@@ -1,0 +1,436 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AstrolabePanel from '@/components/rolelens/AstrolabePanel';
+import StabilityCard from '@/components/rolelens/StabilityCard';
+import CompensationCard from '@/components/rolelens/CompensationCard';
+import CultureCard from '@/components/rolelens/CultureCard';
+import AlternativesCard from '@/components/rolelens/AlternativesCard';
+import ConnectionVines from '@/components/rolelens/ConnectionVines';
+
+const jobDatabase = {
+  salesforce: {
+    id: "salesforce",
+    meta: { 
+      title: "Lead Gen AI Artist", 
+      company: "Salesforce",
+      location: "San Francisco, CA",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Ring-Fenced", 
+      risk_score: 0.15,
+      division: "Revenue Center",
+      runway: "24+ months",
+      headcount_trend: "+12%"
+    },
+    comp: { 
+      headline: 170000, 
+      real_feel: 84500, 
+      leak_label: "SF Tax + COL",
+      base: 140000,
+      equity: 30000,
+      tax_rate: 0.32,
+      col_adjustment: 0.73
+    },
+    culture: { 
+      type: "Protected Ecosystem", 
+      stress_level: 0.25,
+      wlb_score: 8.2,
+      growth_score: 7.5,
+      politics_level: "Low"
+    },
+    alternatives: ["openai", "canva", "figma"]
+  },
+  openai: {
+    id: "openai",
+    meta: { 
+      title: "Creative AI Engineer", 
+      company: "OpenAI",
+      location: "San Francisco, CA",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "High Growth", 
+      risk_score: 0.45,
+      division: "Strategic Core",
+      runway: "18 months",
+      headcount_trend: "+85%"
+    },
+    comp: { 
+      headline: 280000, 
+      real_feel: 138600, 
+      leak_label: "SF Tax + Burn Risk",
+      base: 180000,
+      equity: 100000,
+      tax_rate: 0.32,
+      col_adjustment: 0.73
+    },
+    culture: { 
+      type: "Intensity Chamber", 
+      stress_level: 0.75,
+      wlb_score: 5.2,
+      growth_score: 9.8,
+      politics_level: "Medium"
+    },
+    alternatives: ["salesforce", "anthropic", "canva"]
+  },
+  canva: {
+    id: "canva",
+    meta: { 
+      title: "AI Design Lead", 
+      company: "Canva",
+      location: "Sydney (Remote)",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Stable Growth", 
+      risk_score: 0.20,
+      division: "Product Core",
+      runway: "36+ months",
+      headcount_trend: "+25%"
+    },
+    comp: { 
+      headline: 195000, 
+      real_feel: 142350, 
+      leak_label: "Minimal (Remote)",
+      base: 165000,
+      equity: 30000,
+      tax_rate: 0.27,
+      col_adjustment: 1.0
+    },
+    culture: { 
+      type: "Balanced Oasis", 
+      stress_level: 0.30,
+      wlb_score: 8.8,
+      growth_score: 7.8,
+      politics_level: "Low"
+    },
+    alternatives: ["salesforce", "figma", "openai"]
+  },
+  figma: {
+    id: "figma",
+    meta: { 
+      title: "Generative Design Engineer", 
+      company: "Figma",
+      location: "San Francisco, CA",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Adobe-Backed", 
+      risk_score: 0.10,
+      division: "Strategic Core",
+      runway: "Unlimited",
+      headcount_trend: "+15%"
+    },
+    comp: { 
+      headline: 210000, 
+      real_feel: 104580, 
+      leak_label: "SF Tax + COL",
+      base: 175000,
+      equity: 35000,
+      tax_rate: 0.32,
+      col_adjustment: 0.73
+    },
+    culture: { 
+      type: "Design Haven", 
+      stress_level: 0.35,
+      wlb_score: 7.8,
+      growth_score: 8.2,
+      politics_level: "Low"
+    },
+    alternatives: ["canva", "salesforce", "openai"]
+  },
+  anthropic: {
+    id: "anthropic",
+    meta: { 
+      title: "AI Safety Researcher", 
+      company: "Anthropic",
+      location: "San Francisco, CA",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Mission-Driven", 
+      risk_score: 0.35,
+      division: "Research Core",
+      runway: "24 months",
+      headcount_trend: "+60%"
+    },
+    comp: { 
+      headline: 320000, 
+      real_feel: 158720, 
+      leak_label: "SF Tax + Intensity",
+      base: 220000,
+      equity: 100000,
+      tax_rate: 0.32,
+      col_adjustment: 0.73
+    },
+    culture: { 
+      type: "Scholarly Intensity", 
+      stress_level: 0.60,
+      wlb_score: 6.5,
+      growth_score: 9.5,
+      politics_level: "Low"
+    },
+    alternatives: ["openai", "salesforce", "canva"]
+  }
+};
+
+export default function RoleLens() {
+  const [activeJob, setActiveJob] = useState("salesforce");
+  const [tunerSettings, setTunerSettings] = useState({
+    riskAppetite: 0.3,
+    lifeAnchors: 0.5,
+    careerStage: 0.6
+  });
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
+
+  const currentJob = jobDatabase[activeJob];
+
+  const handleJobSwap = (newJobId) => {
+    if (jobDatabase[newJobId]) {
+      setIsConnecting(true);
+      setTimeout(() => {
+        setActiveJob(newJobId);
+        setTimeout(() => setIsConnecting(false), 600);
+      }, 300);
+    }
+  };
+
+  const getAlternativeJobs = () => {
+    return currentJob.alternatives.map(id => jobDatabase[id]).filter(Boolean);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-zinc-100">
+      {/* Texture Overlay */}
+      <div className="fixed inset-0 opacity-[0.015] pointer-events-none"
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}
+      />
+
+      <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
+        {/* Mobile Header */}
+        <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-semibold text-slate-800 tracking-tight">RoleLens</h1>
+              <p className="text-xs text-slate-500">Executive Decision Engine</p>
+            </div>
+            <button
+              onClick={() => setShowMobilePanel(!showMobilePanel)}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors"
+            >
+              <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Panel Overlay */}
+        <AnimatePresence>
+          {showMobilePanel && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+              onClick={() => setShowMobilePanel(false)}
+            >
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="absolute left-0 top-0 h-full w-80 bg-white shadow-2xl"
+                onClick={e => e.stopPropagation()}
+              >
+                <AstrolabePanel
+                  settings={tunerSettings}
+                  onSettingsChange={setTunerSettings}
+                  isConnecting={isConnecting}
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 bg-white/50 backdrop-blur-xl">
+          <AstrolabePanel
+            settings={tunerSettings}
+            onSettingsChange={setTunerSettings}
+            isConnecting={isConnecting}
+          />
+        </div>
+
+        {/* Connection Vines */}
+        <ConnectionVines isActive={isConnecting} settings={tunerSettings} />
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 lg:p-8 xl:p-12">
+          <div className="max-w-5xl mx-auto">
+            {/* Job Header */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeJob}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="mb-8"
+              >
+                <div className="flex items-start gap-4 mb-2">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden shadow-sm">
+                    <img src={currentJob.meta.logo} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1">
+                    <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight">
+                      {currentJob.meta.title}
+                    </h1>
+                    <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
+                      <span className="font-medium text-slate-700">{currentJob.meta.company}</span>
+                      <span className="w-1 h-1 rounded-full bg-slate-300" />
+                      <span>{currentJob.meta.location}</span>
+                      <span className="w-1 h-1 rounded-full bg-slate-300" />
+                      <span>{currentJob.meta.date}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Intelligence Cards Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`stability-${activeJob}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: 0.05 }}
+                >
+                  <StabilityCard 
+                    data={currentJob.stability} 
+                    tunerSettings={tunerSettings}
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`comp-${activeJob}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                >
+                  <CompensationCard 
+                    data={currentJob.comp} 
+                    tunerSettings={tunerSettings}
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`culture-${activeJob}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: 0.15 }}
+                >
+                  <CultureCard 
+                    data={currentJob.culture} 
+                    tunerSettings={tunerSettings}
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`alts-${activeJob}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                  <AlternativesCard 
+                    alternatives={getAlternativeJobs()}
+                    currentJob={currentJob}
+                    onSwap={handleJobSwap}
+                    tunerSettings={tunerSettings}
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* True Fit Score */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-8 p-6 rounded-3xl bg-gradient-to-r from-slate-800 to-slate-900 text-white"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm font-medium mb-1">Your True Fit Score</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold">
+                      {Math.round(calculateTrueFit(currentJob, tunerSettings))}
+                    </span>
+                    <span className="text-slate-400 text-lg">/100</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-slate-400 text-sm">Based on your profile</p>
+                  <p className="text-lg font-medium mt-1">
+                    {getTrueFitLabel(calculateTrueFit(currentJob, tunerSettings))}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Fit Bar */}
+              <div className="mt-4 h-2 bg-slate-700 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${calculateTrueFit(currentJob, tunerSettings)}%` }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  className="h-full rounded-full"
+                  style={{
+                    background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateTrueFit(currentJob, tunerSettings) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
+                  }}
+                />
+              </div>
+            </motion.div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function calculateTrueFit(job, settings) {
+  const riskFit = 1 - Math.abs(job.stability.risk_score - settings.riskAppetite);
+  const stressFit = settings.lifeAnchors > 0.5 
+    ? 1 - job.culture.stress_level 
+    : 0.5 + job.culture.stress_level * 0.5;
+  const growthFit = settings.careerStage < 0.5
+    ? job.culture.growth_score / 10
+    : job.culture.wlb_score / 10;
+  
+  return Math.round((riskFit * 40 + stressFit * 30 + growthFit * 30));
+}
+
+function getTrueFitLabel(score) {
+  if (score >= 85) return "Exceptional Match";
+  if (score >= 70) return "Strong Alignment";
+  if (score >= 55) return "Moderate Fit";
+  if (score >= 40) return "Consider Trade-offs";
+  return "Significant Gaps";
+}

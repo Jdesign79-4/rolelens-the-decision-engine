@@ -47,8 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import RoleLens from './pages/RoleLens';
 
-export const pagesConfig = {
-	Pages: {}
+
+export const PAGES = {
+    "RoleLens": RoleLens,
 }
 
+export const pagesConfig = {
+    mainPage: "RoleLens",
+    Pages: PAGES,
+};
