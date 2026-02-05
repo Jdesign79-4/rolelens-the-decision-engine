@@ -2,9 +2,65 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, TrendingDown, Droplets } from 'lucide-react';
 
+// Animated water droplet for leak
+function LeakDroplet({ delay, x }) {
+  return (
+    <motion.div
+      initial={{ y: 0, opacity: 0, scale: 0 }}
+      animate={{ 
+        y: [0, 40, 80],
+        opacity: [0, 1, 0],
+        scale: [0.5, 1, 0.8]
+      }}
+      transition={{ 
+        duration: 1.2,
+        repeat: Infinity,
+        delay,
+        ease: "easeIn"
+      }}
+      className="absolute w-1.5 h-2 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"
+      style={{ 
+        right: -4 + x,
+        top: '40%',
+        filter: 'blur(0.5px)'
+      }}
+    />
+  );
+}
+
+// Water ripple effect
+function WaterRipple({ fillPercentage }) {
+  return (
+    <motion.div
+      className="absolute inset-x-0 pointer-events-none"
+      style={{ bottom: `${fillPercentage - 5}%` }}
+    >
+      {[...Array(3)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ scale: 0.8, opacity: 0.6 }}
+          animate={{ 
+            scale: [0.8, 1.2, 0.8],
+            opacity: [0.6, 0.2, 0.6]
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            delay: i * 1,
+            ease: "easeInOut"
+          }}
+          className="absolute left-1/2 -translate-x-1/2 w-16 h-2 rounded-full border border-white/30"
+          style={{ top: i * 4 }}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
 export default function CompensationCard({ data, tunerSettings }) {
   const fillPercentage = (data.real_feel / data.headline) * 100;
   const leakPercentage = 100 - fillPercentage;
+  const isLeaking = leakPercentage > 25;
   
   const isProviderMode = tunerSettings.lifeAnchors > 0.5;
   
@@ -17,10 +73,12 @@ export default function CompensationCard({ data, tunerSettings }) {
   };
 
   const getWaterColor = () => {
-    if (fillPercentage > 70) return 'from-teal-400 to-cyan-500';
-    if (fillPercentage > 50) return 'from-cyan-400 to-blue-500';
-    return 'from-amber-400 to-orange-500';
+    if (fillPercentage > 70) return { main: 'from-teal-400 to-cyan-500', surface: 'rgba(45, 212, 191, 0.8)' };
+    if (fillPercentage > 50) return { main: 'from-cyan-400 to-blue-500', surface: 'rgba(34, 211, 238, 0.8)' };
+    return { main: 'from-amber-400 to-orange-500', surface: 'rgba(251, 191, 36, 0.8)' };
   };
+  
+  const waterColors = getWaterColor();
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -36,64 +94,129 @@ export default function CompensationCard({ data, tunerSettings }) {
 
       {/* Water Basin Visualization */}
       <div className="relative mb-6">
-        <div className="relative h-40 bg-slate-100 rounded-2xl overflow-hidden border-2 border-slate-200">
-          {/* Water Fill */}
+        <div className="relative h-40 bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-inner">
+          {/* Basin Glass Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/10 pointer-events-none" />
+          
+          {/* Water Fill with fluid animation */}
           <motion.div
             initial={{ height: 0 }}
             animate={{ height: `${fillPercentage}%` }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${getWaterColor()}`}
-            style={{ opacity: 0.8 }}
+            transition={{ duration: 1.5, ease: [0.34, 1.56, 0.64, 1] }}
+            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${waterColors.main}`}
+            style={{ opacity: 0.85 }}
           >
-            {/* Water Surface Animation */}
+            {/* Animated Wave Surface */}
+            <svg className="absolute -top-3 left-0 w-full h-8" viewBox="0 0 100 20" preserveAspectRatio="none">
+              <motion.path
+                d="M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z"
+                fill={waterColors.surface}
+                animate={{
+                  d: [
+                    "M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z",
+                    "M0,10 Q10,15 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z",
+                    "M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z"
+                  ]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </svg>
+            
+            {/* Underwater shimmer */}
             <motion.div
               animate={{ 
-                backgroundPositionX: ['0%', '100%']
+                backgroundPosition: ['0% 0%', '100% 100%']
               }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="absolute top-0 left-0 right-0 h-4"
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              className="absolute inset-0"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-                backgroundSize: '200% 100%'
+                background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)',
+                backgroundSize: '200% 200%'
               }}
             />
+            
+            {/* Rising bubbles */}
+            {[...Array(5)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ 
+                  y: [-10, -60],
+                  opacity: [0, 0.6, 0],
+                  x: [0, (i % 2 === 0 ? 5 : -5)]
+                }}
+                transition={{ 
+                  duration: 2 + i * 0.3,
+                  repeat: Infinity,
+                  delay: i * 0.5,
+                  ease: "easeOut"
+                }}
+                className="absolute w-1.5 h-1.5 rounded-full bg-white/40"
+                style={{ left: `${15 + i * 15}%`, bottom: '20%' }}
+              />
+            ))}
+            
+            {/* Water Ripples */}
+            <WaterRipple fillPercentage={fillPercentage} />
           </motion.div>
 
-          {/* Leak Visualization */}
-          <div className="absolute right-0 top-1/3 w-12 flex flex-col items-center">
-            <div className="w-6 h-6 rounded-full border-2 border-dashed border-red-300 flex items-center justify-center bg-red-50">
-              <TrendingDown className="w-3 h-3 text-red-400" />
+          {/* Leak Hole and Dripping Animation */}
+          {isLeaking && (
+            <div className="absolute right-0 top-1/3">
+              {/* Leak hole */}
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="w-5 h-5 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 border-2 border-slate-400 shadow-inner flex items-center justify-center"
+              >
+                <div className="w-2 h-2 rounded-full bg-slate-500" />
+              </motion.div>
+              
+              {/* Dripping droplets */}
+              <LeakDroplet delay={0} x={0} />
+              <LeakDroplet delay={0.4} x={3} />
+              <LeakDroplet delay={0.8} x={-2} />
+              
+              {/* Leak label */}
+              <motion.div
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute -right-1 top-8 text-[9px] text-red-500 font-semibold whitespace-nowrap"
+              >
+                -{Math.round(leakPercentage)}%
+              </motion.div>
             </div>
-            <motion.div
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="mt-1 text-xs text-red-400 font-medium"
-            >
-              Leak
-            </motion.div>
-          </div>
+          )}
 
           {/* Water Level Markers */}
           {[25, 50, 75].map((level) => (
             <div
               key={level}
-              className="absolute left-2 right-2 border-t border-dashed border-slate-300/50"
+              className="absolute left-2 right-8 border-t border-dashed border-slate-300/40"
               style={{ bottom: `${level}%` }}
             >
-              <span className="absolute -top-2.5 left-1 text-[10px] text-slate-400">{level}%</span>
+              <span className="absolute -top-2.5 left-1 text-[9px] text-slate-400 font-medium">{level}%</span>
             </div>
           ))}
 
-          {/* Real Feel Indicator */}
+          {/* Real Feel Indicator floating on water */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="absolute left-3 right-3 flex items-center justify-between"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              y: [0, -3, 0]
+            }}
+            transition={{ 
+              opacity: { delay: 1.2 },
+              scale: { delay: 1.2 },
+              y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+            }}
+            className="absolute left-3 right-10 flex items-center justify-between px-2 py-1 bg-white/30 backdrop-blur-sm rounded-full"
             style={{ bottom: `${fillPercentage}%`, transform: 'translateY(50%)' }}
           >
-            <Droplets className="w-4 h-4 text-white drop-shadow-sm" />
-            <span className="text-xs font-bold text-white drop-shadow-sm">Real Feel</span>
+            <Droplets className="w-3 h-3 text-white drop-shadow-md" />
+            <span className="text-[10px] font-bold text-white drop-shadow-md">Real Feel</span>
           </motion.div>
         </div>
       </div>
