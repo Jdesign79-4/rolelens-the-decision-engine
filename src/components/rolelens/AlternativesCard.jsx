@@ -5,31 +5,86 @@ import { ArrowRight, ChevronUp, Zap, Clock, DollarSign, Heart } from 'lucide-rea
 export default function AlternativesCard({ alternatives, currentJob, onSwap, tunerSettings }) {
   const [expandedId, setExpandedId] = useState(null);
 
+  // Profile detection
+  const isRiskSeeker = tunerSettings.riskAppetite > 0.6;
+  const isStabilitySeeker = tunerSettings.riskAppetite < 0.4;
+  const isNomad = tunerSettings.lifeAnchors < 0.4;
+  const isProvider = tunerSettings.lifeAnchors > 0.6;
+  const isSeedling = tunerSettings.careerStage < 0.4;
+  const isOak = tunerSettings.careerStage > 0.6;
+
+  // Calculate profile match score for each alternative
+  const getProfileMatch = (alt) => {
+    let score = 50; // Base score
+    
+    // Risk alignment
+    const riskDiff = Math.abs(alt.stability.risk_score - tunerSettings.riskAppetite);
+    if (isRiskSeeker && alt.stability.risk_score > 0.4) score += 25;
+    if (isStabilitySeeker && alt.stability.risk_score < 0.3) score += 25;
+    if (riskDiff < 0.2) score += 15;
+    
+    // Life anchor alignment
+    if (isProvider && alt.culture.wlb_score > 7) score += 15;
+    if (isNomad && alt.culture.growth_score > 8) score += 15;
+    if (isProvider && alt.culture.stress_level > 0.6) score -= 20;
+    
+    // Career stage alignment
+    if (isSeedling && alt.culture.growth_score > 8) score += 10;
+    if (isOak && alt.culture.wlb_score > 7.5) score += 10;
+    
+    return Math.min(100, Math.max(0, score));
+  };
+
+  // Sort alternatives by profile match
+  const sortedAlternatives = [...alternatives].sort((a, b) => getProfileMatch(b) - getProfileMatch(a));
+
   const getTradeOff = (alt) => {
     const compDiff = alt.comp.real_feel - currentJob.comp.real_feel;
     const stressDiff = alt.culture.stress_level - currentJob.culture.stress_level;
+    const matchScore = getProfileMatch(alt);
+    
+    // Personalized trade-off messages based on profile
+    if (isRiskSeeker && alt.stability.risk_score > 0.4) {
+      if (compDiff > 30000) {
+        return { text: `🔥 High-risk high-reward: +${Math.round(compDiff/1000)}K potential`, type: 'match', score: matchScore };
+      }
+      return { text: '⚡ Matches your risk appetite', type: 'match', score: matchScore };
+    }
+    
+    if (isStabilitySeeker && alt.stability.risk_score < 0.25) {
+      return { text: '🛡️ Strong stability match', type: 'safe', score: matchScore };
+    }
+    
+    if (isProvider && alt.culture.wlb_score > 7.5 && alt.culture.stress_level < 0.4) {
+      return { text: '⚓ Family-friendly balance', type: 'safe', score: matchScore };
+    }
+    
+    if (isNomad && alt.culture.growth_score > 8) {
+      return { text: '🚀 High growth trajectory', type: 'match', score: matchScore };
+    }
     
     if (compDiff > 30000 && stressDiff > 0.2) {
-      return { text: `+${Math.round(compDiff/1000)}K but ${Math.round(stressDiff*100)}% more intensity`, type: 'tradeoff' };
+      return { text: `+${Math.round(compDiff/1000)}K but ${Math.round(stressDiff*100)}% more intensity`, type: 'tradeoff', score: matchScore };
     }
     if (compDiff > 20000 && stressDiff <= 0) {
-      return { text: `+${Math.round(compDiff/1000)}K with better balance`, type: 'win' };
+      return { text: `+${Math.round(compDiff/1000)}K with better balance`, type: 'win', score: matchScore };
     }
     if (compDiff < 0 && stressDiff < -0.1) {
-      return { text: `${Math.round(compDiff/1000)}K for ${Math.round(-stressDiff*100)}% calmer culture`, type: 'tradeoff' };
+      return { text: `${Math.round(compDiff/1000)}K for ${Math.round(-stressDiff*100)}% calmer culture`, type: 'tradeoff', score: matchScore };
     }
     if (alt.stability.risk_score < currentJob.stability.risk_score - 0.1) {
-      return { text: 'Lower risk, similar comp', type: 'safe' };
+      return { text: 'Lower risk, similar comp', type: 'safe', score: matchScore };
     }
-    return { text: 'Different opportunity profile', type: 'neutral' };
+    return { text: 'Different opportunity profile', type: 'neutral', score: matchScore };
   };
 
   const getTradeOffColor = (type) => {
     switch (type) {
-      case 'win': return 'text-emerald-600 bg-emerald-50';
-      case 'safe': return 'text-teal-600 bg-teal-50';
-      case 'tradeoff': return 'text-amber-600 bg-amber-50';
-      default: return 'text-slate-600 bg-slate-50';
+      case 'win': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'safe': return 'text-teal-600 bg-teal-50 border-teal-200';
+      case 'match': return 'text-violet-600 bg-violet-50 border-violet-200';
+      case 'tradeoff': return 'text-amber-600 bg-amber-50 border-amber-200';
+      default: return 'text-slate-600 bg-slate-50 border-slate-200';
     }
   };
 
@@ -55,9 +110,10 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
 
       {/* Alternatives List */}
       <div className="space-y-3">
-        {alternatives.map((alt, index) => {
+        {sortedAlternatives.map((alt, index) => {
           const tradeOff = getTradeOff(alt);
           const isExpanded = expandedId === alt.id;
+          const isTopMatch = index === 0 && tradeOff.score > 70;
 
           return (
             <motion.div
@@ -67,21 +123,51 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
               transition={{ delay: index * 0.1 }}
               className="relative"
             >
+              {/* Top Match Glow */}
+              {isTopMatch && (
+                <motion.div
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-violet-400 to-purple-400 blur-sm"
+                />
+              )}
+              
               <div
-                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                   isExpanded 
                     ? 'border-slate-300 bg-slate-50' 
-                    : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/50'
+                    : isTopMatch
+                      ? 'border-violet-200 bg-white hover:border-violet-300'
+                      : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/50'
                 }`}
                 onClick={() => setExpandedId(isExpanded ? null : alt.id)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden">
-                      <img src={alt.meta.logo} alt="" className="w-full h-full object-cover" />
+                    <div className="relative">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden">
+                        <img src={alt.meta.logo} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      {/* Profile Match Indicator */}
+                      {tradeOff.score > 70 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center"
+                        >
+                          <span className="text-[8px] font-bold text-white">{Math.round(tradeOff.score)}</span>
+                        </motion.div>
+                      )}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-800">{alt.meta.company}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-slate-800">{alt.meta.company}</h4>
+                        {isTopMatch && (
+                          <span className="text-[9px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">
+                            TOP MATCH
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-500">{alt.meta.title}</p>
                     </div>
                   </div>
@@ -94,7 +180,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                 </div>
 
                 {/* Quick Trade-off Badge */}
-                <div className={`mt-3 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium ${getTradeOffColor(tradeOff.type)}`}>
+                <div className={`mt-3 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${getTradeOffColor(tradeOff.type)}`}>
                   {tradeOff.text}
                 </div>
 
