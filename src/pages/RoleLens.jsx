@@ -489,7 +489,7 @@ const jobDatabase = {
       growth_score: 9.5,
       politics_level: "Low"
     },
-    alternatives: ["openai", "salesforce", "canva", "notion", "spotify"]
+    alternatives: ["openai", "salesforce", "canva", "notion", "standing_stones"]
   },
   notion: {
     id: "notion",
