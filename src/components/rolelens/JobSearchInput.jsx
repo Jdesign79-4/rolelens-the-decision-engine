@@ -162,7 +162,7 @@ Be specific with numbers. Show your work - reference which source each number co
                   }
                 }
               },
-              description: "3 alternative similar roles at competing companies"
+              description: "5 alternative similar roles at competing companies"
             },
             sources: {
               type: "array",
