@@ -138,7 +138,9 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500">{alt.meta.title}</p>
+                      {!alt.isCompanyOnly && alt.meta.title !== 'Company Research' && (
+                        <p className="text-xs text-slate-500">{alt.meta.title}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
