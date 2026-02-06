@@ -110,10 +110,10 @@ export default function CompensationCard({ data, tunerSettings }) {
           {/* Basin Glass Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/10 pointer-events-none" />
           
-          {/* Water Fill with fluid animation */}
+          {/* Water Fill with fluid animation - fills to real_feel level */}
           <motion.div
             initial={{ height: 0 }}
-            animate={{ height: `${fillPercentage}%` }}
+            animate={{ height: `${actualFillPercentage}%` }}
             transition={{ duration: 1.5, ease: [0.34, 1.56, 0.64, 1] }}
             className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${waterColors.main}`}
             style={{ opacity: 0.85 }}
