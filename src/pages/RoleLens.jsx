@@ -708,28 +708,6 @@ export default function RoleLens() {
                 </button>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-medium text-slate-500">Sort by:</span>
-                <div className="flex gap-2">
-                  {[
-                    { id: 'match', label: 'Best Match' },
-                    { id: 'comp', label: 'Compensation' },
-                    { id: 'culture', label: 'Culture' },
-                    { id: 'stability', label: 'Stability' }
-                  ].map(option => (
-                    <button
-                      key={option.id}
-                      onClick={() => setSortBy(option.id)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                        sortBy === option.id
-                          ? 'bg-slate-800 text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-                <span className="w-px h-4 bg-slate-300 mx-1" />
                 <span className="text-xs font-medium text-slate-500">Filter:</span>
                 <div className="flex gap-2">
                   {[
