@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AstrolabePanel from '@/components/rolelens/AstrolabePanel';
 import StabilityCard from '@/components/rolelens/StabilityCard';
@@ -6,6 +6,8 @@ import CompensationCard from '@/components/rolelens/CompensationCard';
 import CultureCard from '@/components/rolelens/CultureCard';
 import AlternativesCard from '@/components/rolelens/AlternativesCard';
 import ConnectionVines from '@/components/rolelens/ConnectionVines';
+import JobSearchInput from '@/components/rolelens/JobSearchInput';
+import Disclaimer from '@/components/rolelens/Disclaimer';
 
 const jobDatabase = {
   salesforce: {
@@ -182,18 +184,45 @@ const jobDatabase = {
 
 export default function RoleLens() {
   const [activeJob, setActiveJob] = useState("salesforce");
+  const [customJobs, setCustomJobs] = useState({});
   const [tunerSettings, setTunerSettings] = useState({
     riskAppetite: 0.3,
     lifeAnchors: 0.5,
     careerStage: 0.6
   });
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
 
-  const currentJob = jobDatabase[activeJob];
+  // Merge static and custom jobs
+  const allJobs = { ...jobDatabase, ...customJobs };
+  const currentJob = allJobs[activeJob];
+
+  const handleJobDataLoaded = (jobData) => {
+    // Add the new job and its alternatives to custom jobs
+    const newCustomJobs = { [jobData.id]: jobData };
+    
+    jobData.alternatives?.forEach(alt => {
+      newCustomJobs[alt.id] = {
+        ...alt,
+        alternatives: [jobData.id, ...jobData.alternatives.filter(a => a.id !== alt.id).slice(0, 2).map(a => a.id)]
+      };
+    });
+
+    // Update alternatives to use IDs
+    newCustomJobs[jobData.id] = {
+      ...jobData,
+      alternatives: jobData.alternatives?.map(alt => alt.id) || []
+    };
+
+    setCustomJobs(prev => ({ ...prev, ...newCustomJobs }));
+    setActiveJob(jobData.id);
+    setIsConnecting(true);
+    setTimeout(() => setIsConnecting(false), 600);
+  };
 
   const handleJobSwap = (newJobId) => {
-    if (jobDatabase[newJobId]) {
+    if (allJobs[newJobId]) {
       setIsConnecting(true);
       setTimeout(() => {
         setActiveJob(newJobId);
@@ -203,7 +232,7 @@ export default function RoleLens() {
   };
 
   const getAlternativeJobs = () => {
-    return currentJob.alternatives.map(id => jobDatabase[id]).filter(Boolean);
+    return currentJob.alternatives.map(id => allJobs[id]).filter(Boolean);
   };
 
   return (
@@ -275,6 +304,13 @@ export default function RoleLens() {
         {/* Main Content */}
         <main className="flex-1 p-4 lg:p-8 xl:p-12">
           <div className="max-w-5xl mx-auto">
+            {/* Search Input */}
+            <JobSearchInput 
+              onJobDataLoaded={handleJobDataLoaded}
+              isLoading={isSearching}
+              setIsLoading={setIsSearching}
+            />
+
             {/* Job Header */}
             <AnimatePresence mode="wait">
               <motion.div
@@ -408,6 +444,9 @@ export default function RoleLens() {
                 />
               </div>
             </motion.div>
+
+            {/* Disclaimer */}
+            <Disclaimer />
           </div>
         </main>
       </div>
