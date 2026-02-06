@@ -23,6 +23,7 @@ import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 import JobFeedback from '@/components/rolelens/JobFeedback';
+import JobDataCharts from '@/components/rolelens/JobDataCharts';
 
 const jobDatabase = {
   standing_stones: {
@@ -1205,6 +1206,11 @@ function RoleLensContent() {
                   setTimeout(() => setIsConnecting(false), 400);
                 }}
               />
+            </div>
+
+            {/* Interactive Data Charts */}
+            <div className="mt-6">
+              <JobDataCharts job={currentJob} tunerSettings={tunerSettings} />
             </div>
 
             {/* Job Posting Analysis - Red/Green Flags */}
