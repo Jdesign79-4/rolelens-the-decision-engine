@@ -58,11 +58,16 @@ function WaterRipple({ fillPercentage }) {
 }
 
 export default function CompensationCard({ data, tunerSettings }) {
-  const fillPercentage = (data.real_feel / data.headline) * 100;
+  // Adjust headline based on self-reflection (0.5 = average, below = reduced offer, above = premium offer)
+  const reflectionAdjustment = 0.7 + (tunerSettings.honestSelfReflection * 0.6); // Range: 0.7 to 1.3
+  const adjustedHeadline = Math.round(data.headline * reflectionAdjustment);
+  
+  const fillPercentage = (data.real_feel / adjustedHeadline) * 100;
   const leakPercentage = 100 - fillPercentage;
   const isLeaking = leakPercentage > 25;
   
   const isProviderMode = tunerSettings.lifeAnchors > 0.5;
+  const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
   
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -256,8 +261,23 @@ export default function CompensationCard({ data, tunerSettings }) {
       <div className="space-y-3">
         <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
           <span className="text-sm text-slate-600">Headline Offer</span>
-          <span className="text-lg font-bold text-slate-800">{formatCurrency(data.headline)}</span>
+          <span className="text-lg font-bold text-slate-800">{formatCurrency(adjustedHeadline)}</span>
         </div>
+        
+        {tunerSettings.honestSelfReflection !== 0.7 && (
+          <div className={`flex justify-between items-center p-3 rounded-xl border ${
+            tunerSettings.honestSelfReflection > 0.7 
+              ? 'bg-emerald-50 border-emerald-200' 
+              : 'bg-amber-50 border-amber-200'
+          }`}>
+            <span className="text-xs text-slate-600">Skill Match Adjustment</span>
+            <span className={`text-sm font-medium ${
+              tunerSettings.honestSelfReflection > 0.7 ? 'text-emerald-700' : 'text-amber-700'
+            }`}>
+              {tunerSettings.honestSelfReflection > 0.7 ? '+' : ''}{Math.round((reflectionAdjustment - 1) * 100)}%
+            </span>
+          </div>
+        )}
         
         <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100">
           <div className="flex items-center gap-2">
@@ -282,6 +302,19 @@ export default function CompensationCard({ data, tunerSettings }) {
         >
           <p className="text-xs text-amber-700">
             <span className="font-semibold">Provider Alert:</span> This real feel may be {data.real_feel < 100000 ? 'tight' : 'comfortable'} for family obligations
+          </p>
+        </motion.div>
+      )}
+      
+      {/* Underqualified Warning */}
+      {isUnderqualified && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mt-4 p-3 rounded-xl border border-dashed border-red-300 bg-red-50/50"
+        >
+          <p className="text-xs text-red-700">
+            <span className="font-semibold">Reality Check:</span> Lower offers typical when lacking key qualifications. Focus on skill development to command higher compensation.
           </p>
         </motion.div>
       )}

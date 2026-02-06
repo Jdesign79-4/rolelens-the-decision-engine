@@ -432,7 +432,8 @@ export default function RoleLens() {
   const [tunerSettings, setTunerSettings] = useState({
     riskAppetite: 0.3,
     lifeAnchors: 0.5,
-    careerStage: 0.6
+    careerStage: 0.6,
+    honestSelfReflection: 0.7
   });
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);

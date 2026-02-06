@@ -23,12 +23,17 @@ CULTURE DATA: WLB Score ${currentJob.culture.wlb_score}/10, Growth Score ${curre
 COMPENSATION: Headline $${currentJob.comp.headline}, Real Feel $${currentJob.comp.real_feel}
 STABILITY: ${currentJob.stability.health}, Risk Score ${currentJob.stability.risk_score}, Runway ${currentJob.stability.runway}
 
-USER PROFILE: Risk Appetite ${Math.round(tunerSettings.riskAppetite * 100)}%, Life Anchors ${Math.round(tunerSettings.lifeAnchors * 100)}%, Career Stage ${Math.round(tunerSettings.careerStage * 100)}%
+USER PROFILE: Risk Appetite ${Math.round(tunerSettings.riskAppetite * 100)}%, Life Anchors ${Math.round(tunerSettings.lifeAnchors * 100)}%, Career Stage ${Math.round(tunerSettings.careerStage * 100)}%, Honest Self-Reflection ${Math.round(tunerSettings.honestSelfReflection * 100)}%
+
+Self-Reflection Guide: 
+- Below 40%: User acknowledges significant skill gaps or lack of experience for this role
+- 40-60%: User has moderate qualifications, room for growth
+- Above 60%: User is well-qualified to exceptional fit
 
 Provide 3 insights (each 2-3 sentences max):
 1. Culture Analysis: Explain WHY the culture scores are what they are based on the data
 2. Compensation Forecast: Predict 1-year and 3-year compensation trends for this role/industry
-3. Career Path: Suggest next career moves based on user profile and market trends`;
+3. Career Path: Be HONEST but CONSTRUCTIVE. If user is underqualified (self-reflection <40%), explain why this role may not be ideal and suggest skill development or alternative entry points. If well-qualified (>60%), encourage pursuit and suggest advancement strategies. Focus on actionable guidance, never cruel.`;
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,

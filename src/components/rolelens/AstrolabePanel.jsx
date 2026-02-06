@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Slider } from "@/components/ui/slider";
-import { Shield, Sword, Anchor, Compass, TreeDeciduous, Sprout } from 'lucide-react';
+import { Shield, Sword, Anchor, Compass, TreeDeciduous, Sprout, Target } from 'lucide-react';
 
 export default function AstrolabePanel({ settings, onSettingsChange, isConnecting }) {
   const [wobble, setWobble] = useState({ x: 0, y: 0 });
