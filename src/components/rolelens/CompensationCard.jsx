@@ -84,9 +84,9 @@ export default function CompensationCard({ data, tunerSettings }) {
   };
 
   const getWaterColor = () => {
-    if (fillPercentage > 70) return { main: 'from-teal-400 to-cyan-500', surface: 'rgba(45, 212, 191, 0.8)', isStormy: false };
-    if (fillPercentage > 50) return { main: 'from-cyan-400 to-blue-500', surface: 'rgba(34, 211, 238, 0.8)', isStormy: false };
-    if (fillPercentage > 35) return { main: 'from-amber-400 to-orange-500', surface: 'rgba(251, 191, 36, 0.8)', isStormy: false };
+    if (actualFillPercentage > 70) return { main: 'from-teal-400 to-cyan-500', surface: 'rgba(45, 212, 191, 0.8)', isStormy: false };
+    if (actualFillPercentage > 50) return { main: 'from-cyan-400 to-blue-500', surface: 'rgba(34, 211, 238, 0.8)', isStormy: false };
+    if (actualFillPercentage > 35) return { main: 'from-amber-400 to-orange-500', surface: 'rgba(251, 191, 36, 0.8)', isStormy: false };
     return { main: 'from-slate-600 to-slate-800', surface: 'rgba(71, 85, 105, 0.9)', isStormy: true };
   };
   
