@@ -901,7 +901,6 @@ export default function RoleLens() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
-                    className="lg:col-span-2"
                   >
                     {/* Filters for Alternatives */}
                     <div className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-slate-200">
