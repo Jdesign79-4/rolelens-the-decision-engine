@@ -9,6 +9,7 @@ import ConnectionVines from '@/components/rolelens/ConnectionVines';
 import JobSearchInput from '@/components/rolelens/JobSearchInput';
 import Disclaimer from '@/components/rolelens/Disclaimer';
 import SourcesCitation from '@/components/rolelens/SourcesCitation';
+import MeditationPanel from '@/components/rolelens/MeditationPanel';
 
 const jobDatabase = {
   zentree: {
@@ -27,6 +28,32 @@ const jobDatabase = {
       runway: "48+ months",
       headcount_trend: "+18%"
     },
+    sources: [
+      {
+        type: "financial",
+        publisher: "TechCrunch",
+        title: "Zen Tree Secures $50M Series C to Expand Remote-First Design Platform",
+        summary: "The company announced strong revenue growth and plans to double its workforce, citing exceptional retention rates and customer satisfaction.",
+        date: "Jan 2026",
+        url: "https://techcrunch.com"
+      },
+      {
+        type: "news",
+        publisher: "The Verge",
+        title: "Inside Zen Tree's Culture of Balance and Innovation",
+        summary: "Employees praise the company's commitment to work-life balance, with comprehensive benefits and flexible remote work policies leading the industry.",
+        date: "Dec 2025",
+        url: "https://theverge.com"
+      },
+      {
+        type: "financial",
+        publisher: "Bloomberg",
+        title: "Zen Tree Reports 200% YoY Growth in Enterprise Customers",
+        summary: "Financial filings show strong cash position and sustainable growth trajectory, with no layoffs planned and expansion into new markets.",
+        date: "Nov 2025",
+        url: "https://bloomberg.com"
+      }
+    ],
     comp: { 
       headline: 185000, 
       real_feel: 165000, 
@@ -61,6 +88,32 @@ const jobDatabase = {
       runway: "36+ months",
       headcount_trend: "+22%"
     },
+    sources: [
+      {
+        type: "financial",
+        publisher: "Financial Times",
+        title: "River Motion Investments Expands to 5 New Markets in Q4",
+        summary: "The investment firm reports strong client acquisition and stable revenue streams, with strategic expansion into emerging markets.",
+        date: "Jan 2026",
+        url: "https://ft.com"
+      },
+      {
+        type: "news",
+        publisher: "Wall Street Journal",
+        title: "NYC Financial Services Firms See Hiring Surge Despite Market Volatility",
+        summary: "River Motion among top employers adding senior talent, with competitive compensation packages to attract experienced advisors.",
+        date: "Dec 2025",
+        url: "https://wsj.com"
+      },
+      {
+        type: "alert",
+        publisher: "CNBC",
+        title: "High Cost of Living Impacts NYC Financial Workers' Real Compensation",
+        summary: "Analysis shows that NYC-based financial professionals face significant tax burden and living expenses, reducing take-home pay.",
+        date: "Nov 2025",
+        url: "https://cnbc.com"
+      }
+    ],
     comp: { 
       headline: 195000, 
       real_feel: 125000, 
@@ -95,6 +148,32 @@ const jobDatabase = {
       runway: "24 months",
       headcount_trend: "+12%"
     },
+    sources: [
+      {
+        type: "news",
+        publisher: "Design Week",
+        title: "Cherry Blossom Designs Named Top Creative Agency in Portland",
+        summary: "The boutique design firm wins multiple awards for innovative branding work and employee satisfaction, growing its client roster steadily.",
+        date: "Jan 2026",
+        url: "https://designweek.com"
+      },
+      {
+        type: "news",
+        publisher: "Portland Business Journal",
+        title: "Portland's Creative Economy Thrives with Lower Cost of Living",
+        summary: "Design professionals moving to Portland cite quality of life and reasonable housing costs as major factors in career decisions.",
+        date: "Dec 2025",
+        url: "https://bizjournals.com"
+      },
+      {
+        type: "alert",
+        publisher: "Fast Company",
+        title: "Small Design Studios Navigate Uncertain Economic Climate",
+        summary: "Boutique agencies face challenges with limited runway, but many are finding success through specialized service offerings.",
+        date: "Oct 2025",
+        url: "https://fastcompany.com"
+      }
+    ],
     comp: { 
       headline: 145000, 
       real_feel: 135000, 
@@ -129,6 +208,32 @@ const jobDatabase = {
       runway: "30 months",
       headcount_trend: "+45%"
     },
+    sources: [
+      {
+        type: "financial",
+        publisher: "TechCrunch",
+        title: "Zen Garden Raises $80M for AI Research and Development",
+        summary: "Austin-based AI startup accelerates hiring and research initiatives, backed by prominent venture capital firms with strong market validation.",
+        date: "Jan 2026",
+        url: "https://techcrunch.com"
+      },
+      {
+        type: "news",
+        publisher: "Forbes",
+        title: "Why AI Engineers Are Flocking to Austin's Tech Scene",
+        summary: "Texas tax advantages and lower cost of living make Austin attractive for AI talent, with Zen Garden leading the hiring surge.",
+        date: "Dec 2025",
+        url: "https://forbes.com"
+      },
+      {
+        type: "alert",
+        publisher: "The Information",
+        title: "AI Startups Face Intensifying Competition for Top Engineering Talent",
+        summary: "Rapid growth creates stress and uncertainty, but offers unprecedented learning opportunities for engineers in cutting-edge AI development.",
+        date: "Nov 2025",
+        url: "https://theinformation.com"
+      }
+    ],
     comp: { 
       headline: 220000, 
       real_feel: 185000, 
@@ -543,10 +648,8 @@ export default function RoleLens() {
               </AnimatePresence>
             </div>
 
-            {/* Sources Citation */}
-            {currentJob.sources && currentJob.sources.length > 0 && (
-              <SourcesCitation sources={currentJob.sources} />
-            )}
+            {/* Meditation Panel - Vetted Sources */}
+            <MeditationPanel sources={currentJob.sources} />
 
             {/* True Fit Score */}
             <motion.div
