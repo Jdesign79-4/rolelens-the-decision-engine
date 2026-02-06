@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ComparisonCharts from './ComparisonCharts';
 
 export default function CompanyComparison({ allJobs, initialJobIds = [], onClose }) {
   const [selectedJobs, setSelectedJobs] = useState(initialJobIds);
+  const [showCharts, setShowCharts] = useState(false);
 
   const addJob = (jobId) => {
     if (selectedJobs.length < 4 && !selectedJobs.includes(jobId)) {
@@ -54,12 +56,27 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
             <h2 className="text-2xl font-bold text-slate-800">Company Comparison</h2>
             <p className="text-sm text-slate-500 mt-1">Compare up to 4 companies side-by-side</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
-          >
-            <X className="w-5 h-5 text-slate-600" />
-          </button>
+          <div className="flex items-center gap-2">
+            {selectedJobData.length > 0 && (
+              <button
+                onClick={() => setShowCharts(!showCharts)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                  showCharts 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                {showCharts ? 'Hide' : 'Show'} Charts
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-600" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -89,6 +106,19 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Visual Analytics Charts */}
+              <AnimatePresence>
+                {showCharts && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <ComparisonCharts jobs={selectedJobData} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* Company Headers */}
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
                 {selectedJobData.map(job => (
