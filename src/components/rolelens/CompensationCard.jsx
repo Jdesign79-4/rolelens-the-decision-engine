@@ -73,9 +73,10 @@ export default function CompensationCard({ data, tunerSettings }) {
   };
 
   const getWaterColor = () => {
-    if (fillPercentage > 70) return { main: 'from-teal-400 to-cyan-500', surface: 'rgba(45, 212, 191, 0.8)' };
-    if (fillPercentage > 50) return { main: 'from-cyan-400 to-blue-500', surface: 'rgba(34, 211, 238, 0.8)' };
-    return { main: 'from-amber-400 to-orange-500', surface: 'rgba(251, 191, 36, 0.8)' };
+    if (fillPercentage > 70) return { main: 'from-teal-400 to-cyan-500', surface: 'rgba(45, 212, 191, 0.8)', isStormy: false };
+    if (fillPercentage > 50) return { main: 'from-cyan-400 to-blue-500', surface: 'rgba(34, 211, 238, 0.8)', isStormy: false };
+    if (fillPercentage > 35) return { main: 'from-amber-400 to-orange-500', surface: 'rgba(251, 191, 36, 0.8)', isStormy: false };
+    return { main: 'from-slate-600 to-slate-800', surface: 'rgba(71, 85, 105, 0.9)', isStormy: true };
   };
   
   const waterColors = getWaterColor();
@@ -106,37 +107,67 @@ export default function CompensationCard({ data, tunerSettings }) {
             className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${waterColors.main}`}
             style={{ opacity: 0.85 }}
           >
-            {/* Animated Wave Surface */}
+            {/* Animated Wave Surface - Choppy when stormy */}
             <svg className="absolute -top-3 left-0 w-full h-8" viewBox="0 0 100 20" preserveAspectRatio="none">
               <motion.path
                 d="M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z"
                 fill={waterColors.surface}
-                animate={{
+                animate={waterColors.isStormy ? {
+                  d: [
+                    "M0,10 Q10,2 20,12 T40,8 T60,14 T80,6 T100,10 L100,20 L0,20 Z",
+                    "M0,12 Q10,16 20,8 T40,14 T60,6 T80,12 T100,8 L100,20 L0,20 Z",
+                    "M0,8 Q10,14 20,6 T40,12 T60,8 T80,14 T100,10 L100,20 L0,20 Z",
+                    "M0,10 Q10,2 20,12 T40,8 T60,14 T80,6 T100,10 L100,20 L0,20 Z"
+                  ]
+                } : {
                   d: [
                     "M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z",
                     "M0,10 Q10,15 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z",
                     "M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z"
                   ]
                 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{ duration: waterColors.isStormy ? 0.8 : 2, repeat: Infinity, ease: "easeInOut" }}
               />
             </svg>
             
-            {/* Underwater shimmer */}
-            <motion.div
-              animate={{ 
-                backgroundPosition: ['0% 0%', '100% 100%']
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)',
-                backgroundSize: '200% 200%'
-              }}
-            />
+            {/* Underwater shimmer or murky particles */}
+            {waterColors.isStormy ? (
+              <>
+                {/* Murky particles floating */}
+                {[...Array(8)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ 
+                      y: [0, -20, 0],
+                      x: [(i % 2 === 0 ? -5 : 5), (i % 2 === 0 ? 5 : -5), (i % 2 === 0 ? -5 : 5)],
+                      opacity: [0.3, 0.6, 0.3]
+                    }}
+                    transition={{ 
+                      duration: 2 + i * 0.3,
+                      repeat: Infinity,
+                      delay: i * 0.2
+                    }}
+                    className="absolute w-2 h-2 rounded-full bg-slate-900/40"
+                    style={{ left: `${10 + i * 12}%`, bottom: `${20 + (i % 3) * 15}%` }}
+                  />
+                ))}
+              </>
+            ) : (
+              <motion.div
+                animate={{ 
+                  backgroundPosition: ['0% 0%', '100% 100%']
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)',
+                  backgroundSize: '200% 200%'
+                }}
+              />
+            )}
             
-            {/* Rising bubbles */}
-            {[...Array(5)].map((_, i) => (
+            {/* Rising bubbles - fewer in stormy water */}
+            {!waterColors.isStormy && [...Array(5)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ y: 100, opacity: 0 }}
