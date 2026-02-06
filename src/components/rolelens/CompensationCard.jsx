@@ -349,13 +349,13 @@ export default function CompensationCard({ data, tunerSettings }) {
           </div>
         )}
         
-        {leakPercentage > 0 && (
+        {overflowPercentage > 0 && (
           <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100">
             <div className="flex items-center gap-2">
               <TrendingDown className="w-4 h-4 text-red-400" />
               <span className="text-sm text-red-600">{data.leak_label}</span>
             </div>
-            <span className="text-sm font-medium text-red-500">-{Math.round(leakPercentage)}%</span>
+            <span className="text-sm font-medium text-red-500">-{Math.round(overflowPercentage)}%</span>
           </div>
         )}
 
