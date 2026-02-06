@@ -65,9 +65,12 @@ export default function CompensationCard({ data, tunerSettings }) {
   const reflectionAdjustment = 0.7 + (tunerSettings.honestSelfReflection * 0.6); // Range: 0.7 to 1.3
   const adjustedHeadline = hasExactRange ? data.headline : Math.round(data.headline * reflectionAdjustment);
   
-  const fillPercentage = Math.min(100, Math.max(0, (data.real_feel / adjustedHeadline) * 100));
-  const leakPercentage = Math.max(0, 100 - fillPercentage);
-  const isLeaking = leakPercentage > 5;
+  // Water fills to real_feel level, but headline is the target capacity
+  // If real_feel < headline, the excess overflows out the top
+  const targetFillPercentage = 100; // Always aim for full capacity (headline)
+  const actualFillPercentage = Math.min(100, Math.max(0, (data.real_feel / adjustedHeadline) * 100));
+  const overflowPercentage = Math.max(0, 100 - actualFillPercentage);
+  const isOverflowing = overflowPercentage > 5;
   
   const isProviderMode = tunerSettings.lifeAnchors > 0.5;
   const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
