@@ -89,6 +89,7 @@ function ZenGarden({ postingHealthScore }) {
   // High score (75-100) = organized garden (few red flags)
   // Low score (0-50) = chaotic garden (many red flags)
   const harmonyScore = postingHealthScore / 100;
+  const hasAnalysis = postingHealthScore !== 50; // 50 is default/no data
   
   // Generate stone positions - more organized when harmony is high
   const stones = harmonyScore > 0.6 ? [
@@ -106,7 +107,14 @@ function ZenGarden({ postingHealthScore }) {
   ];
 
   return (
-    <div className="relative h-48 bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100 rounded-2xl overflow-hidden mb-6 border border-stone-200">
+    <div className="relative h-48 bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100 rounded-2xl overflow-hidden border border-stone-200">
+      {!hasAnalysis && (
+        <div className="absolute inset-0 flex items-center justify-center bg-stone-50/50 backdrop-blur-sm z-10">
+          <div className="text-center px-4">
+            <p className="text-xs text-stone-500 font-medium">Paste job posting for red flag analysis</p>
+          </div>
+        </div>
+      )}
       {/* Sand texture overlay */}
       <div className="absolute inset-0 opacity-[0.03]" 
         style={{ 
@@ -522,11 +530,9 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
       </div>
 
       {/* Zen Garden - Red Flags Indicator */}
-      {postingHealthScore !== undefined && (
-        <div className="mb-4">
-          <ZenGarden postingHealthScore={postingHealthScore} />
-        </div>
-      )}
+      <div className="mb-4">
+        <ZenGarden postingHealthScore={postingHealthScore ?? 50} />
+      </div>
 
       {/* Grove Health Status */}
       <div className={`flex items-center gap-3 p-3 rounded-xl ${groveHealth.bg}`}>
