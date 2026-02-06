@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThumbsUp, ThumbsDown, Heart, Frown, TrendingUp } from 'lucide-react';
-import { submitJobFeedback, getFeedbackHistory } from './MatchingAlgorithm';
+import { submitJobFeedback, getFeedbackHistory } from '@/components/rolelens/MatchingAlgorithm';
 import { toast } from 'sonner';
 
 export default function JobFeedback({ job, tunerSettings, onFeedbackSubmitted }) {
