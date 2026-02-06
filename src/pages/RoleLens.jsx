@@ -15,6 +15,7 @@ import CompanyHealthScore from '@/components/rolelens/CompanyHealthScore';
 import CompanyComparison from '@/components/rolelens/CompanyComparison';
 import SavedLists from '@/components/rolelens/SavedLists';
 import CompensationSources from '@/components/rolelens/CompensationSources';
+import BenefitsHub from '@/components/rolelens/BenefitsHub';
 import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
