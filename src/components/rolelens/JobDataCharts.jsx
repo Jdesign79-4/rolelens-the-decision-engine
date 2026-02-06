@@ -6,6 +6,10 @@ import { TrendingUp, DollarSign, Heart, Activity } from 'lucide-react';
 export default function JobDataCharts({ job, tunerSettings }) {
   const [activeChart, setActiveChart] = useState('overview');
 
+  if (!job?.comp || !job?.culture || !job?.stability) {
+    return null;
+  }
+
   // Compensation Breakdown Data
   const compensationData = [
     { name: 'Base Salary', value: job.comp.base, color: '#3b82f6' },

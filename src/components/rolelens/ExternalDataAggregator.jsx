@@ -126,7 +126,9 @@ CRITICAL: Include direct URLs to each source used.`,
   };
 
   useEffect(() => {
-    fetchEnrichedData();
+    if (company && jobTitle) {
+      fetchEnrichedData();
+    }
   }, [company, jobTitle]);
 
   if (!enrichedData && !loading) return null;
