@@ -21,14 +21,29 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
 
 Job/Company: "${query}"
 
-Gather REAL, CURRENT data from the web including:
-1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
-2. Compensation: typical salary ranges for this role at this company (use levels.fyi, glassdoor, blind data)
-3. Culture: work-life balance scores, stress levels, growth opportunities, political environment (use glassdoor, blind, teamblind reviews)
-4. 3 alternative similar roles at competing companies
-5. IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers (CNBC, Bloomberg, Forbes, LinkedIn, Wired, Fast Company, WSJ, TechCrunch, Business Insider, Reuters). These must be actual articles you found about this company.
+CRITICAL - COMPENSATION DATA SOURCES (MUST USE):
+For ALL compensation calculations, you MUST gather data from these specific vetted sources:
+1. MIT Living Wage Calculator (livingwage.mit.edu) - Use this to determine minimum required income based on the job's location and typical family sizes
+2. Bureau of Labor Statistics (bls.gov/oes) - Official US government wage data by occupation code and metropolitan area
+3. Glassdoor AND Levels.fyi - Cross-reference real salary reports for this specific company and role
+4. PayScale - Salary data with cost-of-living adjustments
 
-Be specific with numbers. Use real data from your web search. If exact data unavailable, provide reasonable estimates based on industry benchmarks.`,
+Calculate the following based on these sources:
+- headline: Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data
+- base: Base salary from BLS and salary sites
+- equity: Annual equity value from Levels.fyi
+- real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power
+- tax_rate: State + Federal effective tax rate for this income level and location
+- col_adjustment: Use MIT Living Wage and PayScale COL data (1.0 = national average, <1 = expensive, >1 = affordable)
+- leak_label: Describe what reduces purchasing power (e.g., "SF Tax + COL", "NYC Housing Costs")
+
+OTHER DATA to gather from web:
+1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
+2. Culture: work-life balance scores, stress levels, growth opportunities (use glassdoor, blind reviews)
+3. 3 alternative similar roles at competing companies (with their compensation from same sources)
+4. IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers
+
+Be specific with numbers. Show your work - reference which source each number comes from.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
