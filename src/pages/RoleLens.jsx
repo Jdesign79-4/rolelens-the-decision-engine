@@ -987,7 +987,9 @@ export default function RoleLens() {
             />
 
             {/* AI Strategic Insights */}
-            <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
+            <div className="mt-6">
+              <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
+            </div>
 
             {/* Company Health Score */}
             <CompanyHealthScore company={currentJob.meta.company} />
