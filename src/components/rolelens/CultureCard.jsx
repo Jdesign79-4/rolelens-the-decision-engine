@@ -168,7 +168,7 @@ export default function CultureCard({ data, tunerSettings }) {
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Culture Scan</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Company Fit</p>
           <h3 className="text-lg font-semibold text-slate-800">{data.type}</h3>
         </div>
         <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-400 to-green-500">
