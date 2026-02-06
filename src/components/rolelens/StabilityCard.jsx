@@ -1,10 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, AlertTriangle, TrendingUp, Clock, Users } from 'lucide-react';
+import { Shield, AlertTriangle, TrendingUp, Clock, Users, Info } from 'lucide-react';
 
 export default function StabilityCard({ data, tunerSettings }) {
+  // Adjust risk based on self-reflection - underqualified = higher personal risk
+  const personalRiskAdjustment = tunerSettings.honestSelfReflection < 0.5 
+    ? (0.5 - tunerSettings.honestSelfReflection) * 0.4 // Add up to 0.2 risk if underqualified
+    : 0;
+  const adjustedRiskScore = Math.min(1, data.risk_score + personalRiskAdjustment);
+  
   const isRiskAverse = tunerSettings.riskAppetite < 0.4;
-  const riskLevel = data.risk_score;
+  const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
+  const riskLevel = adjustedRiskScore;
   
   const getHealthColor = () => {
     if (riskLevel < 0.2) return 'from-emerald-400 to-teal-500';
@@ -14,6 +21,9 @@ export default function StabilityCard({ data, tunerSettings }) {
   };
 
   const getInsight = () => {
+    if (isUnderqualified) {
+      return { text: "Skill Gap Risk", icon: AlertTriangle, color: "text-amber-600" };
+    }
     if (isRiskAverse) {
       if (riskLevel < 0.3) return { text: "Ring-Fenced Safety", icon: Shield, color: "text-emerald-600" };
       if (riskLevel < 0.5) return { text: "Acceptable Exposure", icon: Shield, color: "text-amber-600" };
@@ -54,6 +64,11 @@ export default function StabilityCard({ data, tunerSettings }) {
             className={`h-full rounded-full bg-gradient-to-r ${getHealthColor()}`}
           />
         </div>
+        {personalRiskAdjustment > 0 && (
+          <p className="text-[10px] text-amber-600 mt-1">
+            +{Math.round(personalRiskAdjustment * 100)}% from skill gap
+          </p>
+        )}
       </div>
 
       {/* Metrics Grid */}
@@ -85,12 +100,21 @@ export default function StabilityCard({ data, tunerSettings }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-200"
+        className={`flex items-start gap-3 p-3 rounded-xl border ${
+          isUnderqualified 
+            ? 'bg-amber-50 border-amber-200' 
+            : 'border-dashed border-slate-200'
+        }`}
       >
-        <InsightIcon className={`w-5 h-5 ${insight.color}`} />
+        <InsightIcon className={`w-5 h-5 ${insight.color} flex-shrink-0 mt-0.5`} />
         <div>
           <p className="text-xs text-slate-400">Your Profile Insight</p>
           <p className={`text-sm font-medium ${insight.color}`}>{insight.text}</p>
+          {isUnderqualified && (
+            <p className="text-xs text-amber-700 mt-1">
+              Limited qualifications increase vulnerability to layoffs and slower career progression
+            </p>
+          )}
         </div>
       </motion.div>
     </div>

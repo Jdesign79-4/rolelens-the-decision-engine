@@ -408,6 +408,30 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             <span>Oak</span>
           </div>
         </div>
+
+        {/* Honest Self-Reflection */}
+        <div className="space-y-3 pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-indigo-500" />
+              <span className="text-sm font-medium text-slate-700">Honest Self-Reflection</span>
+            </div>
+          </div>
+          <Slider
+            value={[settings.honestSelfReflection * 100]}
+            onValueChange={([v]) => onSettingsChange({ ...settings, honestSelfReflection: v / 100 })}
+            max={100}
+            step={1}
+            className="cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-slate-400">
+            <span>Underqualified</span>
+            <span>Exceptional Fit</span>
+          </div>
+          <p className="text-xs text-slate-500 italic">
+            Your honest assessment of skill match and experience level for this role
+          </p>
+        </div>
       </div>
 
       {/* Status Indicator */}
