@@ -50,6 +50,8 @@ For ALL compensation calculations, you MUST gather data from these specific vett
 3. Glassdoor AND Levels.fyi - Cross-reference real salary reports for this specific company and role
 4. PayScale - Salary data with cost-of-living adjustments
 
+ALTERNATIVES: Must return exactly 5 similar roles at competing companies, not 3.
+
 Calculate the following based on these sources:
 - range_min: ${salaryMinNum ? `USE EXACT VALUE: ${salaryMinNum}` : 'null (no user input, use external data)'}
 - range_max: ${salaryMaxNum ? `USE EXACT VALUE: ${salaryMaxNum}` : 'null (no user input, use external data)'}
