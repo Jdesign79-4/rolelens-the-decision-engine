@@ -18,6 +18,7 @@ import CompensationSources from '@/components/rolelens/CompensationSources';
 import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
+import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 
 const jobDatabase = {
   zentree: {
@@ -528,6 +529,7 @@ export default function RoleLens() {
   const [jobPostingText, setJobPostingText] = useState('');
   const [postingHealthScore, setPostingHealthScore] = useState(undefined);
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
+  const [showApplicationStrategy, setShowApplicationStrategy] = useState(false);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -777,6 +779,12 @@ export default function RoleLens() {
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-medium text-sm hover:from-indigo-700 hover:to-blue-700 transition-all"
                 >
                   Interview Prep
+                </button>
+                <button
+                  onClick={() => setShowApplicationStrategy(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 text-white font-medium text-sm hover:from-rose-600 hover:to-pink-700 transition-all"
+                >
+                  Application Plan
                 </button>
                 <button
                   onClick={() => {
@@ -1085,6 +1093,16 @@ export default function RoleLens() {
           <InterviewPrepGenerator
             job={currentJob}
             onClose={() => setShowInterviewPrep(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Application Strategy Modal */}
+      <AnimatePresence>
+        {showApplicationStrategy && (
+          <ApplicationStrategyPlanner
+            job={currentJob}
+            onClose={() => setShowApplicationStrategy(false)}
           />
         )}
       </AnimatePresence>
