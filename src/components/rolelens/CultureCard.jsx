@@ -3,6 +3,169 @@ import { motion } from 'framer-motion';
 import { Heart, Flame, Scale, Sparkles, Info } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
+// Zen Garden Stone Component
+function ZenStone({ x, y, size, index, harmony }) {
+  const isOrganized = harmony > 0.6;
+  const randomness = isOrganized ? 5 : 30;
+  
+  return (
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ 
+        scale: 1,
+        opacity: 1,
+        x: isOrganized ? 0 : [0, Math.random() * randomness - randomness/2, 0],
+        y: isOrganized ? 0 : [0, Math.random() * randomness - randomness/2, 0]
+      }}
+      transition={{ 
+        scale: { duration: 0.5, delay: index * 0.1 },
+        opacity: { duration: 0.5, delay: index * 0.1 },
+        x: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+        y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+      }}
+      className="absolute rounded-full"
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        width: `${size}px`,
+        height: `${size}px`,
+        background: isOrganized 
+          ? 'linear-gradient(135deg, #78716c 0%, #57534e 100%)'
+          : 'linear-gradient(135deg, #a8a29e 0%, #78716c 100%)',
+        boxShadow: isOrganized 
+          ? '0 2px 8px rgba(0,0,0,0.2), inset -1px -1px 2px rgba(0,0,0,0.1)'
+          : '0 1px 4px rgba(0,0,0,0.15)'
+      }}
+    >
+      {/* Stone texture */}
+      <div className="absolute inset-0 rounded-full" 
+        style={{ 
+          background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent)',
+          opacity: 0.6
+        }} 
+      />
+    </motion.div>
+  );
+}
+
+// Zen Garden Pattern Lines
+function ZenPattern({ harmony, index }) {
+  const isOrganized = harmony > 0.6;
+  const pathVariants = isOrganized ? [
+    "M10,50 Q30,30 50,50 T90,50",
+    "M10,30 Q30,10 50,30 T90,30",
+    "M10,70 Q30,50 50,70 T90,70"
+  ] : [
+    "M10,45 Q25,55 40,35 Q55,65 70,40 L85,60",
+    "M15,25 Q35,15 50,40 Q65,20 85,35",
+    "M10,80 Q30,70 45,85 Q60,75 80,80"
+  ];
+  
+  return (
+    <motion.path
+      d={pathVariants[index]}
+      stroke={isOrganized ? "rgba(120, 113, 108, 0.25)" : "rgba(168, 162, 158, 0.15)"}
+      strokeWidth={isOrganized ? "1.5" : "1"}
+      fill="none"
+      strokeDasharray={isOrganized ? "4 8" : "2 6"}
+      initial={{ pathLength: 0, opacity: 0 }}
+      animate={{ 
+        pathLength: 1, 
+        opacity: isOrganized ? 0.6 : 0.3,
+        strokeDashoffset: isOrganized ? [0, -12] : [0, -8]
+      }}
+      transition={{ 
+        pathLength: { duration: 1.5, delay: index * 0.3 },
+        opacity: { duration: 1.5, delay: index * 0.3 },
+        strokeDashoffset: { duration: 8, repeat: Infinity, ease: "linear" }
+      }}
+    />
+  );
+}
+
+// Zen Garden Component
+function ZenGarden({ wlbScore, growthScore, stressLevel }) {
+  // Calculate harmony score (0-1) based on all factors
+  const harmonyScore = ((wlbScore / 10) * 0.4 + (growthScore / 10) * 0.3 + (1 - stressLevel) * 0.3);
+  
+  // Generate stone positions - more organized when harmony is high
+  const stones = harmonyScore > 0.6 ? [
+    { x: 20, y: 30, size: 28 },
+    { x: 35, y: 55, size: 22 },
+    { x: 50, y: 35, size: 32 },
+    { x: 65, y: 60, size: 26 },
+    { x: 80, y: 40, size: 24 }
+  ] : [
+    { x: 15 + Math.random() * 10, y: 25 + Math.random() * 15, size: 24 },
+    { x: 35 + Math.random() * 10, y: 50 + Math.random() * 15, size: 28 },
+    { x: 50 + Math.random() * 10, y: 30 + Math.random() * 15, size: 20 },
+    { x: 65 + Math.random() * 10, y: 55 + Math.random() * 15, size: 26 },
+    { x: 75 + Math.random() * 10, y: 35 + Math.random() * 15, size: 22 }
+  ];
+
+  return (
+    <div className="relative h-48 bg-gradient-to-br from-stone-100 via-stone-50 to-stone-100 rounded-2xl overflow-hidden mb-6 border border-stone-200">
+      {/* Sand texture overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" 
+        style={{ 
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'3\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
+          backgroundSize: '100px 100px'
+        }} 
+      />
+
+      {/* Zen patterns (raked sand) */}
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        {[0, 1, 2].map((i) => (
+          <ZenPattern key={i} harmony={harmonyScore} index={i} />
+        ))}
+      </svg>
+
+      {/* Stones */}
+      {stones.map((stone, index) => (
+        <ZenStone 
+          key={index}
+          x={stone.x}
+          y={stone.y}
+          size={stone.size}
+          index={index}
+          harmony={harmonyScore}
+        />
+      ))}
+
+      {/* Harmony Score Badge */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.8 }}
+        className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-stone-200 shadow-sm"
+      >
+        <p className="text-[10px] text-stone-500 font-medium">Garden Harmony</p>
+        <p className={`text-lg font-bold ${
+          harmonyScore > 0.7 ? 'text-emerald-600' :
+          harmonyScore > 0.4 ? 'text-amber-600' :
+          'text-red-600'
+        }`}>
+          {Math.round(harmonyScore * 10)}/10
+        </p>
+      </motion.div>
+
+      {/* Status Label */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-3 left-3 px-2 py-1 rounded-lg bg-stone-800/80 backdrop-blur-sm"
+      >
+        <p className="text-[9px] text-stone-100 font-medium">
+          {harmonyScore > 0.7 ? '🧘 Perfectly Balanced Garden' :
+           harmonyScore > 0.4 ? '🌊 Partially Organized' :
+           '⚠️ Chaotic Arrangement'}
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
 // Animated Bamboo Leaf component
 function BambooLeaf({ side, delay, healthy, turmoil, withering }) {
   const baseColor = withering ? '#92400e' : healthy ? '#22c55e' : '#eab308';
@@ -176,8 +339,53 @@ export default function CultureCard({ data, tunerSettings }) {
         </div>
       </div>
 
-      {/* Bamboo Grove Visualization */}
-      <div className="relative h-44 bg-gradient-to-t from-amber-100/50 via-transparent to-transparent rounded-2xl overflow-hidden mb-6">
+      {/* Zen Garden Visualization */}
+      <ZenGarden 
+        wlbScore={data.wlb_score} 
+        growthScore={data.growth_score}
+        stressLevel={stressLevel}
+      />
+
+      {/* Culture Deep Dive Text */}
+      <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
+        <h4 className="text-sm font-semibold text-slate-700 mb-3">Culture Deep Dive</h4>
+        <div className="space-y-2 text-xs text-slate-600">
+          <p>
+            <span className="font-medium">Work Environment:</span> {data.type} with {
+              stressLevel < 0.3 ? 'minimal stress and calm atmosphere' :
+              stressLevel < 0.5 ? 'moderate pressure and steady pace' :
+              stressLevel < 0.7 ? 'high intensity and fast-moving environment' :
+              'extreme pressure and burnout risk'
+            }.
+          </p>
+          <p>
+            <span className="font-medium">Work-Life Balance:</span> {
+              data.wlb_score >= 8 ? 'Excellent boundaries with strong respect for personal time' :
+              data.wlb_score >= 6 ? 'Good balance with occasional overtime expected' :
+              data.wlb_score >= 4 ? 'Challenging balance with frequent late hours' :
+              'Poor boundaries with consistent overwork culture'
+            }.
+          </p>
+          <p>
+            <span className="font-medium">Career Growth:</span> {
+              data.growth_score >= 8 ? 'Exceptional opportunities with clear advancement paths and strong mentorship' :
+              data.growth_score >= 6 ? 'Solid growth potential with standard progression timelines' :
+              data.growth_score >= 4 ? 'Limited advancement with slow promotion cycles' :
+              'Minimal growth prospects with stagnant career paths'
+            }.
+          </p>
+          <p>
+            <span className="font-medium">Office Politics:</span> {
+              data.politics_level === 'Low' ? 'Merit-based culture with transparent decision-making and minimal bureaucracy' :
+              data.politics_level === 'Medium' ? 'Moderate navigation required with some relationship management needed' :
+              'High political complexity requiring significant stakeholder management'
+            }.
+          </p>
+        </div>
+      </div>
+
+      {/* Old Bamboo Grove Visualization */}
+      <div className="relative h-44 bg-gradient-to-t from-amber-100/50 via-transparent to-transparent rounded-2xl overflow-hidden mb-6 hidden">
         {/* Atmospheric wind lines for turmoil */}
         {stressLevel > 0.5 && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
