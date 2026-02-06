@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Flame, Scale, Sparkles } from 'lucide-react';
+import { Heart, Flame, Scale, Sparkles, Info } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Animated Bamboo Leaf component
 function BambooLeaf({ side, delay, healthy, turmoil, withering }) {
@@ -267,17 +268,50 @@ export default function CultureCard({ data, tunerSettings }) {
 
       {/* Metrics */}
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="p-2 rounded-xl bg-slate-50 text-center">
+        <div className="relative p-2 rounded-xl bg-slate-50 text-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="absolute top-1 right-1 p-0.5 rounded-full hover:bg-slate-200 transition-colors">
+                <Info className="w-3 h-3 text-slate-400" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 text-xs">
+              <p className="font-semibold mb-1">Work-Life Balance Score</p>
+              <p className="text-slate-600">Calculated from employee reviews, average work hours, PTO policies, flexibility options, and remote work availability. Higher scores indicate better balance.</p>
+            </PopoverContent>
+          </Popover>
           <p className="text-lg font-bold text-slate-800">{data.wlb_score}</p>
           <p className="text-[10px] text-slate-500">Work-Life Balance</p>
           <p className="text-[8px] text-slate-400">out of 10</p>
         </div>
-        <div className="p-2 rounded-xl bg-slate-50 text-center">
+        <div className="relative p-2 rounded-xl bg-slate-50 text-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="absolute top-1 right-1 p-0.5 rounded-full hover:bg-slate-200 transition-colors">
+                <Info className="w-3 h-3 text-slate-400" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 text-xs">
+              <p className="font-semibold mb-1">Career Growth Score</p>
+              <p className="text-slate-600">Based on promotion rates, learning opportunities, mentorship programs, skill development resources, and internal mobility. Higher scores indicate stronger growth potential.</p>
+            </PopoverContent>
+          </Popover>
           <p className="text-lg font-bold text-slate-800">{data.growth_score}</p>
           <p className="text-[10px] text-slate-500">Career Growth</p>
           <p className="text-[8px] text-slate-400">out of 10</p>
         </div>
-        <div className="p-2 rounded-xl bg-slate-50 text-center">
+        <div className="relative p-2 rounded-xl bg-slate-50 text-center">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="absolute top-1 right-1 p-0.5 rounded-full hover:bg-slate-200 transition-colors">
+                <Info className="w-3 h-3 text-slate-400" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 text-xs">
+              <p className="font-semibold mb-1">Office Politics Level</p>
+              <p className="text-slate-600">Derived from employee sentiment about bureaucracy, decision-making transparency, and organizational dynamics. Lower levels indicate clearer, merit-based environments.</p>
+            </PopoverContent>
+          </Popover>
           <p className="text-lg font-bold text-slate-800">{data.politics_level}</p>
           <p className="text-[10px] text-slate-500">Office Politics</p>
           <p className="text-[8px] text-slate-400">intensity</p>
