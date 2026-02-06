@@ -862,16 +862,18 @@ function RoleLensContent() {
 
       <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
         {/* Mobile Header */}
-        <div className="lg:hidden sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 px-4 py-3">
+        <div className="lg:hidden sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-slate-800 tracking-tight">RoleLens</h1>
-              <p className="text-xs text-slate-500">Executive Decision Engine</p>
+              <h1 className="text-lg font-semibold text-slate-800 dark:text-white tracking-tight">RoleLens</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Executive Decision Engine</p>
             </div>
-            <button
-              onClick={() => setShowMobilePanel(!showMobilePanel)}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors"
-            >
+            <div className="flex items-center gap-2">
+              <DarkModeToggle />
+              <button
+                onClick={() => setShowMobilePanel(!showMobilePanel)}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              >
               <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
               </svg>
