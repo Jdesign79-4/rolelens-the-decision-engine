@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, BarChart3 } from 'lucide-react';
+import { X, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, BarChart3, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ComparisonCharts from './ComparisonCharts';
 import ExternalDataAggregator from './ExternalDataAggregator';
