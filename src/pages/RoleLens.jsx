@@ -10,6 +10,7 @@ import JobSearchInput from '@/components/rolelens/JobSearchInput';
 import Disclaimer from '@/components/rolelens/Disclaimer';
 import SourcesCitation from '@/components/rolelens/SourcesCitation';
 import MeditationPanel from '@/components/rolelens/MeditationPanel';
+import AIInsightsPanel from '@/components/rolelens/AIInsightsPanel';
 
 const jobDatabase = {
   zentree: {
@@ -878,6 +879,9 @@ export default function RoleLens() {
                 </div>
               </motion.div>
             )}
+
+            {/* AI Strategic Insights */}
+            <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
 
             {/* Meditation Panel - Vetted Sources */}
             <MeditationPanel sources={currentJob.sources} />
