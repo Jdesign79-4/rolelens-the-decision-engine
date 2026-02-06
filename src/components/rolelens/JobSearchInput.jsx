@@ -9,7 +9,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
   const [query, setQuery] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState(null);
-  const [companyName, setCompanyName] = useState('');
+
   const [jobTitle, setJobTitle] = useState('');
   const [city, setCity] = useState('');
   const [salaryMin, setSalaryMin] = useState('');
@@ -23,12 +23,12 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
     setError(null);
 
     // Parse structured inputs if provided
-    const hasStructuredData = companyName || jobTitle || city || salaryMin || salaryMax;
+    const hasStructuredData = jobTitle || city || salaryMin || salaryMax;
     const salaryMinNum = salaryMin ? parseInt(salaryMin.replace(/,/g, '')) : null;
     const salaryMaxNum = salaryMax ? parseInt(salaryMax.replace(/,/g, '')) : null;
     
     // Detect if this is a company-only search (no specific role)
-    const isCompanyOnly = companyName && !jobTitle;
+    const isCompanyOnly = !jobTitle;
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
@@ -36,7 +36,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           // Company-only research prompt
           `Research this company and provide comprehensive data for a job seeker researching potential employers:
 
-Company: "${companyName || query}"
+Company: "${query}"
 ${city ? `Location Focus: ${city}` : ''}
 
 CRITICAL: This is a COMPANY RESEARCH request, NOT a specific role. Provide general company information.
@@ -63,11 +63,11 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
           // Original role-specific prompt
           `Research this job opportunity and provide comprehensive data for a job seeker decision engine:
 
-Job/Company: "${query}"
+Company: "${query}"
+${hasStructuredData ? `Job Title: ${jobTitle}` : ''}
 
 ${hasStructuredData ? `
 USER PROVIDED EXACT JOB DETAILS:
-${companyName ? `Company: ${companyName}` : ''}
 ${jobTitle ? `Job Title: ${jobTitle}` : ''}
 ${city ? `Location: ${city}` : ''}
 ${salaryMinNum && salaryMaxNum ? `Compensation Range: $${salaryMinNum.toLocaleString()} - $${salaryMaxNum.toLocaleString()}` : ''}
@@ -348,7 +348,6 @@ Be specific with numbers. Show your work - reference which source each number co
 
       onJobDataLoaded(processedJob, jobPostingText);
       setQuery('');
-      setCompanyName('');
       setJobTitle('');
       setCity('');
       setSalaryMin('');
@@ -373,7 +372,7 @@ Be specific with numbers. Show your work - reference which source each number co
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search role or company... e.g. 'Product Manager at Stripe' or just 'Stripe'"
+            placeholder="Enter company name... e.g. 'Stripe', 'Google', 'Tesla'"
             className="pl-10 pr-4 py-5 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm focus:border-teal-400 focus:ring-teal-400/20"
             disabled={isLoading}
           />
@@ -406,27 +405,15 @@ Be specific with numbers. Show your work - reference which source each number co
             exit={{ opacity: 0, height: 0 }}
             className="mt-3 p-4 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 space-y-3"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Company Name</label>
-                <Input
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="e.g. Stripe"
-                  className="rounded-lg"
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Job Title (Optional)</label>
-                <Input
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="Leave blank to research company only"
-                  className="rounded-lg"
-                  disabled={isLoading}
-                />
-              </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Job Title (Optional)</label>
+              <Input
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder="Leave blank to research company only"
+                className="rounded-lg"
+                disabled={isLoading}
+              />
             </div>
             <div>
               <label className="text-xs font-medium text-slate-600 mb-1 block">City</label>
@@ -471,7 +458,7 @@ Be specific with numbers. Show your work - reference which source each number co
               />
             </div>
             <p className="text-xs text-slate-500">
-              💡 Leave Job Title blank to research just the company. Include job posting text for red flag analysis.
+              💡 Company name is entered in the main search bar above. Add job title here for role-specific research, or leave blank for company-only research.
             </p>
           </motion.div>
         )}
