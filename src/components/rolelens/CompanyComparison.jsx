@@ -55,7 +55,7 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Company Comparison</h2>
-            <p className="text-sm text-slate-500 mt-1">Compare up to 4 companies side-by-side</p>
+            <p className="text-sm text-slate-500 mt-1">Compare {selectedJobData.length > 0 ? 'current role with' : 'up to 4 companies'} market alternatives side-by-side</p>
           </div>
           <div className="flex items-center gap-2">
             {selectedJobData.length > 0 && (
@@ -98,7 +98,9 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
                       <img src={job.meta.logo} alt="" className="w-10 h-10 rounded-lg" />
                       <div>
                         <p className="font-semibold text-slate-800 text-sm">{job.meta.company}</p>
-                        <p className="text-xs text-slate-500">{job.meta.title}</p>
+                        {!job.isCompanyOnly && job.meta.title !== 'Company Research' && (
+                          <p className="text-xs text-slate-500">{job.meta.title}</p>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -134,8 +136,13 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
 
               {/* Company Headers */}
               <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                {selectedJobData.map(job => (
-                  <div key={job.id} className="relative p-4 rounded-2xl border-2 border-slate-200 bg-slate-50">
+                {selectedJobData.map((job, idx) => (
+                  <div key={job.id} className={`relative p-4 rounded-2xl border-2 ${idx === 0 ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-slate-50'}`}>
+                    {idx === 0 && (
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">
+                        CURRENT
+                      </div>
+                    )}
                     <button
                       onClick={() => removeJob(job.id)}
                       className="absolute top-2 right-2 p-1 rounded-lg bg-white hover:bg-red-50 transition-colors"
@@ -149,7 +156,12 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
                         <p className="text-xs text-slate-500">{job.meta.location}</p>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-600 mt-2">{job.meta.title}</p>
+                    {!job.isCompanyOnly && job.meta.title !== 'Company Research' && (
+                      <p className="text-sm text-slate-600 mt-2">{job.meta.title}</p>
+                    )}
+                    {job.isCompanyOnly && job.meta.company_description && (
+                      <p className="text-sm text-slate-600 mt-2">{job.meta.company_description}</p>
+                    )}
                   </div>
                 ))}
               </div>

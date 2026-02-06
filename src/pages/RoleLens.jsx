@@ -1035,7 +1035,7 @@ function RoleLensContent() {
                 </button>
                 <button
                   onClick={() => {
-                    setComparisonJobIds([]);
+                    setComparisonJobIds([activeJob]);
                     setShowComparison(true);
                   }}
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium text-sm hover:from-violet-700 hover:to-purple-700 transition-all"
