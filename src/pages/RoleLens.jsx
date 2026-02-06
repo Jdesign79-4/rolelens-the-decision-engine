@@ -199,7 +199,7 @@ const jobDatabase = {
       growth_score: 8.0,
       politics_level: "Medium"
     },
-    alternatives: ["zentree", "cherryblossom", "zengarden", "notion", "spotify"]
+    alternatives: ["zentree", "cherryblossom", "zengarden", "notion", "standing_stones"]
   },
   cherryblossom: {
     id: "cherryblossom",
