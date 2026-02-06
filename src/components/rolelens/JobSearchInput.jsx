@@ -113,7 +113,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 company: { type: "string", description: "Company name" },
                 company_description: { type: "string", description: "Very concise 2-6 word description of what the company does. Examples: 'Automotive Manufacturing', 'EV Automotive Manufacturing', 'Aviation, Healthcare, Energy'. For conglomerates, list only top 2-3 business lines." },
                 location: { type: "string", description: "Primary location or 'Multiple Locations'" },
-                logo_search_term: { type: "string", description: "Search term for company logo" }
+                logo_search_term: { type: "string", description: "Search term for company logo" },
+                website: { type: "string", description: "Official company website URL" }
               }
             },
             stability: {
@@ -219,7 +220,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 title: { type: "string", description: "Job title" },
                 company: { type: "string", description: "Company name" },
                 location: { type: "string", description: "Job location" },
-                logo_search_term: { type: "string", description: "Search term for company logo" }
+                logo_search_term: { type: "string", description: "Search term for company logo" },
+                website: { type: "string", description: "Official company website URL" }
               }
             },
             stability: {
