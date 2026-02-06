@@ -259,7 +259,7 @@ const jobDatabase = {
       growth_score: 7.2,
       politics_level: "Low"
     },
-    alternatives: ["zentree", "rivermotion", "zengarden", "notion", "spotify"]
+    alternatives: ["zentree", "rivermotion", "zengarden", "notion", "standing_stones"]
   },
   zengarden: {
     id: "zengarden",
