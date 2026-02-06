@@ -101,7 +101,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
       <div className="flex items-start justify-between mb-6">
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Market Alternatives</p>
-          <h3 className="text-lg font-semibold text-slate-800">The Chessboard</h3>
+          <h3 className="text-lg font-semibold text-slate-800">The Forest</h3>
         </div>
         <div className="p-2 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500">
           <Zap className="w-5 h-5 text-white" />
