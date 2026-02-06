@@ -11,6 +11,7 @@ import Disclaimer from '@/components/rolelens/Disclaimer';
 import SourcesCitation from '@/components/rolelens/SourcesCitation';
 import MeditationPanel from '@/components/rolelens/MeditationPanel';
 import AIInsightsPanel from '@/components/rolelens/AIInsightsPanel';
+import CompanyHealthScore from '@/components/rolelens/CompanyHealthScore';
 
 const jobDatabase = {
   zentree: {
@@ -882,6 +883,9 @@ export default function RoleLens() {
 
             {/* AI Strategic Insights */}
             <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
+
+            {/* Company Health Score */}
+            <CompanyHealthScore company={currentJob.meta.company} />
 
             {/* Meditation Panel - Vetted Sources */}
             <MeditationPanel sources={currentJob.sources} />
