@@ -62,9 +62,9 @@ export default function CompensationCard({ data, tunerSettings }) {
   const reflectionAdjustment = 0.7 + (tunerSettings.honestSelfReflection * 0.6); // Range: 0.7 to 1.3
   const adjustedHeadline = Math.round(data.headline * reflectionAdjustment);
   
-  const fillPercentage = (data.real_feel / adjustedHeadline) * 100;
-  const leakPercentage = 100 - fillPercentage;
-  const isLeaking = leakPercentage > 25;
+  const fillPercentage = Math.min(100, Math.max(0, (data.real_feel / adjustedHeadline) * 100));
+  const leakPercentage = Math.max(0, 100 - fillPercentage);
+  const isLeaking = leakPercentage > 5;
   
   const isProviderMode = tunerSettings.lifeAnchors > 0.5;
   const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
@@ -279,13 +279,15 @@ export default function CompensationCard({ data, tunerSettings }) {
           </div>
         )}
         
-        <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100">
-          <div className="flex items-center gap-2">
-            <TrendingDown className="w-4 h-4 text-red-400" />
-            <span className="text-sm text-red-600">{data.leak_label}</span>
+        {leakPercentage > 0 && (
+          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100">
+            <div className="flex items-center gap-2">
+              <TrendingDown className="w-4 h-4 text-red-400" />
+              <span className="text-sm text-red-600">{data.leak_label}</span>
+            </div>
+            <span className="text-sm font-medium text-red-500">-{Math.round(leakPercentage)}%</span>
           </div>
-          <span className="text-sm font-medium text-red-500">-{Math.round(leakPercentage)}%</span>
-        </div>
+        )}
 
         <div className="flex justify-between items-center p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border border-teal-200">
           <span className="text-sm font-medium text-teal-700">Real Feel Salary</span>
