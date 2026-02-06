@@ -13,6 +13,7 @@ import MeditationPanel from '@/components/rolelens/MeditationPanel';
 import AIInsightsPanel from '@/components/rolelens/AIInsightsPanel';
 import CompanyHealthScore from '@/components/rolelens/CompanyHealthScore';
 import CompanyComparison from '@/components/rolelens/CompanyComparison';
+import SavedLists from '@/components/rolelens/SavedLists';
 
 const jobDatabase = {
   zentree: {
@@ -450,6 +451,8 @@ export default function RoleLens() {
     return saved ? JSON.parse(saved) : ['stability', 'compensation', 'culture', 'alternatives'];
   });
   const [showComparison, setShowComparison] = useState(false);
+  const [showSavedLists, setShowSavedLists] = useState(false);
+  const [comparisonJobIds, setComparisonJobIds] = useState([]);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -683,12 +686,23 @@ export default function RoleLens() {
 
             {/* Filter and Widget Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-white rounded-2xl border border-slate-200">
-              <button
-                onClick={() => setShowComparison(true)}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium text-sm hover:from-violet-700 hover:to-purple-700 transition-all"
-              >
-                Compare Companies
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowSavedLists(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium text-sm hover:from-amber-600 hover:to-orange-600 transition-all"
+                >
+                  Saved Lists
+                </button>
+                <button
+                  onClick={() => {
+                    setComparisonJobIds([]);
+                    setShowComparison(true);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium text-sm hover:from-violet-700 hover:to-purple-700 transition-all"
+                >
+                  Compare Companies
+                </button>
+              </div>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-xs font-medium text-slate-500">Sort by:</span>
                 <div className="flex gap-2">
@@ -976,12 +990,30 @@ export default function RoleLens() {
         </main>
       </div>
 
+      {/* Saved Lists Modal */}
+      <AnimatePresence>
+        {showSavedLists && (
+          <SavedLists
+            allJobs={allJobs}
+            onClose={() => setShowSavedLists(false)}
+            onCompare={(jobIds) => {
+              setComparisonJobIds(jobIds);
+              setShowComparison(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Company Comparison Modal */}
       <AnimatePresence>
         {showComparison && (
           <CompanyComparison
             allJobs={allJobs}
-            onClose={() => setShowComparison(false)}
+            initialJobIds={comparisonJobIds}
+            onClose={() => {
+              setShowComparison(false);
+              setComparisonJobIds([]);
+            }}
           />
         )}
       </AnimatePresence>

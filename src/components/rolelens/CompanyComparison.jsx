@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function CompanyComparison({ allJobs, onClose }) {
-  const [selectedJobs, setSelectedJobs] = useState([]);
+export default function CompanyComparison({ allJobs, initialJobIds = [], onClose }) {
+  const [selectedJobs, setSelectedJobs] = useState(initialJobIds);
 
   const addJob = (jobId) => {
     if (selectedJobs.length < 4 && !selectedJobs.includes(jobId)) {
