@@ -7,17 +7,11 @@ import ExternalDataAggregator from './ExternalDataAggregator';
 
 export default function CompanyComparison({ allJobs, initialJobIds = [], onClose }) {
   const [selectedJobs, setSelectedJobs] = useState(initialJobIds);
-  const [showCharts, setShowCharts] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
 
-  const addJob = (jobId) => {
-    if (selectedJobs.length < 4 && !selectedJobs.includes(jobId)) {
-      setSelectedJobs([...selectedJobs, jobId]);
-    }
-  };
-
-  const removeJob = (jobId) => {
-    setSelectedJobs(selectedJobs.filter(id => id !== jobId));
-  };
+  const currentJob = selectedJobs.length > 0 ? allJobs[selectedJobs[0]] : null;
+  const alternativeIds = currentJob?.alternatives || [];
+  const alternatives = alternativeIds.map(id => allJobs[id]).filter(Boolean).slice(0, 5);
 
   const getMetricDifference = (values, index) => {
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
@@ -33,8 +27,30 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
     }).format(value);
   };
 
-  const selectedJobData = selectedJobs.map(id => allJobs[id]).filter(Boolean);
-  const availableJobs = Object.values(allJobs).filter(job => !selectedJobs.includes(job.id));
+  const getComparisonInsight = (alt) => {
+    if (!currentJob || !alt) return null;
+    
+    const compDiff = alt.comp.real_feel - currentJob.comp.real_feel;
+    const wlbDiff = alt.culture.wlb_score - currentJob.culture.wlb_score;
+    const riskDiff = alt.stability.risk_score - currentJob.stability.risk_score;
+    const growthDiff = alt.culture.growth_score - currentJob.culture.growth_score;
+    
+    const insights = [];
+    
+    if (compDiff > 15000) insights.push({ text: `+${formatCurrency(compDiff)} more purchasing power`, type: 'win' });
+    else if (compDiff < -15000) insights.push({ text: `${formatCurrency(Math.abs(compDiff))} less purchasing power`, type: 'warning' });
+    
+    if (wlbDiff > 1) insights.push({ text: `Better work-life balance (+${wlbDiff.toFixed(1)})`, type: 'win' });
+    else if (wlbDiff < -1) insights.push({ text: `Lower work-life balance (${wlbDiff.toFixed(1)})`, type: 'warning' });
+    
+    if (riskDiff < -0.1) insights.push({ text: `More stable (${Math.abs(riskDiff * 100).toFixed(0)}% less risk)`, type: 'win' });
+    else if (riskDiff > 0.1) insights.push({ text: `Higher risk (+${(riskDiff * 100).toFixed(0)}%)`, type: 'warning' });
+    
+    if (growthDiff > 1) insights.push({ text: `Better growth opportunities (+${growthDiff.toFixed(1)})`, type: 'win' });
+    else if (growthDiff < -1) insights.push({ text: `Slower growth (${growthDiff.toFixed(1)})`, type: 'warning' });
+    
+    return insights;
+  };
 
   return (
     <motion.div
@@ -55,263 +71,234 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div>
             <h2 className="text-2xl font-bold text-slate-800">Company Comparison</h2>
-            <p className="text-sm text-slate-500 mt-1">Compare {selectedJobData.length > 0 ? 'current role with' : 'up to 4 companies'} market alternatives side-by-side</p>
+            <p className="text-sm text-slate-500 mt-1">Compare current role with market alternatives</p>
           </div>
-          <div className="flex items-center gap-2">
-            {selectedJobData.length > 0 && (
-              <button
-                onClick={() => setShowCharts(!showCharts)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
-                  showCharts 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                <BarChart3 className="w-4 h-4" />
-                {showCharts ? 'Hide' : 'Show'} Charts
-              </button>
-            )}
-            <button
-              onClick={onClose}
-              className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-600" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-600" />
+          </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
-          {selectedJobs.length === 0 ? (
+          {!currentJob ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Plus className="w-16 h-16 text-slate-300 mb-4" />
-              <p className="text-lg font-medium text-slate-600 mb-2">Select companies to compare</p>
-              <p className="text-sm text-slate-400 mb-6">Choose up to 4 companies from the list below</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-4xl">
-                {availableJobs.map(job => (
-                  <button
-                    key={job.id}
-                    onClick={() => addJob(job.id)}
-                    className="p-4 rounded-xl border-2 border-slate-200 hover:border-violet-300 hover:bg-violet-50 transition-all text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img src={job.meta.logo} alt="" className="w-10 h-10 rounded-lg" />
-                      <div>
-                        <p className="font-semibold text-slate-800 text-sm">{job.meta.company}</p>
-                        {!job.isCompanyOnly && job.meta.title !== 'Company Research' && (
-                          <p className="text-xs text-slate-500">{job.meta.title}</p>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <AlertTriangle className="w-16 h-16 text-slate-300 mb-4" />
+              <p className="text-lg font-medium text-slate-600">No company selected for comparison</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Visual Analytics Charts */}
-              <AnimatePresence>
-                {showCharts && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <ComparisonCharts jobs={selectedJobData} />
+            <div className="space-y-4">
+              {/* Current Company */}
+              <div className="p-6 rounded-2xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-purple-50">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <img src={currentJob.meta.logo} alt="" className="w-16 h-16 rounded-xl shadow-md" />
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-xl font-bold text-slate-800">{currentJob.meta.company}</h3>
+                        <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-xs font-bold">CURRENT</span>
+                      </div>
+                      {!currentJob.isCompanyOnly && currentJob.meta.title !== 'Company Research' && (
+                        <p className="text-sm text-slate-600">{currentJob.meta.title}</p>
+                      )}
+                      {currentJob.isCompanyOnly && currentJob.meta.company_description && (
+                        <p className="text-sm text-slate-600">{currentJob.meta.company_description}</p>
+                      )}
+                      <p className="text-xs text-slate-500 mt-1">{currentJob.meta.location}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-3 mt-4">
+                  <div className="p-3 rounded-xl bg-white/80">
+                    <p className="text-xs text-slate-500 mb-1">Real Feel</p>
+                    <p className="text-lg font-bold text-teal-700">{formatCurrency(currentJob.comp.real_feel)}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/80">
+                    <p className="text-xs text-slate-500 mb-1">WLB Score</p>
+                    <p className="text-lg font-bold text-slate-800">{currentJob.culture.wlb_score}/10</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/80">
+                    <p className="text-xs text-slate-500 mb-1">Risk</p>
+                    <p className="text-lg font-bold text-slate-800">{Math.round(currentJob.stability.risk_score * 100)}%</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/80">
+                    <p className="text-xs text-slate-500 mb-1">Growth</p>
+                    <p className="text-lg font-bold text-slate-800">{currentJob.culture.growth_score}/10</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Market Alternatives Header */}
+              <div className="pt-2">
+                <h3 className="text-lg font-bold text-slate-700 mb-3">Market Alternatives</h3>
+              </div>
+
+              {/* Alternatives List */}
+              {alternatives.length === 0 ? (
+                <div className="p-8 rounded-2xl border-2 border-dashed border-slate-200 text-center">
+                  <p className="text-slate-500">No alternatives available for this company</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {alternatives.map((alt) => {
+                    const isExpanded = expandedId === alt.id;
+                    const insights = getComparisonInsight(alt);
                     
-                    {/* External Data for Each Company */}
-                    <div className="mt-6 space-y-4">
-                      <h3 className="text-lg font-bold text-slate-800">📊 Live External Data</h3>
-                      {selectedJobData.map(job => (
-                        <ExternalDataAggregator
-                          key={job.id}
-                          company={job.meta.company}
-                          jobTitle={job.meta.title}
-                        />
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Company Headers */}
-              <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                {selectedJobData.map((job, idx) => (
-                  <div key={job.id} className={`relative p-4 rounded-2xl border-2 ${idx === 0 ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-slate-50'}`}>
-                    {idx === 0 && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold">
-                        CURRENT
-                      </div>
-                    )}
-                    <button
-                      onClick={() => removeJob(job.id)}
-                      className="absolute top-2 right-2 p-1 rounded-lg bg-white hover:bg-red-50 transition-colors"
-                    >
-                      <X className="w-4 h-4 text-slate-400 hover:text-red-500" />
-                    </button>
-                    <div className="flex items-center gap-3 mb-2">
-                      <img src={job.meta.logo} alt="" className="w-12 h-12 rounded-xl" />
-                      <div>
-                        <p className="font-bold text-slate-800">{job.meta.company}</p>
-                        <p className="text-xs text-slate-500">{job.meta.location}</p>
-                      </div>
-                    </div>
-                    {!job.isCompanyOnly && job.meta.title !== 'Company Research' && (
-                      <p className="text-sm text-slate-600 mt-2">{job.meta.title}</p>
-                    )}
-                    {job.isCompanyOnly && job.meta.company_description && (
-                      <p className="text-sm text-slate-600 mt-2">{job.meta.company_description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Compensation Comparison */}
-              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-6 border border-teal-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-4">💰 Compensation</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Headline Offer</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map((job, idx) => {
-                        const values = selectedJobData.map(j => j.comp.headline);
-                        const diff = getMetricDifference(values, idx);
-                        const isHighest = job.comp.headline === Math.max(...values);
-                        return (
-                          <div key={job.id} className={`p-3 rounded-xl ${isHighest ? 'bg-emerald-100 border-2 border-emerald-300' : 'bg-white'}`}>
-                            <p className="text-xl font-bold text-slate-800">{formatCurrency(job.comp.headline)}</p>
-                            {Math.abs(diff) > 5 && (
-                              <p className={`text-xs font-medium mt-1 ${diff > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                                {diff > 0 ? '+' : ''}{diff.toFixed(1)}% vs avg
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Real Feel Salary</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map((job, idx) => {
-                        const values = selectedJobData.map(j => j.comp.real_feel);
-                        const isHighest = job.comp.real_feel === Math.max(...values);
-                        return (
-                          <div key={job.id} className={`p-3 rounded-xl ${isHighest ? 'bg-emerald-100 border-2 border-emerald-300' : 'bg-white'}`}>
-                            <p className="text-lg font-bold text-teal-700">{formatCurrency(job.comp.real_feel)}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stability Comparison */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-4">🛡️ Stability & Risk</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Risk Score (lower is better)</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map(job => {
-                        const riskValues = selectedJobData.map(j => j.stability.risk_score);
-                        const isLowest = job.stability.risk_score === Math.min(...riskValues);
-                        return (
-                          <div key={job.id} className={`p-3 rounded-xl ${isLowest ? 'bg-emerald-100 border-2 border-emerald-300' : 'bg-white'}`}>
-                            <p className="text-xl font-bold text-slate-800">{Math.round(job.stability.risk_score * 100)}%</p>
-                            <div className="h-2 bg-slate-200 rounded-full mt-2 overflow-hidden">
-                              <div 
-                                className="h-full bg-gradient-to-r from-emerald-500 to-red-500" 
-                                style={{ width: `${job.stability.risk_score * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Runway & Health</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map(job => (
-                        <div key={job.id} className="p-3 rounded-xl bg-white">
-                          <p className="text-sm font-semibold text-slate-700">{job.stability.runway}</p>
-                          <p className="text-xs text-slate-500 mt-1">{job.stability.health}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Culture Comparison */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
-                <h3 className="text-lg font-bold text-slate-800 mb-4">❤️ Culture & Work-Life</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Work-Life Balance Score</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map(job => {
-                        const wlbValues = selectedJobData.map(j => j.culture.wlb_score);
-                        const isHighest = job.culture.wlb_score === Math.max(...wlbValues);
-                        return (
-                          <div key={job.id} className={`p-3 rounded-xl ${isHighest ? 'bg-emerald-100 border-2 border-emerald-300' : 'bg-white'}`}>
-                            <p className="text-xl font-bold text-slate-800">{job.culture.wlb_score}/10</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Career Growth Score</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map(job => {
-                        const growthValues = selectedJobData.map(j => j.culture.growth_score);
-                        const isHighest = job.culture.growth_score === Math.max(...growthValues);
-                        return (
-                          <div key={job.id} className={`p-3 rounded-xl ${isHighest ? 'bg-emerald-100 border-2 border-emerald-300' : 'bg-white'}`}>
-                            <p className="text-xl font-bold text-slate-800">{job.culture.growth_score}/10</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-slate-500 mb-2">Stress Level (lower is better)</p>
-                    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${selectedJobData.length}, 1fr)` }}>
-                      {selectedJobData.map(job => {
-                        const stressValues = selectedJobData.map(j => j.culture.stress_level);
-                        const isLowest = job.culture.stress_level === Math.min(...stressValues);
-                        return (
-                          <div key={job.id} className={`p-3 rounded-xl ${isLowest ? 'bg-emerald-100 border-2 border-emerald-300' : 'bg-white'}`}>
-                            <p className="text-xl font-bold text-slate-800">{Math.round(job.culture.stress_level * 100)}%</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Add Another Button */}
-              {selectedJobs.length < 4 && availableJobs.length > 0 && (
-                <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6">
-                  <p className="text-sm font-medium text-slate-600 mb-3">Add another company to compare:</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {availableJobs.slice(0, 6).map(job => (
-                      <button
-                        key={job.id}
-                        onClick={() => addJob(job.id)}
-                        className="p-3 rounded-xl border-2 border-slate-200 hover:border-violet-300 hover:bg-violet-50 transition-all text-left"
+                    return (
+                      <motion.div
+                        key={alt.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                       >
-                        <div className="flex items-center gap-2">
-                          <img src={job.meta.logo} alt="" className="w-8 h-8 rounded-lg" />
-                          <p className="font-semibold text-slate-800 text-xs">{job.meta.company}</p>
+                        <div
+                          onClick={() => setExpandedId(isExpanded ? null : alt.id)}
+                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                            isExpanded 
+                              ? 'border-violet-300 bg-violet-50' 
+                              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <img src={alt.meta.logo} alt="" className="w-12 h-12 rounded-xl" />
+                              <div>
+                                <h4 className="font-bold text-slate-800">{alt.meta.company}</h4>
+                                {!alt.isCompanyOnly && alt.meta.title !== 'Company Research' && (
+                                  <p className="text-sm text-slate-600">{alt.meta.title}</p>
+                                )}
+                                <p className="text-xs text-slate-500">{alt.meta.location}</p>
+                              </div>
+                            </div>
+                            <motion.div
+                              animate={{ rotate: isExpanded ? 180 : 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ChevronUp className="w-5 h-5 text-slate-400" />
+                            </motion.div>
+                          </div>
+
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-4 mt-4 border-t border-slate-200 space-y-4">
+                                  {/* Key Insights */}
+                                  {insights && insights.length > 0 && (
+                                    <div>
+                                      <p className="text-xs font-medium text-slate-500 mb-2">Key Differences</p>
+                                      <div className="space-y-2">
+                                        {insights.map((insight, idx) => (
+                                          <div 
+                                            key={idx}
+                                            className={`flex items-center gap-2 p-2 rounded-lg text-xs ${
+                                              insight.type === 'win' 
+                                                ? 'bg-emerald-50 text-emerald-700' 
+                                                : 'bg-amber-50 text-amber-700'
+                                            }`}
+                                          >
+                                            {insight.type === 'win' ? (
+                                              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                                            ) : (
+                                              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                                            )}
+                                            <span className="font-medium">{insight.text}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Detailed Metrics */}
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                                      <p className="text-xs text-slate-500 mb-1">Real Feel Salary</p>
+                                      <p className="text-lg font-bold text-teal-700">{formatCurrency(alt.comp.real_feel)}</p>
+                                      <p className="text-xs text-slate-500 mt-1">
+                                        vs {formatCurrency(currentJob.comp.real_feel)}
+                                      </p>
+                                    </div>
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                                      <p className="text-xs text-slate-500 mb-1">Headline Offer</p>
+                                      <p className="text-lg font-bold text-slate-800">{formatCurrency(alt.comp.headline)}</p>
+                                      <p className="text-xs text-slate-500 mt-1">
+                                        vs {formatCurrency(currentJob.comp.headline)}
+                                      </p>
+                                    </div>
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                                      <p className="text-xs text-slate-500 mb-1">Work-Life Balance</p>
+                                      <p className="text-lg font-bold text-slate-800">{alt.culture.wlb_score}/10</p>
+                                      <p className={`text-xs mt-1 ${
+                                        alt.culture.wlb_score > currentJob.culture.wlb_score 
+                                          ? 'text-emerald-600' 
+                                          : alt.culture.wlb_score < currentJob.culture.wlb_score 
+                                            ? 'text-red-600' 
+                                            : 'text-slate-500'
+                                      }`}>
+                                        {alt.culture.wlb_score > currentJob.culture.wlb_score && '↑ '}
+                                        {alt.culture.wlb_score < currentJob.culture.wlb_score && '↓ '}
+                                        vs {currentJob.culture.wlb_score}/10
+                                      </p>
+                                    </div>
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                                      <p className="text-xs text-slate-500 mb-1">Career Growth</p>
+                                      <p className="text-lg font-bold text-slate-800">{alt.culture.growth_score}/10</p>
+                                      <p className={`text-xs mt-1 ${
+                                        alt.culture.growth_score > currentJob.culture.growth_score 
+                                          ? 'text-emerald-600' 
+                                          : alt.culture.growth_score < currentJob.culture.growth_score 
+                                            ? 'text-red-600' 
+                                            : 'text-slate-500'
+                                      }`}>
+                                        {alt.culture.growth_score > currentJob.culture.growth_score && '↑ '}
+                                        {alt.culture.growth_score < currentJob.culture.growth_score && '↓ '}
+                                        vs {currentJob.culture.growth_score}/10
+                                      </p>
+                                    </div>
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                                      <p className="text-xs text-slate-500 mb-1">Risk Score</p>
+                                      <p className="text-lg font-bold text-slate-800">{Math.round(alt.stability.risk_score * 100)}%</p>
+                                      <p className={`text-xs mt-1 ${
+                                        alt.stability.risk_score < currentJob.stability.risk_score 
+                                          ? 'text-emerald-600' 
+                                          : alt.stability.risk_score > currentJob.stability.risk_score 
+                                            ? 'text-red-600' 
+                                            : 'text-slate-500'
+                                      }`}>
+                                        {alt.stability.risk_score < currentJob.stability.risk_score && '↓ '}
+                                        {alt.stability.risk_score > currentJob.stability.risk_score && '↑ '}
+                                        vs {Math.round(currentJob.stability.risk_score * 100)}%
+                                      </p>
+                                    </div>
+                                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                                      <p className="text-xs text-slate-500 mb-1">Runway</p>
+                                      <p className="text-sm font-semibold text-slate-700">{alt.stability.runway}</p>
+                                      <p className="text-xs text-slate-500 mt-1">vs {currentJob.stability.runway}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Culture Details */}
+                                  <div className="p-3 rounded-xl bg-purple-50 border border-purple-200">
+                                    <p className="text-xs font-medium text-purple-700 mb-1">Culture Type</p>
+                                    <p className="text-sm font-semibold text-slate-800">{alt.culture.type}</p>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                      Stress: {Math.round(alt.culture.stress_level * 100)}% • 
+                                      Politics: {alt.culture.politics_level}
+                                    </p>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
