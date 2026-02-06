@@ -77,7 +77,7 @@ const jobDatabase = {
       growth_score: 8.5,
       politics_level: "Very Low"
     },
-    alternatives: ["rivermotion", "cherryblossom", "zengarden"]
+    alternatives: ["rivermotion", "cherryblossom", "zengarden", "notion", "spotify"]
   },
   rivermotion: {
     id: "rivermotion",
@@ -137,7 +137,7 @@ const jobDatabase = {
       growth_score: 8.0,
       politics_level: "Medium"
     },
-    alternatives: ["zentree", "cherryblossom", "zengarden"]
+    alternatives: ["zentree", "cherryblossom", "zengarden", "notion", "spotify"]
   },
   cherryblossom: {
     id: "cherryblossom",
@@ -197,7 +197,7 @@ const jobDatabase = {
       growth_score: 7.2,
       politics_level: "Low"
     },
-    alternatives: ["zentree", "rivermotion", "zengarden"]
+    alternatives: ["zentree", "rivermotion", "zengarden", "notion", "spotify"]
   },
   zengarden: {
     id: "zengarden",
@@ -257,7 +257,7 @@ const jobDatabase = {
       growth_score: 9.0,
       politics_level: "Low"
     },
-    alternatives: ["zentree", "rivermotion", "cherryblossom"]
+    alternatives: ["zentree", "rivermotion", "cherryblossom", "notion", "spotify"]
   },
   salesforce: {
     id: "salesforce",
@@ -291,7 +291,7 @@ const jobDatabase = {
       growth_score: 7.5,
       politics_level: "Low"
     },
-    alternatives: ["openai", "canva", "figma"]
+    alternatives: ["openai", "canva", "figma", "notion", "spotify"]
   },
   openai: {
     id: "openai",
@@ -325,7 +325,7 @@ const jobDatabase = {
       growth_score: 9.8,
       politics_level: "Medium"
     },
-    alternatives: ["salesforce", "anthropic", "canva"]
+    alternatives: ["salesforce", "anthropic", "canva", "notion", "spotify"]
   },
   canva: {
     id: "canva",
@@ -359,7 +359,7 @@ const jobDatabase = {
       growth_score: 7.8,
       politics_level: "Low"
     },
-    alternatives: ["salesforce", "figma", "openai"]
+    alternatives: ["salesforce", "figma", "openai", "notion", "spotify"]
   },
   figma: {
     id: "figma",
@@ -393,7 +393,7 @@ const jobDatabase = {
       growth_score: 8.2,
       politics_level: "Low"
     },
-    alternatives: ["canva", "salesforce", "openai"]
+    alternatives: ["canva", "salesforce", "openai", "notion", "spotify"]
   },
   anthropic: {
     id: "anthropic",
@@ -427,7 +427,75 @@ const jobDatabase = {
       growth_score: 9.5,
       politics_level: "Low"
     },
-    alternatives: ["openai", "salesforce", "canva"]
+    alternatives: ["openai", "salesforce", "canva", "notion", "spotify"]
+  },
+  notion: {
+    id: "notion",
+    meta: { 
+      title: "Product Designer", 
+      company: "Notion",
+      location: "Remote (US)",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Steady Growth", 
+      risk_score: 0.22,
+      division: "Product Core",
+      runway: "36+ months",
+      headcount_trend: "+20%"
+    },
+    comp: { 
+      headline: 175000, 
+      real_feel: 153250, 
+      leak_label: "Remote Advantage",
+      base: 150000,
+      equity: 25000,
+      tax_rate: 0.25,
+      col_adjustment: 1.03
+    },
+    culture: { 
+      type: "Thoughtful Craft", 
+      stress_level: 0.28,
+      wlb_score: 8.6,
+      growth_score: 8.0,
+      politics_level: "Low"
+    },
+    alternatives: ["canva", "figma", "salesforce", "zentree", "spotify"]
+  },
+  spotify: {
+    id: "spotify",
+    meta: { 
+      title: "Design Systems Lead", 
+      company: "Spotify",
+      location: "New York, NY",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Established Player", 
+      risk_score: 0.18,
+      division: "Product Core",
+      runway: "48+ months",
+      headcount_trend: "+12%"
+    },
+    comp: { 
+      headline: 205000, 
+      real_feel: 102500, 
+      leak_label: "NYC Tax + COL",
+      base: 165000,
+      equity: 40000,
+      tax_rate: 0.35,
+      col_adjustment: 0.68
+    },
+    culture: { 
+      type: "Creative Studio", 
+      stress_level: 0.35,
+      wlb_score: 8.0,
+      growth_score: 7.8,
+      politics_level: "Medium"
+    },
+    alternatives: ["figma", "notion", "canva", "salesforce", "zentree"]
   }
 };
 
