@@ -111,7 +111,8 @@ function ZenGarden({ postingHealthScore }) {
       {!hasAnalysis && (
         <div className="absolute inset-0 flex items-center justify-center bg-stone-50/50 backdrop-blur-sm z-10">
           <div className="text-center px-4">
-            <p className="text-xs text-stone-500 font-medium">Paste job posting for red flag analysis</p>
+            <p className="text-xs text-stone-500 font-medium mb-1">No Job Posting Analyzed</p>
+            <p className="text-[10px] text-stone-400">Use "Add Job Details" in search to paste posting text</p>
           </div>
         </div>
       )}
