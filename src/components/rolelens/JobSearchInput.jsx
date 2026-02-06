@@ -7,6 +7,8 @@ import { base44 } from '@/api/base44Client';
 
 export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoading }) {
   const [query, setQuery] = useState('');
+  const [jobPostingText, setJobPostingText] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState(null);
 
   const handleSearch = async () => {
@@ -21,6 +23,13 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
 
 Job/Company: "${query}"
 
+${jobPostingText ? `
+ACTUAL JOB POSTING PROVIDED BY USER:
+${jobPostingText}
+
+CRITICAL: Extract the EXACT compensation range stated in this job posting. Use these exact numbers for your calculations.
+` : ''}
+
 CRITICAL - COMPENSATION DATA SOURCES (MUST USE):
 For ALL compensation calculations, you MUST gather data from these specific vetted sources:
 1. MIT Living Wage Calculator (livingwage.mit.edu) - Use this to determine minimum required income based on the job's location and typical family sizes
@@ -29,13 +38,15 @@ For ALL compensation calculations, you MUST gather data from these specific vett
 4. PayScale - Salary data with cost-of-living adjustments
 
 Calculate the following based on these sources:
-- headline: Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data
-- base: Base salary from BLS and salary sites
-- equity: Annual equity value from Levels.fyi
-- real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power
-- tax_rate: State + Federal effective tax rate for this income level and location
+- headline: ${jobPostingText ? 'Use the EXACT compensation stated in the job posting above. If a range is given (e.g., 115.6k-190k), use the midpoint.' : 'Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data'}
+- base: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate base portion' : 'Base salary from BLS and salary sites'}
+- equity: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate equity portion' : 'Annual equity value from Levels.fyi'}
+- real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power after taxes and COL adjustments
+- tax_rate: State + Federal effective tax rate for this income level and location (research actual tax brackets)
 - col_adjustment: Use MIT Living Wage and PayScale COL data (1.0 = national average, <1 = expensive, >1 = affordable)
 - leak_label: Describe what reduces purchasing power (e.g., "SF Tax + COL", "NYC Housing Costs")
+
+${jobPostingText ? 'IMPORTANT: The user has provided the actual job posting. Prioritize extracting compensation data from this posting over external sources.' : ''}
 
 OTHER DATA to gather from web:
 1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
@@ -178,6 +189,8 @@ Be specific with numbers. Show your work - reference which source each number co
 
       onJobDataLoaded(processedJob);
       setQuery('');
+      setJobPostingText('');
+      setShowDetails(false);
     } catch (err) {
       console.error('Search failed:', err);
       setError('Failed to fetch job data. Please try again.');
@@ -194,12 +207,19 @@ Be specific with numbers. Show your work - reference which source each number co
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && !showDetails && handleSearch()}
             placeholder="Search any role... e.g. 'Product Manager at Stripe'"
             className="pl-10 pr-4 py-5 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm focus:border-teal-400 focus:ring-teal-400/20"
             disabled={isLoading}
           />
         </div>
+        <Button
+          onClick={() => setShowDetails(!showDetails)}
+          variant="outline"
+          className="px-4 rounded-xl border-slate-200"
+        >
+          {showDetails ? 'Hide' : 'Paste'} Job Details
+        </Button>
         <Button
           onClick={handleSearch}
           disabled={isLoading || !query.trim()}
@@ -212,6 +232,28 @@ Be specific with numbers. Show your work - reference which source each number co
           )}
         </Button>
       </div>
+
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-3"
+          >
+            <textarea
+              value={jobPostingText}
+              onChange={(e) => setJobPostingText(e.target.value)}
+              placeholder="Paste the full job posting here (including compensation details)...&#10;&#10;Example:&#10;Senior Software Engineer at Stripe&#10;San Francisco, CA&#10;$115,600 - $190,000/year + equity&#10;..."
+              className="w-full min-h-[120px] p-3 rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 text-sm resize-y"
+              disabled={isLoading}
+            />
+            <p className="text-xs text-slate-500 mt-1">
+              💡 Include compensation details from the posting for accurate calculations
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isLoading && (
