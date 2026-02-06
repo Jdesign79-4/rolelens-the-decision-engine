@@ -140,7 +140,145 @@ const jobDatabase = {
       growth_score: 8.5,
       politics_level: "Very Low"
     },
-    alternatives: ["rivermotion", "cherryblossom", "zengarden", "notion", "standing_stones"]
+    alternatives: ["rivermotion", "cherryblossom", "zengarden", "notion", "standing_stones"],
+    benefits: [
+      {
+        type: "health",
+        name: "Medical Insurance",
+        description: "Comprehensive health coverage with low deductibles",
+        coverageDetails: "PPO and HMO plans available. Covers preventive care, hospitalization, emergency services, and specialist care.",
+        estimatedValue: 12000,
+        eligibility: ["Full-time employees", "Day 1 coverage"],
+        enrollmentPeriod: "First 30 days of employment",
+        highlights: [
+          "Multiple plan options to choose from",
+          "No waiting period for existing conditions",
+          "Covers family members"
+        ],
+        employeeContribution: "$150-250/month",
+        providerLinks: [
+          { label: "View Plan Details", url: "#" },
+          { label: "Find Local Doctors", url: "#" }
+        ]
+      },
+      {
+        type: "dental",
+        name: "Dental Coverage",
+        description: "Preventive and restorative dental care",
+        coverageDetails: "Covers cleanings, fillings, crowns, and orthodontia with reasonable copays.",
+        estimatedValue: 1200,
+        eligibility: ["Full-time employees", "Day 1 coverage"],
+        enrollmentPeriod: "First 30 days of employment",
+        highlights: [
+          "100% preventive care coverage",
+          "Access to 60,000+ dentists nationwide"
+        ],
+        employeeContribution: "$25-40/month"
+      },
+      {
+        type: "vision",
+        name: "Vision Insurance",
+        description: "Eye exams, glasses, and contact lenses",
+        coverageDetails: "Annual eye exams, frames, lenses, and contact lenses with VSP network.",
+        estimatedValue: 600,
+        eligibility: ["Full-time employees", "Day 1 coverage"],
+        enrollmentPeriod: "First 30 days of employment",
+        highlights: [
+          "Coverage for prescription eyeglasses",
+          "LASIK surgery discounts"
+        ],
+        employeeContribution: "$10-15/month"
+      },
+      {
+        type: "retirement",
+        name: "401(k) Plan",
+        description: "Tax-advantaged retirement savings with company match",
+        coverageDetails: "Company matches 100% up to 3% of salary, 50% from 3-5%. Immediate eligibility.",
+        estimatedValue: 5250,
+        eligibility: ["Full-time employees", "Age 18+"],
+        enrollmentPeriod: "First 30 days of employment",
+        highlights: [
+          "100% match on first 3% of contributions",
+          "50% match up to 5% of salary",
+          "Roth 401(k) option available",
+          "Investment in diverse fund options"
+        ],
+        employeeContribution: "Variable (employee choice)"
+      },
+      {
+        type: "pto",
+        name: "Paid Time Off",
+        description: "Flexible PTO policy with 25+ days annually",
+        coverageDetails: "Unlimited PTO for managers and senior staff. Standard employees receive 25 days + 10 holidays.",
+        estimatedValue: 7500,
+        eligibility: ["Full-time employees", "Day 1 access"],
+        enrollmentPeriod: "No enrollment needed",
+        highlights: [
+          "25 vacation days + 10 paid holidays",
+          "5 sick days",
+          "Unused days roll over 50%",
+          "Sabbatical program after 5 years"
+        ]
+      },
+      {
+        type: "stock",
+        name: "Employee Stock Purchase Plan",
+        description: "Purchase company stock at a 15% discount",
+        coverageDetails: "Contribute via payroll deduction to purchase stock at 15% below market price.",
+        estimatedValue: 2000,
+        eligibility: ["Full-time employees after 6 months"],
+        enrollmentPeriod: "Quarterly enrollment windows",
+        highlights: [
+          "15% discount on stock purchases",
+          "Payroll deduction enrollment",
+          "No holding period restrictions"
+        ]
+      },
+      {
+        type: "insurance",
+        name: "Life Insurance",
+        description: "Life and disability coverage",
+        coverageDetails: "2x annual salary life insurance included. Additional coverage available. Short and long-term disability at 60% salary replacement.",
+        estimatedValue: 3500,
+        eligibility: ["Full-time employees", "Day 1 coverage"],
+        enrollmentPeriod: "First 30 days of employment",
+        highlights: [
+          "2x salary basic coverage included",
+          "Spouse and dependent coverage available",
+          "60% salary replacement on disability"
+        ]
+      },
+      {
+        type: "wellness",
+        name: "Wellness Program",
+        description: "Fitness reimbursement and wellness initiatives",
+        coverageDetails: "$100/month wellness stipend. Access to Headspace, Peloton, gym memberships, and wellness challenges.",
+        estimatedValue: 1200,
+        eligibility: ["Full-time employees", "Day 1 access"],
+        enrollmentPeriod: "No enrollment needed",
+        highlights: [
+          "$100/month wellness stipend",
+          "Free Headspace premium subscription",
+          "Fitness class reimbursement",
+          "On-site health screenings"
+        ]
+      },
+      {
+        type: "education",
+        name: "Professional Development",
+        description: "Tuition reimbursement and learning opportunities",
+        coverageDetails: "$5,000/year for courses, certifications, degrees. Up to $10,000 for approved programs.",
+        estimatedValue: 5000,
+        eligibility: ["Full-time employees after 1 year"],
+        enrollmentPeriod: "Rolling enrollment",
+        highlights: [
+          "$5,000/year education allowance",
+          "Tuition reimbursement after completion",
+          "LinkedIn Learning access",
+          "Internal training programs"
+        ]
+      }
+    ]
   },
   rivermotion: {
     id: "rivermotion",
