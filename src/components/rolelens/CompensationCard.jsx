@@ -313,7 +313,7 @@ export default function CompensationCard({ data, tunerSettings }) {
               y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
             }}
             className="absolute left-3 right-10 flex items-center justify-between px-2 py-1 bg-white/30 backdrop-blur-sm rounded-full"
-            style={{ bottom: `${fillPercentage}%`, transform: 'translateY(50%)' }}
+            style={{ bottom: `${actualFillPercentage}%`, transform: 'translateY(50%)' }}
           >
             <Droplets className="w-3 h-3 text-white drop-shadow-md" />
             <span className="text-[10px] font-bold text-white drop-shadow-md">Real Feel</span>
