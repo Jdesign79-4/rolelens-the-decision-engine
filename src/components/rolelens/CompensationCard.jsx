@@ -260,8 +260,14 @@ export default function CompensationCard({ data, tunerSettings }) {
       {/* Compensation Breakdown */}
       <div className="space-y-3">
         <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-          <span className="text-sm text-slate-600">Headline Offer</span>
-          <span className="text-lg font-bold text-slate-800">{formatCurrency(adjustedHeadline)}</span>
+          <span className="text-sm text-slate-600">Offer</span>
+          <span className="text-lg font-bold text-slate-800">
+            {data.range_min && data.range_max ? (
+              `${formatCurrency(data.range_min)} - ${formatCurrency(data.range_max)}`
+            ) : (
+              formatCurrency(adjustedHeadline)
+            )}
+          </span>
         </div>
         
         {tunerSettings.honestSelfReflection !== 0.7 && (

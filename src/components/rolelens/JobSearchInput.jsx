@@ -38,7 +38,9 @@ For ALL compensation calculations, you MUST gather data from these specific vett
 4. PayScale - Salary data with cost-of-living adjustments
 
 Calculate the following based on these sources:
-- headline: ${jobPostingText ? 'Use the EXACT compensation stated in the job posting above. If a range is given (e.g., 115.6k-190k), use the midpoint.' : 'Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data'}
+- headline: ${jobPostingText ? 'Use the midpoint of the compensation range if given (e.g., for 115.6k-190k, use 152.8k)' : 'Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data'}
+- range_min: ${jobPostingText ? 'If a compensation range is stated in the job posting (e.g., $115,600), extract the MINIMUM value' : 'Set to null if no range available'}
+- range_max: ${jobPostingText ? 'If a compensation range is stated in the job posting (e.g., $190,000), extract the MAXIMUM value' : 'Set to null if no range available'}
 - base: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate base portion' : 'Base salary from BLS and salary sites'}
 - equity: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate equity portion' : 'Annual equity value from Levels.fyi'}
 - real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power after taxes and COL adjustments
@@ -46,7 +48,7 @@ Calculate the following based on these sources:
 - col_adjustment: Use MIT Living Wage and PayScale COL data (1.0 = national average, <1 = expensive, >1 = affordable)
 - leak_label: Describe what reduces purchasing power (e.g., "SF Tax + COL", "NYC Housing Costs")
 
-${jobPostingText ? 'IMPORTANT: The user has provided the actual job posting. Prioritize extracting compensation data from this posting over external sources.' : ''}
+${jobPostingText ? 'CRITICAL: The user has provided the actual job posting. You MUST extract the exact compensation range stated (e.g., if it says "$115,600 - $190,000", set range_min=115600 and range_max=190000). Prioritize this posted range over any external sources.' : ''}
 
 OTHER DATA to gather from web:
 1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
@@ -88,7 +90,9 @@ Be specific with numbers. Show your work - reference which source each number co
                 real_feel: { type: "number", description: "After-tax, COL-adjusted purchasing power" },
                 leak_label: { type: "string", description: "What reduces real feel, e.g. 'SF Tax + COL'" },
                 tax_rate: { type: "number", description: "Estimated effective tax rate 0-1" },
-                col_adjustment: { type: "number", description: "Cost of living multiplier where 1.0 is average, <1 is expensive" }
+                col_adjustment: { type: "number", description: "Cost of living multiplier where 1.0 is average, <1 is expensive" },
+                range_min: { type: "number", description: "Minimum of compensation range if specified in job posting" },
+                range_max: { type: "number", description: "Maximum of compensation range if specified in job posting" }
               }
             },
             culture: {
