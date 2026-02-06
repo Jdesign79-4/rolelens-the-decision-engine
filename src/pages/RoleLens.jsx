@@ -22,6 +22,7 @@ import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/Matching
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
+import JobFeedback from '@/components/rolelens/JobFeedback';
 
 const jobDatabase = {
   standing_stones: {
@@ -1192,6 +1193,19 @@ function RoleLensContent() {
                 </div>
               </motion.div>
             )}
+
+            {/* Job Feedback Widget */}
+            <div className="mt-6">
+              <JobFeedback 
+                job={currentJob} 
+                tunerSettings={tunerSettings}
+                onFeedbackSubmitted={() => {
+                  // Force re-render of alternatives to show updated matches
+                  setIsConnecting(true);
+                  setTimeout(() => setIsConnecting(false), 400);
+                }}
+              />
+            </div>
 
             {/* Job Posting Analysis - Red/Green Flags */}
             <JobPostingAnalysis 
