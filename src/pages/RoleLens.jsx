@@ -703,6 +703,14 @@ const jobDatabase = {
 };
 
 export default function RoleLens() {
+  return (
+    <DarkModeProvider>
+      <RoleLensContent />
+    </DarkModeProvider>
+  );
+}
+
+function RoleLensContent() {
   const [activeJob, setActiveJob] = useState("zentree");
   const [customJobs, setCustomJobs] = useState({});
   const [tunerSettings, setTunerSettings] = useState({
@@ -718,8 +726,8 @@ export default function RoleLens() {
     const saved = localStorage.getItem('rolelens-favorites');
     return saved ? JSON.parse(saved) : [];
   });
-  const [sortBy, setSortBy] = useState('match'); // match, comp, culture, stability
-  const [filterBy, setFilterBy] = useState('all'); // all, high-match, low-risk, high-growth
+  const [sortBy, setSortBy] = useState('match');
+  const [filterBy, setFilterBy] = useState('all');
   const [visibleWidgets, setVisibleWidgets] = useState(() => {
     const saved = localStorage.getItem('rolelens-widgets');
     return saved ? JSON.parse(saved) : ['stability', 'compensation', 'culture', 'alternatives'];
