@@ -387,7 +387,7 @@ const jobDatabase = {
       growth_score: 9.8,
       politics_level: "Medium"
     },
-    alternatives: ["salesforce", "anthropic", "canva", "notion", "spotify"]
+    alternatives: ["salesforce", "anthropic", "canva", "notion", "standing_stones"]
   },
   canva: {
     id: "canva",
