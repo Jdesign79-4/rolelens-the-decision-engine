@@ -435,10 +435,40 @@ export default function RoleLens() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showMobilePanel, setShowMobilePanel] = useState(false);
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('rolelens-favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [sortBy, setSortBy] = useState('match'); // match, comp, culture, stability
+  const [filterBy, setFilterBy] = useState('all'); // all, high-match, low-risk, high-growth
+  const [visibleWidgets, setVisibleWidgets] = useState(() => {
+    const saved = localStorage.getItem('rolelens-widgets');
+    return saved ? JSON.parse(saved) : ['stability', 'compensation', 'culture', 'alternatives'];
+  });
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
   const currentJob = allJobs[activeJob];
+
+  // Favorites management
+  const toggleFavorite = (jobId) => {
+    const newFavorites = favorites.includes(jobId)
+      ? favorites.filter(id => id !== jobId)
+      : [...favorites, jobId];
+    setFavorites(newFavorites);
+    localStorage.setItem('rolelens-favorites', JSON.stringify(newFavorites));
+  };
+
+  const isFavorite = (jobId) => favorites.includes(jobId);
+
+  // Widget management
+  const toggleWidget = (widgetId) => {
+    const newWidgets = visibleWidgets.includes(widgetId)
+      ? visibleWidgets.filter(id => id !== widgetId)
+      : [...visibleWidgets, widgetId];
+    setVisibleWidgets(newWidgets);
+    localStorage.setItem('rolelens-widgets', JSON.stringify(newWidgets));
+  };
 
   const handleJobDataLoaded = (jobData) => {
     // Add the new job and its alternatives to custom jobs
@@ -474,7 +504,52 @@ export default function RoleLens() {
   };
 
   const getAlternativeJobs = () => {
-    return currentJob.alternatives.map(id => allJobs[id]).filter(Boolean);
+    let alternatives = currentJob.alternatives.map(id => allJobs[id]).filter(Boolean);
+    
+    // Apply filters
+    if (filterBy === 'high-match') {
+      alternatives = alternatives.filter(alt => {
+        const score = getProfileMatch(alt);
+        return score > 70;
+      });
+    } else if (filterBy === 'low-risk') {
+      alternatives = alternatives.filter(alt => alt.stability.risk_score < 0.3);
+    } else if (filterBy === 'high-growth') {
+      alternatives = alternatives.filter(alt => alt.culture.growth_score > 8);
+    }
+    
+    // Apply sorting
+    if (sortBy === 'match') {
+      alternatives.sort((a, b) => getProfileMatch(b) - getProfileMatch(a));
+    } else if (sortBy === 'comp') {
+      alternatives.sort((a, b) => b.comp.real_feel - a.comp.real_feel);
+    } else if (sortBy === 'culture') {
+      alternatives.sort((a, b) => b.culture.wlb_score - a.culture.wlb_score);
+    } else if (sortBy === 'stability') {
+      alternatives.sort((a, b) => a.stability.risk_score - b.stability.risk_score);
+    }
+    
+    return alternatives;
+  };
+
+  const getProfileMatch = (alt) => {
+    const isRiskSeeker = tunerSettings.riskAppetite > 0.6;
+    const isStabilitySeeker = tunerSettings.riskAppetite < 0.4;
+    const isNomad = tunerSettings.lifeAnchors < 0.4;
+    const isProvider = tunerSettings.lifeAnchors > 0.6;
+    const isSeedling = tunerSettings.careerStage < 0.4;
+    
+    let score = 50;
+    const riskDiff = Math.abs(alt.stability.risk_score - tunerSettings.riskAppetite);
+    if (isRiskSeeker && alt.stability.risk_score > 0.4) score += 25;
+    if (isStabilitySeeker && alt.stability.risk_score < 0.3) score += 25;
+    if (riskDiff < 0.2) score += 15;
+    if (isProvider && alt.culture.wlb_score > 7) score += 15;
+    if (isNomad && alt.culture.growth_score > 8) score += 15;
+    if (isProvider && alt.culture.stress_level > 0.6) score -= 20;
+    if (isSeedling && alt.culture.growth_score > 8) score += 10;
+    
+    return Math.min(100, Math.max(0, score));
   };
 
   return (
@@ -568,85 +643,241 @@ export default function RoleLens() {
                     <img src={currentJob.meta.logo} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
-                    <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight">
-                      {currentJob.meta.title}
-                    </h1>
-                    <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
-                      <span className="font-medium text-slate-700">{currentJob.meta.company}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300" />
-                      <span>{currentJob.meta.location}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300" />
-                      <span>{currentJob.meta.date}</span>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight">
+                          {currentJob.meta.title}
+                        </h1>
+                        <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
+                          <span className="font-medium text-slate-700">{currentJob.meta.company}</span>
+                          <span className="w-1 h-1 rounded-full bg-slate-300" />
+                          <span>{currentJob.meta.location}</span>
+                          <span className="w-1 h-1 rounded-full bg-slate-300" />
+                          <span>{currentJob.meta.date}</span>
+                        </div>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleFavorite(activeJob)}
+                        className={`p-3 rounded-xl border-2 transition-all ${
+                          isFavorite(activeJob)
+                            ? 'bg-rose-50 border-rose-300 text-rose-600'
+                            : 'bg-white border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500'
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill={isFavorite(activeJob) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </motion.button>
                     </div>
                   </div>
                 </div>
               </motion.div>
             </AnimatePresence>
 
+            {/* Filter and Widget Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-white rounded-2xl border border-slate-200">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-xs font-medium text-slate-500">Sort by:</span>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'match', label: 'Best Match' },
+                    { id: 'comp', label: 'Compensation' },
+                    { id: 'culture', label: 'Culture' },
+                    { id: 'stability', label: 'Stability' }
+                  ].map(option => (
+                    <button
+                      key={option.id}
+                      onClick={() => setSortBy(option.id)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                        sortBy === option.id
+                          ? 'bg-slate-800 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="w-px h-4 bg-slate-300 mx-1" />
+                <span className="text-xs font-medium text-slate-500">Filter:</span>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'all', label: 'All' },
+                    { id: 'high-match', label: 'High Match' },
+                    { id: 'low-risk', label: 'Low Risk' },
+                    { id: 'high-growth', label: 'High Growth' }
+                  ].map(option => (
+                    <button
+                      key={option.id}
+                      onClick={() => setFilterBy(option.id)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                        filterBy === option.id
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const allWidgets = ['stability', 'compensation', 'culture', 'alternatives'];
+                  const newState = visibleWidgets.length === 4 ? [] : allWidgets;
+                  setVisibleWidgets(newState);
+                  localStorage.setItem('rolelens-widgets', JSON.stringify(newState));
+                }}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+              >
+                {visibleWidgets.length === 4 ? 'Hide All' : 'Show All'} Widgets
+              </button>
+            </div>
+
             {/* Intelligence Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`stability-${activeJob}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: 0.05 }}
-                >
-                  <StabilityCard 
-                    data={currentJob.stability} 
-                    tunerSettings={tunerSettings}
-                  />
-                </motion.div>
-              </AnimatePresence>
+              {visibleWidgets.includes('stability') && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`stability-${activeJob}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, delay: 0.05 }}
+                  >
+                    <div className="relative group">
+                      <button
+                        onClick={() => toggleWidget('stability')}
+                        className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <StabilityCard 
+                        data={currentJob.stability} 
+                        tunerSettings={tunerSettings}
+                      />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`comp-${activeJob}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                >
-                  <CompensationCard 
-                    data={currentJob.comp} 
-                    tunerSettings={tunerSettings}
-                  />
-                </motion.div>
-              </AnimatePresence>
+              {visibleWidgets.includes('compensation') && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`comp-${activeJob}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    <div className="relative group">
+                      <button
+                        onClick={() => toggleWidget('compensation')}
+                        className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <CompensationCard 
+                        data={currentJob.comp} 
+                        tunerSettings={tunerSettings}
+                      />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`culture-${activeJob}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: 0.15 }}
-                >
-                  <CultureCard 
-                    data={currentJob.culture} 
-                    tunerSettings={tunerSettings}
-                  />
-                </motion.div>
-              </AnimatePresence>
+              {visibleWidgets.includes('culture') && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`culture-${activeJob}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, delay: 0.15 }}
+                  >
+                    <div className="relative group">
+                      <button
+                        onClick={() => toggleWidget('culture')}
+                        className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <CultureCard 
+                        data={currentJob.culture} 
+                        tunerSettings={tunerSettings}
+                      />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`alts-${activeJob}`}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                >
-                  <AlternativesCard 
-                    alternatives={getAlternativeJobs()}
-                    currentJob={currentJob}
-                    onSwap={handleJobSwap}
-                    tunerSettings={tunerSettings}
-                  />
-                </motion.div>
-              </AnimatePresence>
+              {visibleWidgets.includes('alternatives') && (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`alts-${activeJob}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                  >
+                    <div className="relative group">
+                      <button
+                        onClick={() => toggleWidget('alternatives')}
+                        className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <AlternativesCard 
+                        alternatives={getAlternativeJobs()}
+                        currentJob={currentJob}
+                        onSwap={handleJobSwap}
+                        tunerSettings={tunerSettings}
+                        favorites={favorites}
+                        onToggleFavorite={toggleFavorite}
+                      />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              )}
             </div>
+
+            {/* Widget Manager */}
+            {visibleWidgets.length < 4 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-200"
+              >
+                <p className="text-sm font-medium text-slate-600 mb-3">Hidden Widgets - Click to Show:</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'stability', label: 'Stability Forensics', icon: '🛡️' },
+                    { id: 'compensation', label: 'Compensation Reality', icon: '💰' },
+                    { id: 'culture', label: 'Culture Scan', icon: '❤️' },
+                    { id: 'alternatives', label: 'Market Alternatives', icon: '⚡' }
+                  ].filter(w => !visibleWidgets.includes(w.id)).map(widget => (
+                    <button
+                      key={widget.id}
+                      onClick={() => toggleWidget(widget.id)}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all text-sm font-medium text-slate-700"
+                    >
+                      <span className="mr-2">{widget.icon}</span>
+                      {widget.label}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* Meditation Panel - Vetted Sources */}
             <MeditationPanel sources={currentJob.sources} />

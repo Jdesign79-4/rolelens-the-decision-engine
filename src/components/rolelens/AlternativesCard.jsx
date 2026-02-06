@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronUp, Zap, Clock, DollarSign, Heart } from 'lucide-react';
 
-export default function AlternativesCard({ alternatives, currentJob, onSwap, tunerSettings }) {
+export default function AlternativesCard({ alternatives, currentJob, onSwap, tunerSettings, favorites = [], onToggleFavorite }) {
   const [expandedId, setExpandedId] = useState(null);
 
   // Profile detection
@@ -171,12 +171,33 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                       <p className="text-xs text-slate-500">{alt.meta.title}</p>
                     </div>
                   </div>
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ChevronUp className="w-5 h-5 text-slate-400" />
-                  </motion.div>
+                  <div className="flex items-center gap-2">
+                    {onToggleFavorite && (
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleFavorite(alt.id);
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          favorites.includes(alt.id)
+                            ? 'text-rose-500'
+                            : 'text-slate-300 hover:text-rose-400'
+                        }`}
+                      >
+                        <svg className="w-4 h-4" fill={favorites.includes(alt.id) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </motion.button>
+                    )}
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    </motion.div>
+                  </div>
                 </div>
 
                 {/* Quick Trade-off Badge */}
