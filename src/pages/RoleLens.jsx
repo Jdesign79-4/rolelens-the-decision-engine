@@ -17,6 +17,7 @@ import SavedLists from '@/components/rolelens/SavedLists';
 import CompensationSources from '@/components/rolelens/CompensationSources';
 import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
+import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 
 const jobDatabase = {
   zentree: {
@@ -526,6 +527,7 @@ export default function RoleLens() {
   const [comparisonJobIds, setComparisonJobIds] = useState([]);
   const [jobPostingText, setJobPostingText] = useState('');
   const [postingHealthScore, setPostingHealthScore] = useState(undefined);
+  const [showInterviewPrep, setShowInterviewPrep] = useState(false);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -769,6 +771,12 @@ export default function RoleLens() {
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium text-sm hover:from-amber-600 hover:to-orange-600 transition-all"
                 >
                   Saved Lists
+                </button>
+                <button
+                  onClick={() => setShowInterviewPrep(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-medium text-sm hover:from-indigo-700 hover:to-blue-700 transition-all"
+                >
+                  Interview Prep
                 </button>
                 <button
                   onClick={() => {
@@ -1067,6 +1075,16 @@ export default function RoleLens() {
               setComparisonJobIds(jobIds);
               setShowComparison(true);
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Interview Prep Modal */}
+      <AnimatePresence>
+        {showInterviewPrep && (
+          <InterviewPrepGenerator
+            job={currentJob}
+            onClose={() => setShowInterviewPrep(false)}
           />
         )}
       </AnimatePresence>
