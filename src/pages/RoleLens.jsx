@@ -765,7 +765,7 @@ export default function RoleLens() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Filter and Widget Controls */}
+            {/* Widget Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-white rounded-2xl border border-slate-200">
               <div className="flex gap-2">
                 <button
@@ -795,29 +795,6 @@ export default function RoleLens() {
                 >
                   Compare Companies
                 </button>
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-medium text-slate-500">Filter:</span>
-                <div className="flex gap-2">
-                  {[
-                    { id: 'all', label: 'All' },
-                    { id: 'high-match', label: 'High Match' },
-                    { id: 'low-risk', label: 'Low Risk' },
-                    { id: 'high-growth', label: 'High Growth' }
-                  ].map(option => (
-                    <button
-                      key={option.id}
-                      onClick={() => setFilterBy(option.id)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                        filterBy === option.id
-                          ? 'bg-violet-600 text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
               </div>
               <button
                 onClick={() => {
@@ -924,7 +901,33 @@ export default function RoleLens() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
+                    className="lg:col-span-2"
                   >
+                    {/* Filters for Alternatives */}
+                    <div className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-slate-200">
+                      <span className="text-xs font-medium text-slate-500">Filter Alternatives:</span>
+                      <div className="flex gap-2">
+                        {[
+                          { id: 'all', label: 'All' },
+                          { id: 'high-match', label: 'High Match' },
+                          { id: 'low-risk', label: 'Low Risk' },
+                          { id: 'high-growth', label: 'High Growth' }
+                        ].map(option => (
+                          <button
+                            key={option.id}
+                            onClick={() => setFilterBy(option.id)}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                              filterBy === option.id
+                                ? 'bg-violet-600 text-white'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="relative group">
                       <button
                         onClick={() => toggleWidget('alternatives')}
