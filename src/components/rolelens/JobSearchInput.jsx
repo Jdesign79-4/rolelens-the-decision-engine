@@ -7,9 +7,13 @@ import { base44 } from '@/api/base44Client';
 
 export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoading }) {
   const [query, setQuery] = useState('');
-  const [jobPostingText, setJobPostingText] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState(null);
+  const [companyName, setCompanyName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [city, setCity] = useState('');
+  const [salaryMin, setSalaryMin] = useState('');
+  const [salaryMax, setSalaryMax] = useState('');
 
   const handleSearch = async () => {
     if (!query.trim() || isLoading) return;
@@ -17,17 +21,25 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
     setIsLoading(true);
     setError(null);
 
+    // Parse structured inputs if provided
+    const hasStructuredData = companyName || jobTitle || city || salaryMin || salaryMax;
+    const salaryMinNum = salaryMin ? parseInt(salaryMin.replace(/,/g, '')) : null;
+    const salaryMaxNum = salaryMax ? parseInt(salaryMax.replace(/,/g, '')) : null;
+
     try {
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Research this job opportunity and provide comprehensive data for a job seeker decision engine:
 
 Job/Company: "${query}"
 
-${jobPostingText ? `
-ACTUAL JOB POSTING PROVIDED BY USER:
-${jobPostingText}
+${hasStructuredData ? `
+USER PROVIDED EXACT JOB DETAILS:
+${companyName ? `Company: ${companyName}` : ''}
+${jobTitle ? `Job Title: ${jobTitle}` : ''}
+${city ? `Location: ${city}` : ''}
+${salaryMinNum && salaryMaxNum ? `Compensation Range: $${salaryMinNum.toLocaleString()} - $${salaryMaxNum.toLocaleString()}` : ''}
 
-CRITICAL: Extract the EXACT compensation range stated in this job posting. Use these exact numbers for your calculations.
+CRITICAL: Use these EXACT values provided by the user.
 ` : ''}
 
 CRITICAL - COMPENSATION DATA SOURCES (MUST USE):
@@ -38,29 +50,15 @@ For ALL compensation calculations, you MUST gather data from these specific vett
 4. PayScale - Salary data with cost-of-living adjustments
 
 Calculate the following based on these sources:
-- range_min: ${jobPostingText ? 'LOOK FOR SALARY IN THE JOB POSTING TEXT ABOVE. Examples: "115.6k/y" = 115600, "115.6k" = 115600, "$115,600" = 115600, "115.6K" = 115600. Extract the LOWER number and convert to integer.' : 'null'}
-- range_max: ${jobPostingText ? 'LOOK FOR SALARY IN THE JOB POSTING TEXT ABOVE. Examples: "119k/y" = 119000, "119k" = 119000, "$119,000" = 119000, "119K" = 119000. Extract the HIGHER number and convert to integer.' : 'null'}
-- headline: ${jobPostingText ? 'MUST BE: (range_min + range_max) / 2. If range_min=115600 and range_max=119000, then headline=117300' : 'Total compensation from Levels.fyi/Glassdoor'}
-- base: ${jobPostingText ? 'Use headline value or extract if specified separately in posting' : 'Base salary from BLS and salary sites'}
-- equity: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate equity portion' : 'Annual equity value from Levels.fyi'}
+- range_min: ${salaryMinNum ? `USE EXACT VALUE: ${salaryMinNum}` : 'null (no user input, use external data)'}
+- range_max: ${salaryMaxNum ? `USE EXACT VALUE: ${salaryMaxNum}` : 'null (no user input, use external data)'}
+- headline: ${salaryMinNum && salaryMaxNum ? `MUST BE: (${salaryMinNum} + ${salaryMaxNum}) / 2 = ${(salaryMinNum + salaryMaxNum) / 2}` : 'Total compensation from Levels.fyi/Glassdoor'}
+- base: ${salaryMinNum && salaryMaxNum ? 'Use headline value' : 'Base salary from BLS and salary sites'}
+- equity: Annual equity value from Levels.fyi or estimate based on company type
 - real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power after taxes and COL adjustments
 - tax_rate: State + Federal effective tax rate for this income level and location (research actual tax brackets)
 - col_adjustment: Use MIT Living Wage and PayScale COL data (1.0 = national average, <1 = expensive, >1 = affordable)
 - leak_label: Describe what reduces purchasing power (e.g., "SF Tax + COL", "NYC Housing Costs")
-
-${jobPostingText ? `
-⚠️ MANDATORY SALARY EXTRACTION ⚠️
-The user pasted job details above. YOU MUST:
-1. Search for salary/compensation in that text (look for: k, K, $, /y, /year, per year)
-2. Extract EXACT numbers: "115.6k/y to 119k/y" means range_min=115600, range_max=119000
-3. DO NOT use Glassdoor/Levels data - USE ONLY what's in the pasted text
-4. Parse formats: 115.6k=115600, 119k=119000, 115.6K=115600, $115,600=115600
-5. Set headline to the midpoint: (range_min + range_max) / 2
-
-Example: If text says "115.6k/y to 119k/y":
-- range_min: 115600
-- range_max: 119000  
-- headline: 117300` : ''}
 
 OTHER DATA to gather from web:
 1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
@@ -206,7 +204,11 @@ Be specific with numbers. Show your work - reference which source each number co
 
       onJobDataLoaded(processedJob);
       setQuery('');
-      setJobPostingText('');
+      setCompanyName('');
+      setJobTitle('');
+      setCity('');
+      setSalaryMin('');
+      setSalaryMax('');
       setShowDetails(false);
     } catch (err) {
       console.error('Search failed:', err);
@@ -235,7 +237,7 @@ Be specific with numbers. Show your work - reference which source each number co
           variant="outline"
           className="px-4 rounded-xl border-slate-200"
         >
-          {showDetails ? 'Hide' : 'Paste'} Job Details
+          {showDetails ? 'Hide' : 'Add'} Job Details
         </Button>
         <Button
           onClick={handleSearch}
@@ -256,17 +258,64 @@ Be specific with numbers. Show your work - reference which source each number co
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-3"
+            className="mt-3 p-4 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 space-y-3"
           >
-            <textarea
-              value={jobPostingText}
-              onChange={(e) => setJobPostingText(e.target.value)}
-              placeholder="Paste the full job posting here (including compensation details)...&#10;&#10;Example:&#10;Senior Software Engineer at Stripe&#10;San Francisco, CA&#10;$115,600 - $190,000/year + equity&#10;..."
-              className="w-full min-h-[120px] p-3 rounded-xl border border-slate-200 bg-white/80 backdrop-blur-sm focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 text-sm resize-y"
-              disabled={isLoading}
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              💡 Include compensation details from the posting for accurate calculations
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Company Name</label>
+                <Input
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="e.g. Stripe"
+                  className="rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Job Title</label>
+                <Input
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  placeholder="e.g. Senior Software Engineer"
+                  className="rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">City</label>
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="e.g. San Francisco, CA"
+                className="rounded-lg"
+                disabled={isLoading}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Min Salary</label>
+                <Input
+                  value={salaryMin}
+                  onChange={(e) => setSalaryMin(e.target.value)}
+                  placeholder="e.g. 115600"
+                  className="rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Max Salary</label>
+                <Input
+                  value={salaryMax}
+                  onChange={(e) => setSalaryMax(e.target.value)}
+                  placeholder="e.g. 119000"
+                  className="rounded-lg"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              💡 Fill in the fields above for exact compensation analysis
             </p>
           </motion.div>
         )}
