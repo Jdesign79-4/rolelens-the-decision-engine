@@ -910,7 +910,10 @@ function RoleLensContent() {
         </AnimatePresence>
 
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 bg-white/50 backdrop-blur-xl">
+        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
+          <div className="absolute top-4 right-4">
+            <DarkModeToggle />
+          </div>
           <AstrolabePanel
             settings={tunerSettings}
             onSettingsChange={setTunerSettings}
