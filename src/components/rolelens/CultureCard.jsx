@@ -529,11 +529,6 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
         </div>
       </div>
 
-      {/* Zen Garden - Red Flags Indicator */}
-      <div className="mb-4">
-        <ZenGarden postingHealthScore={postingHealthScore ?? 50} />
-      </div>
-
       {/* Grove Health Status */}
       <div className={`flex items-center gap-3 p-3 rounded-xl ${groveHealth.bg}`}>
         <Sparkles className={`w-5 h-5 ${groveHealth.color}`} />
@@ -560,6 +555,11 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
           </p>
         </div>
       </motion.div>
+
+      {/* Zen Garden - Red Flags Indicator */}
+      <div className="mt-4">
+        <ZenGarden postingHealthScore={postingHealthScore ?? 50} />
+      </div>
     </div>
   );
 }
