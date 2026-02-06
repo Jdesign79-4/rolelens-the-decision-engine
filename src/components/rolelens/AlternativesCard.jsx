@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronUp, Zap, Clock, DollarSign, Heart } from 'lucide-react';
+import { calculateJobMatch, getMatchLabel, getMatchInsights } from './MatchingAlgorithm';
 
 export default function AlternativesCard({ alternatives, currentJob, onSwap, tunerSettings, favorites = [], onToggleFavorite }) {
   const [expandedId, setExpandedId] = useState(null);
@@ -13,69 +14,38 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
   const isSeedling = tunerSettings.careerStage < 0.4;
   const isOak = tunerSettings.careerStage > 0.6;
 
-  // Calculate profile match score for each alternative
-  const getProfileMatch = (alt) => {
-    let score = 50; // Base score
-    
-    // Risk alignment
-    const riskDiff = Math.abs(alt.stability.risk_score - tunerSettings.riskAppetite);
-    if (isRiskSeeker && alt.stability.risk_score > 0.4) score += 25;
-    if (isStabilitySeeker && alt.stability.risk_score < 0.3) score += 25;
-    if (riskDiff < 0.2) score += 15;
-    
-    // Life anchor alignment
-    if (isProvider && alt.culture.wlb_score > 7) score += 15;
-    if (isNomad && alt.culture.growth_score > 8) score += 15;
-    if (isProvider && alt.culture.stress_level > 0.6) score -= 20;
-    
-    // Career stage alignment
-    if (isSeedling && alt.culture.growth_score > 8) score += 10;
-    if (isOak && alt.culture.wlb_score > 7.5) score += 10;
-    
-    return Math.min(100, Math.max(0, score));
-  };
-
-  // Sort alternatives by profile match
-  const sortedAlternatives = [...alternatives].sort((a, b) => getProfileMatch(b) - getProfileMatch(a));
+  // Sort alternatives by profile match using advanced algorithm
+  const sortedAlternatives = [...alternatives]
+    .map(alt => ({
+      ...alt,
+      matchScore: calculateJobMatch(alt, tunerSettings),
+      matchLabel: getMatchLabel(calculateJobMatch(alt, tunerSettings)),
+      insights: getMatchInsights(alt, tunerSettings, calculateJobMatch(alt, tunerSettings))
+    }))
+    .sort((a, b) => b.matchScore - a.matchScore);
 
   const getTradeOff = (alt) => {
     const compDiff = alt.comp.real_feel - currentJob.comp.real_feel;
     const stressDiff = alt.culture.stress_level - currentJob.culture.stress_level;
-    const matchScore = getProfileMatch(alt);
     
-    // Personalized trade-off messages based on profile
-    if (isRiskSeeker && alt.stability.risk_score > 0.4) {
-      if (compDiff > 30000) {
-        return { text: `🔥 High-risk high-reward: +${Math.round(compDiff/1000)}K potential`, type: 'match', score: matchScore };
-      }
-      return { text: '⚡ Matches your risk appetite', type: 'match', score: matchScore };
+    // Use primary insight from matching algorithm
+    if (alt.insights && alt.insights.length > 0) {
+      const primaryInsight = alt.insights[0];
+      if (primaryInsight.includes('✅')) return { text: primaryInsight, type: 'win', score: alt.matchScore };
+      if (primaryInsight.includes('🛡️') || primaryInsight.includes('⚓')) return { text: primaryInsight, type: 'safe', score: alt.matchScore };
+      if (primaryInsight.includes('🚀') || primaryInsight.includes('⚡')) return { text: primaryInsight, type: 'match', score: alt.matchScore };
+      if (primaryInsight.includes('⚠️')) return { text: primaryInsight, type: 'tradeoff', score: alt.matchScore };
     }
     
-    if (isStabilitySeeker && alt.stability.risk_score < 0.25) {
-      return { text: '🛡️ Strong stability match', type: 'safe', score: matchScore };
-    }
-    
-    if (isProvider && alt.culture.wlb_score > 7.5 && alt.culture.stress_level < 0.4) {
-      return { text: '⚓ Family-friendly balance', type: 'safe', score: matchScore };
-    }
-    
-    if (isNomad && alt.culture.growth_score > 8) {
-      return { text: '🚀 High growth trajectory', type: 'match', score: matchScore };
-    }
-    
-    if (compDiff > 30000 && stressDiff > 0.2) {
-      return { text: `+${Math.round(compDiff/1000)}K but ${Math.round(stressDiff*100)}% more intensity`, type: 'tradeoff', score: matchScore };
-    }
+    // Fallback to compensation-based messaging
     if (compDiff > 20000 && stressDiff <= 0) {
-      return { text: `+${Math.round(compDiff/1000)}K with better balance`, type: 'win', score: matchScore };
+      return { text: `+${Math.round(compDiff/1000)}K with better balance`, type: 'win', score: alt.matchScore };
     }
-    if (compDiff < 0 && stressDiff < -0.1) {
-      return { text: `${Math.round(compDiff/1000)}K for ${Math.round(-stressDiff*100)}% calmer culture`, type: 'tradeoff', score: matchScore };
+    if (compDiff > 30000 && stressDiff > 0.2) {
+      return { text: `+${Math.round(compDiff/1000)}K but higher intensity`, type: 'tradeoff', score: alt.matchScore };
     }
-    if (alt.stability.risk_score < currentJob.stability.risk_score - 0.1) {
-      return { text: 'Lower risk, similar comp', type: 'safe', score: matchScore };
-    }
-    return { text: 'Different opportunity profile', type: 'neutral', score: matchScore };
+    
+    return { text: alt.matchLabel.label, type: 'neutral', score: alt.matchScore };
   };
 
   const getTradeOffColor = (type) => {
@@ -113,7 +83,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
         {sortedAlternatives.map((alt, index) => {
           const tradeOff = getTradeOff(alt);
           const isExpanded = expandedId === alt.id;
-          const isTopMatch = index === 0 && tradeOff.score > 70;
+          const isTopMatch = index === 0 && alt.matchScore > 70;
 
           return (
             <motion.div
@@ -149,13 +119,13 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                         <img src={alt.meta.logo} alt="" className="w-full h-full object-cover" />
                       </div>
                       {/* Profile Match Indicator */}
-                      {tradeOff.score > 70 && (
+                      {alt.matchScore > 70 && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center"
                         >
-                          <span className="text-[8px] font-bold text-white">{Math.round(tradeOff.score)}</span>
+                          <span className="text-[8px] font-bold text-white">{alt.matchScore}</span>
                         </motion.div>
                       )}
                     </div>

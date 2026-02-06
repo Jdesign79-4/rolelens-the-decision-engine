@@ -15,6 +15,7 @@ import CompanyHealthScore from '@/components/rolelens/CompanyHealthScore';
 import CompanyComparison from '@/components/rolelens/CompanyComparison';
 import SavedLists from '@/components/rolelens/SavedLists';
 import CompensationSources from '@/components/rolelens/CompensationSources';
+import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
 
 const jobDatabase = {
   zentree: {
@@ -942,7 +943,7 @@ export default function RoleLens() {
                   <p className="text-slate-400 text-sm font-medium mb-1">Your True Fit Score</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold">
-                      {Math.round(calculateTrueFit(currentJob, tunerSettings))}
+                      {calculateJobMatch(currentJob, tunerSettings)}
                     </span>
                     <span className="text-slate-400 text-lg">/100</span>
                   </div>
@@ -950,7 +951,7 @@ export default function RoleLens() {
                 <div className="text-right">
                   <p className="text-slate-400 text-sm">Based on your profile</p>
                   <p className="text-lg font-medium mt-1">
-                    {getTrueFitLabel(calculateTrueFit(currentJob, tunerSettings))}
+                    {getMatchLabel(calculateJobMatch(currentJob, tunerSettings)).label}
                   </p>
                 </div>
               </div>
@@ -959,11 +960,11 @@ export default function RoleLens() {
               <div className="mt-4 h-2 bg-slate-700 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${calculateTrueFit(currentJob, tunerSettings)}%` }}
+                  animate={{ width: `${calculateJobMatch(currentJob, tunerSettings)}%` }}
                   transition={{ duration: 0.8, delay: 0.5 }}
                   className="h-full rounded-full"
                   style={{
-                    background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateTrueFit(currentJob, tunerSettings) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
+                    background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateJobMatch(currentJob, tunerSettings) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
                   }}
                 />
               </div>
@@ -1004,26 +1005,4 @@ export default function RoleLens() {
       </AnimatePresence>
     </div>
   );
-}
-
-function calculateTrueFit(job, settings) {
-  if (!job?.stability || !job?.culture) return 0;
-  
-  const riskFit = 1 - Math.abs(job.stability.risk_score - settings.riskAppetite);
-  const stressFit = settings.lifeAnchors > 0.5 
-    ? 1 - job.culture.stress_level 
-    : 0.5 + job.culture.stress_level * 0.5;
-  const growthFit = settings.careerStage < 0.5
-    ? job.culture.growth_score / 10
-    : job.culture.wlb_score / 10;
-  
-  return Math.round((riskFit * 40 + stressFit * 30 + growthFit * 30));
-}
-
-function getTrueFitLabel(score) {
-  if (score >= 85) return "Exceptional Match";
-  if (score >= 70) return "Strong Alignment";
-  if (score >= 55) return "Moderate Fit";
-  if (score >= 40) return "Consider Trade-offs";
-  return "Significant Gaps";
 }
