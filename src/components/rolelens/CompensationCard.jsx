@@ -199,11 +199,69 @@ export default function CompensationCard({ data, tunerSettings }) {
             ))}
             
             {/* Water Ripples */}
-            <WaterRipple fillPercentage={fillPercentage} />
+            <WaterRipple fillPercentage={actualFillPercentage} />
           </motion.div>
 
-          {/* Leak Hole and Dripping Animation */}
-          {isLeaking && (
+          {/* Overflow Animation - Water spilling over the top */}
+          {isOverflowing && (
+            <>
+              {/* Left overflow */}
+              <motion.div
+                animate={{ 
+                  x: [-8, -12, -8],
+                  opacity: [0.4, 0.8, 0.4]
+                }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -left-3 -top-1 w-12 h-4"
+              >
+                <div className="relative w-full h-full">
+                  {[...Array(3)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ y: [0, 12], opacity: [1, 0] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.3 }}
+                      className="absolute w-1 h-2 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"
+                      style={{ left: `${4 + i * 3}px`, top: 0 }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+              
+              {/* Right overflow */}
+              <motion.div
+                animate={{ 
+                  x: [8, 12, 8],
+                  opacity: [0.4, 0.8, 0.4]
+                }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -right-3 -top-1 w-12 h-4"
+              >
+                <div className="relative w-full h-full">
+                  {[...Array(3)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{ y: [0, 12], opacity: [1, 0] }}
+                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.3 }}
+                      className="absolute w-1 h-2 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"
+                      style={{ right: `${4 + i * 3}px`, top: 0 }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Overflow label */}
+              <motion.div
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] text-red-500 font-semibold whitespace-nowrap"
+              >
+                {Math.round(overflowPercentage)}% Lost to COL
+              </motion.div>
+            </>
+          )}
+
+          {/* Old Leak Hole - Hidden */}
+          {false && isOverflowing && (
             <div className="absolute right-0 top-1/3">
               {/* Leak hole */}
               <motion.div
