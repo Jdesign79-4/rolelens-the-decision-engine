@@ -563,7 +563,7 @@ export default function RoleLens() {
     jobData.alternatives?.forEach(alt => {
       newCustomJobs[alt.id] = {
         ...alt,
-        alternatives: [jobData.id, ...jobData.alternatives.filter(a => a.id !== alt.id).slice(0, 2).map(a => a.id)]
+        alternatives: [jobData.id, ...jobData.alternatives.filter(a => a.id !== alt.id).slice(0, 4).map(a => a.id)]
       };
     });
 
