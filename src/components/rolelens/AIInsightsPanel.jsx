@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, TrendingUp, Map, Loader2 } from 'lucide-react';
+import { Sparkles, TrendingUp, Map, Loader2, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import ReportExporter from './ReportExporter';
 
 export default function AIInsightsPanel({ currentJob, tunerSettings }) {
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('culture');
+  const [showExporter, setShowExporter] = useState(false);
 
   useEffect(() => {
     generateInsights();
@@ -72,14 +74,23 @@ Provide 3 insights (each 2-3 sentences max):
       transition={{ delay: 0.3 }}
       className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-3xl p-6 shadow-sm border border-violet-200"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
-          <Sparkles className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-800">AI Strategic Insights</h3>
+            <p className="text-xs text-slate-500">Powered by advanced analysis</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-semibold text-slate-800">AI Strategic Insights</h3>
-          <p className="text-xs text-slate-500">Powered by advanced analysis</p>
-        </div>
+        <button
+          onClick={() => setShowExporter(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium text-sm transition-all"
+        >
+          <Download className="w-4 h-4" />
+          Export Report
+        </button>
       </div>
 
       {/* Tab Navigation */}
@@ -139,6 +150,22 @@ Provide 3 insights (each 2-3 sentences max):
       >
         {loading ? 'Analyzing...' : 'Refresh Insights'}
       </button>
+
+      {/* Report Exporter Modal */}
+      <AnimatePresence>
+        {showExporter && (
+          <ReportExporter
+            currentJob={currentJob}
+            tunerSettings={tunerSettings}
+            insights={{
+              culture: insights?.culture_why,
+              compensation: insights?.comp_forecast,
+              career: insights?.career_path
+            }}
+            onClose={() => setShowExporter(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
