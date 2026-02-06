@@ -14,6 +14,7 @@ import AIInsightsPanel from '@/components/rolelens/AIInsightsPanel';
 import CompanyHealthScore from '@/components/rolelens/CompanyHealthScore';
 import CompanyComparison from '@/components/rolelens/CompanyComparison';
 import SavedLists from '@/components/rolelens/SavedLists';
+import CompensationSources from '@/components/rolelens/CompensationSources';
 
 const jobDatabase = {
   zentree: {
@@ -909,6 +910,9 @@ export default function RoleLens() {
 
             {/* Company Health Score */}
             <CompanyHealthScore company={currentJob.meta.company} />
+
+            {/* Compensation Data Sources */}
+            <CompensationSources />
 
             {/* Meditation Panel - Vetted Sources */}
             <MeditationPanel sources={currentJob.sources} />
