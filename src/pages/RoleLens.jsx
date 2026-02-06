@@ -557,7 +557,7 @@ const jobDatabase = {
       growth_score: 7.8,
       politics_level: "Medium"
     },
-    alternatives: ["figma", "notion", "canva", "salesforce", "zentree"]
+    alternatives: ["figma", "notion", "canva", "salesforce", "standing_stones"]
   }
 };
 
