@@ -304,7 +304,7 @@ export default function CultureCard({ data, tunerSettings }) {
           <Scale className="w-4 h-4 text-slate-400" />
           <p className="text-xs text-slate-600">
             {isSenior 
-              ? "As a senior, this culture offers " + (stressLevel < 0.4 ? "sustainable pace" : "potential burnout risk")
+              ? "As a seasoned employee, this culture offers " + (stressLevel < 0.4 ? "sustainable pace" : "potential burnout risk")
               : "As early career, " + (data.growth_score > 7 ? "strong growth environment" : "limited acceleration")
             }
           </p>
