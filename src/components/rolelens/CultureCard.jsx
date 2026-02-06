@@ -112,20 +112,20 @@ function ZenRake({ harmony }) {
       }}
     >
       {/* Rake assembly */}
-      <div className="relative" style={{ transformOrigin: 'left center' }}>
-        {/* Long handle extending back */}
-        <div className="absolute left-0 top-0 w-32 h-1.5 origin-left">
+      <div className="relative" style={{ transformOrigin: 'center center' }}>
+        {/* Long handle extending back and up */}
+        <div className="absolute left-0 top-0 w-32 h-1.5 origin-left" style={{ transform: 'rotate(-25deg)' }}>
           <div className="w-full h-full bg-gradient-to-l from-amber-700 via-amber-800 to-amber-900/40 rounded-full shadow-sm" />
           {/* Handle grip wrapping */}
           <div className="absolute top-1/2 -translate-y-1/2 left-4 w-2 h-2 border border-amber-900/30 rounded-full" />
           <div className="absolute top-1/2 -translate-y-1/2 left-8 w-2 h-2 border border-amber-900/30 rounded-full" />
         </div>
         
-        {/* Rake head */}
-        <div className="absolute left-0 top-0 w-12 h-1">
+        {/* Rake head - angled downward */}
+        <div className="absolute left-0 top-4 w-12 h-1" style={{ transform: 'rotate(5deg)' }}>
           <div className="w-full h-full bg-gradient-to-r from-amber-800 to-amber-900 rounded-sm shadow-md" />
           
-          {/* Rake teeth */}
+          {/* Rake teeth pointing down */}
           <div className="absolute -bottom-2.5 left-0 right-0 flex justify-around">
             {[...Array(8)].map((_, i) => (
               <motion.div
