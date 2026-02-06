@@ -43,7 +43,109 @@ const jobDatabase = {
       growth_score: 8.5,
       politics_level: "Very Low"
     },
-    alternatives: ["salesforce", "canva", "figma"]
+    alternatives: ["rivermotion", "cherryblossom", "zengarden"]
+  },
+  rivermotion: {
+    id: "rivermotion",
+    meta: { 
+      title: "Lead Financial Advisor", 
+      company: "River Motion Investments",
+      location: "New York, NY",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1559589689-577aabd1db4f?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Stable Growth", 
+      risk_score: 0.20,
+      division: "Revenue Center",
+      runway: "36+ months",
+      headcount_trend: "+22%"
+    },
+    comp: { 
+      headline: 195000, 
+      real_feel: 125000, 
+      leak_label: "NYC Tax + COL",
+      base: 140000,
+      equity: 55000,
+      tax_rate: 0.35,
+      col_adjustment: 0.68
+    },
+    culture: { 
+      type: "Professional Excellence", 
+      stress_level: 0.45,
+      wlb_score: 7.5,
+      growth_score: 8.0,
+      politics_level: "Medium"
+    },
+    alternatives: ["zentree", "cherryblossom", "zengarden"]
+  },
+  cherryblossom: {
+    id: "cherryblossom",
+    meta: { 
+      title: "Graphic Designer", 
+      company: "Cherry Blossom Designs",
+      location: "Portland, OR",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Creative Boutique", 
+      risk_score: 0.25,
+      division: "Creative Core",
+      runway: "24 months",
+      headcount_trend: "+12%"
+    },
+    comp: { 
+      headline: 145000, 
+      real_feel: 135000, 
+      leak_label: "Low COL Benefit",
+      base: 120000,
+      equity: 25000,
+      tax_rate: 0.25,
+      col_adjustment: 1.08
+    },
+    culture: { 
+      type: "Artistic Haven", 
+      stress_level: 0.30,
+      wlb_score: 8.5,
+      growth_score: 7.2,
+      politics_level: "Low"
+    },
+    alternatives: ["zentree", "rivermotion", "zengarden"]
+  },
+  zengarden: {
+    id: "zengarden",
+    meta: { 
+      title: "AI Engineer", 
+      company: "Zen Garden",
+      location: "Austin, TX",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Innovation Hub", 
+      risk_score: 0.32,
+      division: "Research Core",
+      runway: "30 months",
+      headcount_trend: "+45%"
+    },
+    comp: { 
+      headline: 220000, 
+      real_feel: 185000, 
+      leak_label: "TX Tax Advantage",
+      base: 170000,
+      equity: 50000,
+      tax_rate: 0.18,
+      col_adjustment: 1.02
+    },
+    culture: { 
+      type: "Tech Meditation", 
+      stress_level: 0.40,
+      wlb_score: 7.8,
+      growth_score: 9.0,
+      politics_level: "Low"
+    },
+    alternatives: ["zentree", "rivermotion", "cherryblossom"]
   },
   salesforce: {
     id: "salesforce",
