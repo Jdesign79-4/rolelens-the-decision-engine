@@ -89,40 +89,62 @@ function ZenRake({ harmony }) {
   
   return (
     <motion.div
-      className="absolute top-0 left-0 w-full h-full pointer-events-none"
-      initial={{ x: '-100%', opacity: 0 }}
+      className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible"
+      initial={{ x: '-20%', y: '45%', opacity: 0, rotate: 45 }}
       animate={{
-        x: isCalm ? ['0%', '100%'] : ['-10%', '90%', '10%', '110%'],
-        y: isCalm ? '45%' : ['30%', '60%', '40%', '70%'],
-        opacity: [0, 1, 1, 0],
-        rotate: isCalm ? [0, 5, 0] : [-15, 15, -10, 20, -15]
+        x: isCalm 
+          ? ['-20%', '110%'] 
+          : ['-15%', '40%', '15%', '70%', '30%', '105%'],
+        y: isCalm 
+          ? '45%' 
+          : ['35%', '55%', '30%', '65%', '40%', '50%'],
+        opacity: [0, 1, 1, 1, 1, 0],
+        rotate: isCalm 
+          ? [45, 50, 48, 52, 50] 
+          : [30, 60, 20, 70, 35, 65, 25]
       }}
       transition={{
-        duration: isCalm ? 8 : 4,
+        duration: isCalm ? 10 : 5,
         repeat: Infinity,
-        ease: isCalm ? "easeInOut" : "easeInOut",
-        repeatDelay: isCalm ? 2 : 0.5
+        ease: isCalm ? "easeInOut" : [0.45, 0.05, 0.55, 0.95],
+        repeatDelay: isCalm ? 3 : 0.3,
+        times: isCalm ? [0, 1] : [0, 0.2, 0.35, 0.55, 0.75, 1]
       }}
     >
-      {/* Rake handle */}
-      <div className="relative w-16 h-1">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-800 to-amber-900 rounded-full" />
-        {/* Rake teeth */}
-        <div className="absolute -bottom-3 left-0 right-0 flex justify-around">
-          {[...Array(7)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="w-0.5 h-3 bg-amber-900 rounded-full"
-              animate={{
-                scaleY: isCalm ? 1 : [1, 0.8, 1.2, 0.9, 1]
-              }}
-              transition={{
-                duration: 0.3,
-                repeat: Infinity,
-                delay: i * 0.05
-              }}
-            />
-          ))}
+      {/* Rake assembly */}
+      <div className="relative" style={{ transformOrigin: 'left center' }}>
+        {/* Long handle extending back */}
+        <div className="absolute left-0 top-0 w-32 h-1.5 origin-left">
+          <div className="w-full h-full bg-gradient-to-l from-amber-700 via-amber-800 to-amber-900/40 rounded-full shadow-sm" />
+          {/* Handle grip wrapping */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-4 w-2 h-2 border border-amber-900/30 rounded-full" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-8 w-2 h-2 border border-amber-900/30 rounded-full" />
+        </div>
+        
+        {/* Rake head */}
+        <div className="absolute left-0 top-0 w-12 h-1">
+          <div className="w-full h-full bg-gradient-to-r from-amber-800 to-amber-900 rounded-sm shadow-md" />
+          
+          {/* Rake teeth */}
+          <div className="absolute -bottom-2.5 left-0 right-0 flex justify-around">
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="w-0.5 h-2.5 bg-amber-900 rounded-full shadow-sm"
+                animate={isCalm ? {
+                  scaleY: 1
+                } : {
+                  scaleY: [1, 0.7, 1.1, 0.85, 1],
+                  y: [0, 1, -0.5, 0.5, 0]
+                }}
+                transition={{
+                  duration: isCalm ? 1 : 0.25,
+                  repeat: Infinity,
+                  delay: i * 0.03
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>
