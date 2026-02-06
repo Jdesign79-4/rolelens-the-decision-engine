@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CheckCircle2, ChevronDown, Shield, Loader2, Sparkles } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 
-export default function JobPostingAnalysis({ jobPostingText, companyName, jobTitle }) {
+export default function JobPostingAnalysis({ jobPostingText, companyName, jobTitle, onHealthScoreUpdate }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expandedFlags, setExpandedFlags] = useState(new Set());
@@ -101,6 +101,9 @@ Calculate an overall Posting Health Score (0-100):
       });
 
       setAnalysis(result);
+      if (onHealthScoreUpdate && result.health_score !== undefined) {
+        onHealthScoreUpdate(result.health_score);
+      }
     } catch (error) {
       console.error('Failed to analyze posting:', error);
     } finally {

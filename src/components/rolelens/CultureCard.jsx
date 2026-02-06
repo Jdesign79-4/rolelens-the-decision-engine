@@ -83,10 +83,12 @@ function ZenPattern({ harmony, index }) {
   );
 }
 
-// Zen Garden Component
-function ZenGarden({ wlbScore, growthScore, stressLevel }) {
-  // Calculate harmony score (0-1) based on all factors
-  const harmonyScore = ((wlbScore / 10) * 0.4 + (growthScore / 10) * 0.3 + (1 - stressLevel) * 0.3);
+// Zen Garden Component - Shows Red Flags
+function ZenGarden({ postingHealthScore }) {
+  // Calculate harmony based on posting health (red flags)
+  // High score (75-100) = organized garden (few red flags)
+  // Low score (0-50) = chaotic garden (many red flags)
+  const harmonyScore = postingHealthScore / 100;
   
   // Generate stone positions - more organized when harmony is high
   const stones = harmonyScore > 0.6 ? [
@@ -132,20 +134,20 @@ function ZenGarden({ wlbScore, growthScore, stressLevel }) {
         />
       ))}
 
-      {/* Harmony Score Badge */}
+      {/* Red Flags Indicator Badge */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.8 }}
         className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-stone-200 shadow-sm"
       >
-        <p className="text-[10px] text-stone-500 font-medium">Garden Harmony</p>
+        <p className="text-[10px] text-stone-500 font-medium">Red Flags</p>
         <p className={`text-lg font-bold ${
-          harmonyScore > 0.7 ? 'text-emerald-600' :
-          harmonyScore > 0.4 ? 'text-amber-600' :
+          harmonyScore > 0.75 ? 'text-emerald-600' :
+          harmonyScore > 0.5 ? 'text-amber-600' :
           'text-red-600'
         }`}>
-          {Math.round(harmonyScore * 10)}/10
+          {harmonyScore > 0.75 ? 'Low' : harmonyScore > 0.5 ? 'Medium' : 'High'}
         </p>
       </motion.div>
 
@@ -154,12 +156,12 @@ function ZenGarden({ wlbScore, growthScore, stressLevel }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
-        className="absolute bottom-3 left-3 px-2 py-1 rounded-lg bg-stone-800/80 backdrop-blur-sm"
+        className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-stone-800/80 backdrop-blur-sm"
       >
-        <p className="text-[9px] text-stone-100 font-medium">
-          {harmonyScore > 0.7 ? '🧘 Perfectly Balanced Garden' :
-           harmonyScore > 0.4 ? '🌊 Partially Organized' :
-           '⚠️ Chaotic Arrangement'}
+        <p className="text-[10px] text-stone-100 font-medium leading-tight">
+          {harmonyScore > 0.75 ? '🧘 Professional Posting - Few Red Flags' :
+           harmonyScore > 0.5 ? '⚠️ Some Concerns - Review Carefully' :
+           '🚨 Multiple Red Flags - Proceed with Caution'}
         </p>
       </motion.div>
     </div>
@@ -302,7 +304,7 @@ function BambooStalk({ bamboo, index, stressLevel, existentialRisk }) {
   );
 }
 
-export default function CultureCard({ data, tunerSettings }) {
+export default function CultureCard({ data, tunerSettings, postingHealthScore }) {
   const stressLevel = data.stress_level;
   const isSenior = tunerSettings.careerStage > 0.5;
   const isRiskAverse = tunerSettings.riskAppetite < 0.4;
@@ -339,53 +341,8 @@ export default function CultureCard({ data, tunerSettings }) {
         </div>
       </div>
 
-      {/* Zen Garden Visualization */}
-      <ZenGarden 
-        wlbScore={data.wlb_score} 
-        growthScore={data.growth_score}
-        stressLevel={stressLevel}
-      />
-
-      {/* Culture Deep Dive Text */}
-      <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200">
-        <h4 className="text-sm font-semibold text-slate-700 mb-3">Culture Deep Dive</h4>
-        <div className="space-y-2 text-xs text-slate-600">
-          <p>
-            <span className="font-medium">Work Environment:</span> {data.type} with {
-              stressLevel < 0.3 ? 'minimal stress and calm atmosphere' :
-              stressLevel < 0.5 ? 'moderate pressure and steady pace' :
-              stressLevel < 0.7 ? 'high intensity and fast-moving environment' :
-              'extreme pressure and burnout risk'
-            }.
-          </p>
-          <p>
-            <span className="font-medium">Work-Life Balance:</span> {
-              data.wlb_score >= 8 ? 'Excellent boundaries with strong respect for personal time' :
-              data.wlb_score >= 6 ? 'Good balance with occasional overtime expected' :
-              data.wlb_score >= 4 ? 'Challenging balance with frequent late hours' :
-              'Poor boundaries with consistent overwork culture'
-            }.
-          </p>
-          <p>
-            <span className="font-medium">Career Growth:</span> {
-              data.growth_score >= 8 ? 'Exceptional opportunities with clear advancement paths and strong mentorship' :
-              data.growth_score >= 6 ? 'Solid growth potential with standard progression timelines' :
-              data.growth_score >= 4 ? 'Limited advancement with slow promotion cycles' :
-              'Minimal growth prospects with stagnant career paths'
-            }.
-          </p>
-          <p>
-            <span className="font-medium">Office Politics:</span> {
-              data.politics_level === 'Low' ? 'Merit-based culture with transparent decision-making and minimal bureaucracy' :
-              data.politics_level === 'Medium' ? 'Moderate navigation required with some relationship management needed' :
-              'High political complexity requiring significant stakeholder management'
-            }.
-          </p>
-        </div>
-      </div>
-
-      {/* Old Bamboo Grove Visualization */}
-      <div className="relative h-44 bg-gradient-to-t from-amber-100/50 via-transparent to-transparent rounded-2xl overflow-hidden mb-6 hidden">
+      {/* Bamboo Grove Visualization */}
+      <div className="relative h-44 bg-gradient-to-t from-amber-100/50 via-transparent to-transparent rounded-2xl overflow-hidden mb-6">
         {/* Atmospheric wind lines for turmoil */}
         {stressLevel > 0.5 && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -525,6 +482,51 @@ export default function CultureCard({ data, tunerSettings }) {
           <p className="text-[8px] text-slate-400">intensity</p>
         </div>
       </div>
+
+      {/* Culture Deep Dive Text */}
+      <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+        <h4 className="text-sm font-semibold text-slate-700 mb-3">Culture Deep Dive</h4>
+        <div className="space-y-2 text-xs text-slate-600">
+          <p>
+            <span className="font-medium">Work Environment:</span> {data.type} with {
+              stressLevel < 0.3 ? 'minimal stress and calm atmosphere' :
+              stressLevel < 0.5 ? 'moderate pressure and steady pace' :
+              stressLevel < 0.7 ? 'high intensity and fast-moving environment' :
+              'extreme pressure and burnout risk'
+            }.
+          </p>
+          <p>
+            <span className="font-medium">Work-Life Balance:</span> {
+              data.wlb_score >= 8 ? 'Excellent boundaries with strong respect for personal time' :
+              data.wlb_score >= 6 ? 'Good balance with occasional overtime expected' :
+              data.wlb_score >= 4 ? 'Challenging balance with frequent late hours' :
+              'Poor boundaries with consistent overwork culture'
+            }.
+          </p>
+          <p>
+            <span className="font-medium">Career Growth:</span> {
+              data.growth_score >= 8 ? 'Exceptional opportunities with clear advancement paths and strong mentorship' :
+              data.growth_score >= 6 ? 'Solid growth potential with standard progression timelines' :
+              data.growth_score >= 4 ? 'Limited advancement with slow promotion cycles' :
+              'Minimal growth prospects with stagnant career paths'
+            }.
+          </p>
+          <p>
+            <span className="font-medium">Office Politics:</span> {
+              data.politics_level === 'Low' ? 'Merit-based culture with transparent decision-making and minimal bureaucracy' :
+              data.politics_level === 'Medium' ? 'Moderate navigation required with some relationship management needed' :
+              'High political complexity requiring significant stakeholder management'
+            }.
+          </p>
+        </div>
+      </div>
+
+      {/* Zen Garden - Red Flags Indicator */}
+      {postingHealthScore !== undefined && (
+        <div className="mb-4">
+          <ZenGarden postingHealthScore={postingHealthScore} />
+        </div>
+      )}
 
       {/* Grove Health Status */}
       <div className={`flex items-center gap-3 p-3 rounded-xl ${groveHealth.bg}`}>

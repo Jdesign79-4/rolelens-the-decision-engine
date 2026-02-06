@@ -457,6 +457,7 @@ export default function RoleLens() {
   const [showSavedLists, setShowSavedLists] = useState(false);
   const [comparisonJobIds, setComparisonJobIds] = useState([]);
   const [jobPostingText, setJobPostingText] = useState('');
+  const [postingHealthScore, setPostingHealthScore] = useState(undefined);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -824,6 +825,7 @@ export default function RoleLens() {
                       <CultureCard 
                         data={currentJob.culture} 
                         tunerSettings={tunerSettings}
+                        postingHealthScore={postingHealthScore}
                       />
                     </div>
                   </motion.div>
@@ -895,6 +897,7 @@ export default function RoleLens() {
               jobPostingText={jobPostingText}
               companyName={currentJob.meta.company}
               jobTitle={currentJob.meta.title}
+              onHealthScoreUpdate={setPostingHealthScore}
             />
 
             {/* AI Strategic Insights */}
