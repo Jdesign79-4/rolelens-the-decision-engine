@@ -562,7 +562,7 @@ const jobDatabase = {
 };
 
 export default function RoleLens() {
-  const [activeJob, setActiveJob] = useState("zentree");
+  const [activeJob, setActiveJob] = useState("standing_stones");
   const [customJobs, setCustomJobs] = useState({});
   const [tunerSettings, setTunerSettings] = useState({
     riskAppetite: 0.3,
