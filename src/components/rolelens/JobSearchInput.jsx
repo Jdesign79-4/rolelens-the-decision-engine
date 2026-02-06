@@ -14,6 +14,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
   const [city, setCity] = useState('');
   const [salaryMin, setSalaryMin] = useState('');
   const [salaryMax, setSalaryMax] = useState('');
+  const [jobPostingText, setJobPostingText] = useState('');
 
   const handleSearch = async () => {
     if (!query.trim() || isLoading) return;
@@ -202,13 +203,14 @@ Be specific with numbers. Show your work - reference which source each number co
         })) || []
       };
 
-      onJobDataLoaded(processedJob);
+      onJobDataLoaded(processedJob, jobPostingText);
       setQuery('');
       setCompanyName('');
       setJobTitle('');
       setCity('');
       setSalaryMin('');
       setSalaryMax('');
+      setJobPostingText('');
       setShowDetails(false);
     } catch (err) {
       console.error('Search failed:', err);
@@ -314,8 +316,18 @@ Be specific with numbers. Show your work - reference which source each number co
                 />
               </div>
             </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Full Job Posting (Optional - for culture analysis)</label>
+              <textarea
+                value={jobPostingText}
+                onChange={(e) => setJobPostingText(e.target.value)}
+                placeholder="Paste the complete job posting here for AI-powered red flag detection..."
+                className="w-full h-32 px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none"
+                disabled={isLoading}
+              />
+            </div>
             <p className="text-xs text-slate-500">
-              💡 Fill in the fields above for exact compensation analysis
+              💡 Include job posting text for culture & leadership red flag analysis
             </p>
           </motion.div>
         )}

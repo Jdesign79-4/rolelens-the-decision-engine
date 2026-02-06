@@ -16,6 +16,7 @@ import CompanyComparison from '@/components/rolelens/CompanyComparison';
 import SavedLists from '@/components/rolelens/SavedLists';
 import CompensationSources from '@/components/rolelens/CompensationSources';
 import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
+import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 
 const jobDatabase = {
   zentree: {
@@ -455,6 +456,7 @@ export default function RoleLens() {
   const [showComparison, setShowComparison] = useState(false);
   const [showSavedLists, setShowSavedLists] = useState(false);
   const [comparisonJobIds, setComparisonJobIds] = useState([]);
+  const [jobPostingText, setJobPostingText] = useState('');
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -480,7 +482,8 @@ export default function RoleLens() {
     localStorage.setItem('rolelens-widgets', JSON.stringify(newWidgets));
   };
 
-  const handleJobDataLoaded = (jobData) => {
+  const handleJobDataLoaded = (jobData, postingText = '') => {
+    setJobPostingText(postingText);
     // Add the new job and its alternatives to custom jobs
     const newCustomJobs = { [jobData.id]: jobData };
     
@@ -886,6 +889,13 @@ export default function RoleLens() {
                 </div>
               </motion.div>
             )}
+
+            {/* Job Posting Analysis - Red/Green Flags */}
+            <JobPostingAnalysis 
+              jobPostingText={jobPostingText}
+              companyName={currentJob.meta.company}
+              jobTitle={currentJob.meta.title}
+            />
 
             {/* AI Strategic Insights */}
             <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
