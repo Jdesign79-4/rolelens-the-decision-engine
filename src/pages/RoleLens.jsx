@@ -1257,11 +1257,11 @@ function RoleLensContent() {
             {/* Job Posting Analysis - Red/Green Flags (only for specific roles) */}
             {!currentJob.isCompanyOnly && (
               <JobPostingAnalysis 
-              jobPostingText={jobPostingText}
-              companyName={currentJob.meta.company}
-              jobTitle={currentJob.meta.title}
-              onHealthScoreUpdate={setPostingHealthScore}
-            />
+                jobPostingText={jobPostingText}
+                companyName={currentJob.meta.company}
+                jobTitle={currentJob.meta.title}
+                onHealthScoreUpdate={setPostingHealthScore}
+              />
             )}
 
             {/* AI Strategic Insights */}
