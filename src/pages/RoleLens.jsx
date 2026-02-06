@@ -18,7 +18,7 @@ const jobDatabase = {
       company: "Zen Tree",
       location: "Remote (US)",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=+&background=10b981&color=fff&size=100&length=0"
+      logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%2310b981' width='100' height='100'/%3E%3Cpath fill='%23fff' d='M50 20v15m0 0c-8 0-12 6-12 12v8c0 6 4 12 12 12s12-6 12-12v-8c0-6-4-12-12-12zm-8 25h16m-20 15l4-4m16 4l-4-4'/%3E%3C/svg%3E"
     },
     stability: { 
       health: "Exceptional", 
@@ -52,7 +52,7 @@ const jobDatabase = {
       company: "River Motion Investments",
       location: "New York, NY",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=+&background=3b82f6&color=fff&size=100&length=0"
+      logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%233b82f6' width='100' height='100'/%3E%3Cpath fill='%23fff' d='M20 50Q30 40 40 50T60 50T80 50M20 60Q30 50 40 60T60 60T80 60' stroke='%23fff' stroke-width='3' fill='none'/%3E%3C/svg%3E"
     },
     stability: { 
       health: "Stable Growth", 
@@ -86,7 +86,7 @@ const jobDatabase = {
       company: "Cherry Blossom Designs",
       location: "Portland, OR",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=+&background=ec4899&color=fff&size=100&length=0"
+      logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23ec4899' width='100' height='100'/%3E%3Ccircle cx='50' cy='35' r='8' fill='%23fff'/%3E%3Ccircle cx='35' cy='45' r='6' fill='%23fff'/%3E%3Ccircle cx='65' cy='45' r='6' fill='%23fff'/%3E%3Ccircle cx='42' cy='55' r='5' fill='%23fff'/%3E%3Ccircle cx='58' cy='55' r='5' fill='%23fff'/%3E%3Crect x='48' y='60' width='4' height='15' fill='%23fff'/%3E%3C/svg%3E"
     },
     stability: { 
       health: "Creative Boutique", 
@@ -120,7 +120,7 @@ const jobDatabase = {
       company: "Zen Garden",
       location: "Austin, TX",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=+&background=8b5cf6&color=fff&size=100&length=0"
+      logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%238b5cf6' width='100' height='100'/%3E%3Ccircle cx='50' cy='50' r='20' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='50' cy='50' r='12' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='50' cy='50' r='4' fill='%23fff'/%3E%3Cpath d='M30 50h40M50 30v40' stroke='%23fff' stroke-width='1' opacity='0.5'/%3E%3C/svg%3E"
     },
     stability: { 
       health: "Innovation Hub", 
