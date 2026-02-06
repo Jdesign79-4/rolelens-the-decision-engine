@@ -93,7 +93,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 col_adjustment: { type: "number", description: "Cost of living multiplier where 1.0 is average, <1 is expensive" },
                 range_min: { type: "number", description: "Minimum of compensation range if specified in job posting" },
                 range_max: { type: "number", description: "Maximum of compensation range if specified in job posting" }
-              }
+              },
+              required: ["headline", "base", "equity", "real_feel", "leak_label", "tax_rate", "col_adjustment"]
             },
             culture: {
               type: "object",
