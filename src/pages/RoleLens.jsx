@@ -12,6 +12,7 @@ import SourcesCitation from '@/components/rolelens/SourcesCitation';
 import MeditationPanel from '@/components/rolelens/MeditationPanel';
 import AIInsightsPanel from '@/components/rolelens/AIInsightsPanel';
 import CompanyHealthScore from '@/components/rolelens/CompanyHealthScore';
+import CompanyComparison from '@/components/rolelens/CompanyComparison';
 
 const jobDatabase = {
   zentree: {
@@ -448,6 +449,7 @@ export default function RoleLens() {
     const saved = localStorage.getItem('rolelens-widgets');
     return saved ? JSON.parse(saved) : ['stability', 'compensation', 'culture', 'alternatives'];
   });
+  const [showComparison, setShowComparison] = useState(false);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -681,6 +683,12 @@ export default function RoleLens() {
 
             {/* Filter and Widget Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-white rounded-2xl border border-slate-200">
+              <button
+                onClick={() => setShowComparison(true)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium text-sm hover:from-violet-700 hover:to-purple-700 transition-all"
+              >
+                Compare Companies
+              </button>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-xs font-medium text-slate-500">Sort by:</span>
                 <div className="flex gap-2">
@@ -967,6 +975,16 @@ export default function RoleLens() {
           </div>
         </main>
       </div>
+
+      {/* Company Comparison Modal */}
+      <AnimatePresence>
+        {showComparison && (
+          <CompanyComparison
+            allJobs={allJobs}
+            onClose={() => setShowComparison(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
