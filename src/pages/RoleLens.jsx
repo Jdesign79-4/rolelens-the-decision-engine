@@ -1195,6 +1195,11 @@ export default function RoleLens() {
               <CompanyHealthScore company={currentJob.meta.company} />
             </div>
 
+            {/* Benefits Hub */}
+            <div className="mt-6">
+              <BenefitsHub benefits={currentJob.benefits} tunerSettings={tunerSettings} />
+            </div>
+
             {/* Compensation Data Sources */}
             <CompensationSources />
 
