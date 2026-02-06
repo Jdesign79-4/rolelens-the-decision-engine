@@ -24,6 +24,7 @@ import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 import JobFeedback from '@/components/rolelens/JobFeedback';
 import JobDataCharts from '@/components/rolelens/JobDataCharts';
+import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator';
 
 const jobDatabase = {
   standing_stones: {
@@ -1211,6 +1212,18 @@ function RoleLensContent() {
             {/* Interactive Data Charts */}
             <div className="mt-6">
               <JobDataCharts job={currentJob} tunerSettings={tunerSettings} />
+            </div>
+
+            {/* External Data Aggregation */}
+            <div className="mt-6">
+              <ExternalDataAggregator 
+                company={currentJob.meta.company}
+                jobTitle={currentJob.meta.title}
+                onDataLoaded={(data) => {
+                  // Optionally update currentJob with enriched data
+                  console.log('Enriched data loaded:', data);
+                }}
+              />
             </div>
 
             {/* Job Posting Analysis - Red/Green Flags */}

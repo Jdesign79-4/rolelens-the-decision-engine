@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ComparisonCharts from './ComparisonCharts';
+import ExternalDataAggregator from './ExternalDataAggregator';
 
 export default function CompanyComparison({ allJobs, initialJobIds = [], onClose }) {
   const [selectedJobs, setSelectedJobs] = useState(initialJobIds);
@@ -115,6 +116,18 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
                     exit={{ opacity: 0, height: 0 }}
                   >
                     <ComparisonCharts jobs={selectedJobData} />
+                    
+                    {/* External Data for Each Company */}
+                    <div className="mt-6 space-y-4">
+                      <h3 className="text-lg font-bold text-slate-800">📊 Live External Data</h3>
+                      {selectedJobData.map(job => (
+                        <ExternalDataAggregator
+                          key={job.id}
+                          company={job.meta.company}
+                          jobTitle={job.meta.title}
+                        />
+                      ))}
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
