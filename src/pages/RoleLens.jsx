@@ -8,6 +8,7 @@ import AlternativesCard from '@/components/rolelens/AlternativesCard';
 import ConnectionVines from '@/components/rolelens/ConnectionVines';
 import JobSearchInput from '@/components/rolelens/JobSearchInput';
 import Disclaimer from '@/components/rolelens/Disclaimer';
+import SourcesCitation from '@/components/rolelens/SourcesCitation';
 
 const jobDatabase = {
   salesforce: {
@@ -405,6 +406,11 @@ export default function RoleLens() {
                 </motion.div>
               </AnimatePresence>
             </div>
+
+            {/* Sources Citation */}
+            {currentJob.sources && currentJob.sources.length > 0 && (
+              <SourcesCitation sources={currentJob.sources} />
+            )}
 
             {/* True Fit Score */}
             <motion.div

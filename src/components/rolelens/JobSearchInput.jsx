@@ -26,6 +26,7 @@ Gather REAL, CURRENT data from the web including:
 2. Compensation: typical salary ranges for this role at this company (use levels.fyi, glassdoor, blind data)
 3. Culture: work-life balance scores, stress levels, growth opportunities, political environment (use glassdoor, blind, teamblind reviews)
 4. 3 alternative similar roles at competing companies
+5. IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers (CNBC, Bloomberg, Forbes, LinkedIn, Wired, Fast Company, WSJ, TechCrunch, Business Insider, Reuters). These must be actual articles you found about this company.
 
 Be specific with numbers. Use real data from your web search. If exact data unavailable, provide reasonable estimates based on industry benchmarks.`,
         add_context_from_internet: true,
@@ -121,10 +122,17 @@ Be specific with numbers. Use real data from your web search. If exact data unav
               },
               description: "3 alternative similar roles at competing companies"
             },
-            data_sources: {
+            sources: {
               type: "array",
-              items: { type: "string" },
-              description: "List of data sources used (e.g. 'Glassdoor reviews', 'levels.fyi', 'recent news')"
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string", description: "Article or page title" },
+                  url: { type: "string", description: "Direct URL to the source" },
+                  publisher: { type: "string", description: "Publisher name like CNBC, Bloomberg, Forbes, LinkedIn, Wired, Fast Company, Money, WSJ" }
+                }
+              },
+              description: "3 vetted sources with direct URLs from reputable publishers (CNBC, Bloomberg, Forbes, LinkedIn, Wired, Fast Company, WSJ, TechCrunch, Business Insider). Must be real, clickable URLs."
             }
           }
         }
@@ -142,6 +150,7 @@ Be specific with numbers. Use real data from your web search. If exact data unav
           date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
           logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(result.meta.company)}&background=random&size=100`
         },
+        sources: result.sources || [],
         alternatives: result.alternatives?.map((alt, i) => ({
           ...alt,
           id: alt.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + i,
