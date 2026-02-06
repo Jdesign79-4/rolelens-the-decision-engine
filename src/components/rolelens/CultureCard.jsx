@@ -294,7 +294,7 @@ function BambooStalk({ bamboo, index, stressLevel, existentialRisk }) {
       : 'from-amber-500 via-yellow-500 to-amber-600';
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-end" style={{ width: '50px', height: '100%' }}>
       <motion.div
         initial={{ height: 0, opacity: 0 }}
         animate={{ 
@@ -378,8 +378,6 @@ function BambooStalk({ bamboo, index, stressLevel, existentialRisk }) {
           </>
         )}
       </motion.div>
-      
-      <span className="mt-2 text-[10px] text-slate-500 font-medium">{bamboo.label}</span>
     </div>
   );
 }
@@ -470,16 +468,27 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
           )}
         </div>
         
-        {/* Bamboo Stalks */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-around items-end px-4 overflow-hidden" style={{ height: '120px' }}>
+        {/* Bamboo Stalks Container - clipped at bottom */}
+        <div className="absolute bottom-10 left-0 right-0 px-4">
+          <div className="flex justify-around items-end overflow-hidden" style={{ height: '110px' }}>
+            {bambooData.map((bamboo, index) => (
+              <BambooStalk 
+                key={index}
+                bamboo={bamboo}
+                index={index}
+                stressLevel={stressLevel}
+                existentialRisk={existentialRisk}
+              />
+            ))}
+          </div>
+        </div>
+        
+        {/* Bamboo Labels - always visible below */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-around px-4">
           {bambooData.map((bamboo, index) => (
-            <BambooStalk 
-              key={index}
-              bamboo={bamboo}
-              index={index}
-              stressLevel={stressLevel}
-              existentialRisk={existentialRisk}
-            />
+            <div key={index} className="flex items-center justify-center" style={{ width: '50px' }}>
+              <span className="text-[10px] text-slate-500 font-medium text-center">{bamboo.label}</span>
+            </div>
           ))}
         </div>
 
