@@ -148,10 +148,10 @@ export default function CultureCard({ data, tunerSettings }) {
 
   // Bamboo heights based on various metrics
   const bambooData = [
-    { height: data.wlb_score * 10, label: 'WLB', healthy: data.wlb_score > 6 },
+    { height: data.wlb_score * 10, label: 'Balance', healthy: data.wlb_score > 6 },
     { height: data.growth_score * 10, label: 'Growth', healthy: data.growth_score > 7 },
-    { height: (1 - stressLevel) * 100, label: 'Calm', healthy: stressLevel < 0.5 },
-    { height: isSenior ? 80 : 50, label: 'Fit', healthy: true },
+    { height: (1 - stressLevel) * 100, label: 'Low Stress', healthy: stressLevel < 0.5 },
+    { height: isSenior ? 80 : 50, label: 'Stage Fit', healthy: true },
   ];
 
   const getGroveHealth = () => {
@@ -269,15 +269,18 @@ export default function CultureCard({ data, tunerSettings }) {
       <div className="grid grid-cols-3 gap-2 mb-4">
         <div className="p-2 rounded-xl bg-slate-50 text-center">
           <p className="text-lg font-bold text-slate-800">{data.wlb_score}</p>
-          <p className="text-[10px] text-slate-500">WLB Score</p>
+          <p className="text-[10px] text-slate-500">Work-Life Balance</p>
+          <p className="text-[8px] text-slate-400">out of 10</p>
         </div>
         <div className="p-2 rounded-xl bg-slate-50 text-center">
           <p className="text-lg font-bold text-slate-800">{data.growth_score}</p>
-          <p className="text-[10px] text-slate-500">Growth</p>
+          <p className="text-[10px] text-slate-500">Career Growth</p>
+          <p className="text-[8px] text-slate-400">out of 10</p>
         </div>
         <div className="p-2 rounded-xl bg-slate-50 text-center">
           <p className="text-lg font-bold text-slate-800">{data.politics_level}</p>
-          <p className="text-[10px] text-slate-500">Politics</p>
+          <p className="text-[10px] text-slate-500">Office Politics</p>
+          <p className="text-[8px] text-slate-400">intensity</p>
         </div>
       </div>
 
