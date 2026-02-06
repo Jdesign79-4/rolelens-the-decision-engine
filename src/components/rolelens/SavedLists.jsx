@@ -95,14 +95,13 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
             <p className="text-sm text-slate-500 mt-1">Organize and track companies you're interested in</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
+<button
               onClick={createNewList}
-              size="sm"
-              className="bg-violet-600 hover:bg-violet-700"
+              className="px-3 py-2 text-sm rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors flex items-center gap-2"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4" />
               New List
-            </Button>
+            </button>
             <button
               onClick={onClose}
               className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
