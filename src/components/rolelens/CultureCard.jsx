@@ -394,7 +394,11 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
   const bambooData = [
     { height: data.wlb_score * 10, label: 'Balance', healthy: data.wlb_score > 6 },
     { height: data.growth_score * 10, label: 'Growth', healthy: data.growth_score > 7 },
-    { height: (1 - stressLevel) * 100, label: 'Low Stress', healthy: stressLevel < 0.5 },
+    { 
+      height: (1 - stressLevel) * 100, 
+      label: stressLevel > 0.6 ? 'High Stress' : stressLevel > 0.3 ? 'Moderate Stress' : 'Low Stress',
+      healthy: stressLevel < 0.5 
+    },
     { height: isSenior ? 80 : 50, label: 'Career Fit', healthy: true },
   ];
 
