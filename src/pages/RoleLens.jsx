@@ -851,17 +851,6 @@ function RoleLensContent() {
   };
 
   return (
-    <DarkModeProvider>
-      <RoleLensContent />
-    </DarkModeProvider>
-  );
-}
-
-function RoleLensContent() {
-  const [activeJob, setActiveJob] = useState("zentree");
-  // ... rest of state will be here
-  
-  return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-slate-50 to-zinc-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
       {/* Texture Overlay */}
       <div className="fixed inset-0 opacity-[0.015] pointer-events-none"
