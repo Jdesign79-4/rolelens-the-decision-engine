@@ -83,6 +83,52 @@ function ZenPattern({ harmony, index }) {
   );
 }
 
+// Zen Garden Rake
+function ZenRake({ harmony }) {
+  const isCalm = harmony > 0.6;
+  
+  return (
+    <motion.div
+      className="absolute top-0 left-0 w-full h-full pointer-events-none"
+      initial={{ x: '-100%', opacity: 0 }}
+      animate={{
+        x: isCalm ? ['0%', '100%'] : ['-10%', '90%', '10%', '110%'],
+        y: isCalm ? '45%' : ['30%', '60%', '40%', '70%'],
+        opacity: [0, 1, 1, 0],
+        rotate: isCalm ? [0, 5, 0] : [-15, 15, -10, 20, -15]
+      }}
+      transition={{
+        duration: isCalm ? 8 : 4,
+        repeat: Infinity,
+        ease: isCalm ? "easeInOut" : "easeInOut",
+        repeatDelay: isCalm ? 2 : 0.5
+      }}
+    >
+      {/* Rake handle */}
+      <div className="relative w-16 h-1">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-800 to-amber-900 rounded-full" />
+        {/* Rake teeth */}
+        <div className="absolute -bottom-3 left-0 right-0 flex justify-around">
+          {[...Array(7)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="w-0.5 h-3 bg-amber-900 rounded-full"
+              animate={{
+                scaleY: isCalm ? 1 : [1, 0.8, 1.2, 0.9, 1]
+              }}
+              transition={{
+                duration: 0.3,
+                repeat: Infinity,
+                delay: i * 0.05
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // Zen Garden Component - Shows Red Flags
 function ZenGarden({ postingHealthScore }) {
   // Calculate harmony based on posting health (red flags)
@@ -130,6 +176,9 @@ function ZenGarden({ postingHealthScore }) {
           <ZenPattern key={i} harmony={harmonyScore} index={i} />
         ))}
       </svg>
+
+      {/* Rake Animation */}
+      <ZenRake harmony={harmonyScore} />
 
       {/* Stones */}
       {stones.map((stone, index) => (
