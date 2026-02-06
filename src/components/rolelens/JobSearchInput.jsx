@@ -214,7 +214,8 @@ Be specific with numbers. Show your work - reference which source each number co
       setShowDetails(false);
     } catch (err) {
       console.error('Search failed:', err);
-      setError('Failed to fetch job data. Please try again.');
+      const errorMsg = err?.message || err?.toString() || 'Unknown error';
+      setError(`Failed: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }
