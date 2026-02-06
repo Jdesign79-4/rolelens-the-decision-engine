@@ -781,7 +781,8 @@ function RoleLensContent() {
     // Update alternatives to use IDs
     newCustomJobs[jobData.id] = {
       ...jobData,
-      alternatives: jobData.alternatives?.map(alt => alt.id) || []
+      alternatives: jobData.alternatives?.map(alt => alt.id) || [],
+      isCompanyOnly: jobData.meta.title === 'Company Research'
     };
 
     setCustomJobs(prev => ({ ...prev, ...newCustomJobs }));
@@ -952,14 +953,24 @@ function RoleLensContent() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight">
-                          {currentJob.meta.title}
+                          {currentJob.isCompanyOnly ? currentJob.meta.company : currentJob.meta.title}
                         </h1>
                         <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm">
-                          <span className="font-medium text-slate-700">{currentJob.meta.company}</span>
-                          <span className="w-1 h-1 rounded-full bg-slate-300" />
+                          {!currentJob.isCompanyOnly && (
+                            <>
+                              <span className="font-medium text-slate-700">{currentJob.meta.company}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300" />
+                            </>
+                          )}
                           <span>{currentJob.meta.location}</span>
                           <span className="w-1 h-1 rounded-full bg-slate-300" />
                           <span>{currentJob.meta.date}</span>
+                          {currentJob.isCompanyOnly && (
+                            <>
+                              <span className="w-1 h-1 rounded-full bg-slate-300" />
+                              <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Company Research</span>
+                            </>
+                          )}
                         </div>
                       </div>
                       <motion.button
@@ -1026,6 +1037,29 @@ function RoleLensContent() {
               </button>
             </div>
 
+            {/* Company Research Notice */}
+            {currentJob.isCompanyOnly && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-blue-100">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-900">Company Research Mode</p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Viewing company-level data. Compensation shown is an average estimate across roles. Search with a specific job title for role-specific insights.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Intelligence Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
               {visibleWidgets.includes('stability') && (
@@ -1076,6 +1110,7 @@ function RoleLensContent() {
                       <CompensationCard 
                         data={currentJob.comp} 
                         tunerSettings={tunerSettings}
+                        isCompanyOnly={currentJob.isCompanyOnly}
                       />
                     </div>
                   </motion.div>
@@ -1212,20 +1247,22 @@ function RoleLensContent() {
             <div className="mt-6">
               <ExternalDataAggregator 
                 company={currentJob.meta.company}
-                jobTitle={currentJob.meta.title}
+                jobTitle={currentJob.isCompanyOnly ? null : currentJob.meta.title}
                 onDataLoaded={(data) => {
                   console.log('Enriched data loaded:', data);
                 }}
               />
             </div>
 
-            {/* Job Posting Analysis - Red/Green Flags */}
-            <JobPostingAnalysis 
+            {/* Job Posting Analysis - Red/Green Flags (only for specific roles) */}
+            {!currentJob.isCompanyOnly && (
+              <JobPostingAnalysis 
               jobPostingText={jobPostingText}
               companyName={currentJob.meta.company}
               jobTitle={currentJob.meta.title}
               onHealthScoreUpdate={setPostingHealthScore}
             />
+            )}
 
             {/* AI Strategic Insights */}
             <div className="mt-6">

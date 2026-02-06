@@ -57,7 +57,7 @@ function WaterRipple({ fillPercentage }) {
   );
 }
 
-export default function CompensationCard({ data, tunerSettings }) {
+export default function CompensationCard({ data, tunerSettings, isCompanyOnly = false }) {
   // If exact range provided from job posting, don't adjust it
   const hasExactRange = data.range_min && data.range_max;
   
@@ -96,8 +96,12 @@ export default function CompensationCard({ data, tunerSettings }) {
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Compensation Reality</p>
-          <h3 className="text-lg font-semibold text-slate-800">The Water Basin</h3>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
+            {isCompanyOnly ? 'Company Compensation' : 'Compensation Reality'}
+          </p>
+          <h3 className="text-lg font-semibold text-slate-800">
+            {isCompanyOnly ? 'Average Pay Levels' : 'The Water Basin'}
+          </h3>
         </div>
         <div className="p-2 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500">
           <DollarSign className="w-5 h-5 text-white" />
@@ -321,10 +325,17 @@ export default function CompensationCard({ data, tunerSettings }) {
         </div>
       </div>
 
+      {/* Company Research Notice */}
+      {isCompanyOnly && data.compensation_note && (
+        <div className="mb-4 p-3 rounded-xl bg-blue-50 border border-blue-200">
+          <p className="text-xs text-blue-700">{data.compensation_note}</p>
+        </div>
+      )}
+
       {/* Compensation Breakdown */}
       <div className="space-y-3">
         <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-          <span className="text-sm text-slate-600">Offer</span>
+          <span className="text-sm text-slate-600">{isCompanyOnly ? 'Avg Compensation' : 'Offer'}</span>
           <span className="text-lg font-bold text-slate-800">
             {data.range_min && data.range_max ? (
               `${formatCurrency(data.range_min)} - ${formatCurrency(data.range_max)}`

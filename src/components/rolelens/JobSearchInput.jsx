@@ -26,10 +26,42 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
     const hasStructuredData = companyName || jobTitle || city || salaryMin || salaryMax;
     const salaryMinNum = salaryMin ? parseInt(salaryMin.replace(/,/g, '')) : null;
     const salaryMaxNum = salaryMax ? parseInt(salaryMax.replace(/,/g, '')) : null;
+    
+    // Detect if this is a company-only search (no specific role)
+    const isCompanyOnly = companyName && !jobTitle;
 
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Research this job opportunity and provide comprehensive data for a job seeker decision engine:
+        prompt: isCompanyOnly ? 
+          // Company-only research prompt
+          `Research this company and provide comprehensive data for a job seeker researching potential employers:
+
+Company: "${companyName || query}"
+${city ? `Location Focus: ${city}` : ''}
+
+CRITICAL: This is a COMPANY RESEARCH request, NOT a specific role. Provide general company information.
+
+Provide comprehensive company-level data:
+1. Company Overview & Culture: Overall work environment, employee satisfaction, culture type
+2. Work-Life Balance: General WLB scores from employee reviews (Glassdoor, Blind, etc.)
+3. Growth & Career Development: Opportunities for advancement, learning culture, promotion rates
+4. Compensation Philosophy: Overall pay competitiveness, benefits quality, equity practices
+5. Stability & Financial Health: Funding status, recent layoffs, runway, headcount trends, business health
+6. Employee Reviews: Key themes from Glassdoor, Blind, Comparably
+7. Risks & Concerns: Any red flags about management, culture, or business stability
+8. Growth Metrics: Revenue growth, market position, expansion plans
+
+For compensation data, provide GENERAL company compensation trends (not role-specific):
+- Use Glassdoor/Levels.fyi to understand overall pay ranges at this company
+- Indicate if the company pays above/below/at market rate generally
+- Note any compensation-related complaints or praise from reviews
+
+Include 5 similar companies that job seekers might also consider researching.
+
+IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers.`
+          :
+          // Original role-specific prompt
+          `Research this job opportunity and provide comprehensive data for a job seeker decision engine:
 
 Job/Company: "${query}"
 
@@ -71,7 +103,113 @@ OTHER DATA to gather from web:
 
 Be specific with numbers. Show your work - reference which source each number comes from.`,
         add_context_from_internet: true,
-        response_json_schema: {
+        response_json_schema: isCompanyOnly ? {
+          type: "object",
+          properties: {
+            meta: {
+              type: "object",
+              properties: {
+                title: { type: "string", description: "Set to 'Company Research'" },
+                company: { type: "string", description: "Company name" },
+                location: { type: "string", description: "Primary location or 'Multiple Locations'" },
+                logo_search_term: { type: "string", description: "Search term for company logo" }
+              }
+            },
+            stability: {
+              type: "object",
+              properties: {
+                health: { type: "string", description: "Overall company health status" },
+                risk_score: { type: "number", description: "Risk score 0-1" },
+                division: { type: "string", description: "Not applicable for company research, use 'N/A'" },
+                runway: { type: "string", description: "Estimated runway" },
+                headcount_trend: { type: "string", description: "Headcount trend" },
+                analysis: { type: "string", description: "Detailed stability analysis" }
+              }
+            },
+            comp: {
+              type: "object",
+              properties: {
+                headline: { type: "number", description: "Average total comp across all roles (estimate)" },
+                base: { type: "number", description: "Average base salary" },
+                equity: { type: "number", description: "Typical equity value" },
+                real_feel: { type: "number", description: "Purchasing power estimate" },
+                leak_label: { type: "string", description: "General COL factors for main location" },
+                tax_rate: { type: "number", description: "Typical tax rate" },
+                col_adjustment: { type: "number", description: "COL multiplier" },
+                compensation_note: { type: "string", description: "Note that this is company-wide average, not role-specific" }
+              }
+            },
+            culture: {
+              type: "object",
+              properties: {
+                type: { type: "string", description: "Overall culture archetype" },
+                stress_level: { type: "number", description: "General stress level 0-1" },
+                wlb_score: { type: "number", description: "Work-life balance score 1-10" },
+                growth_score: { type: "number", description: "Career growth potential 1-10" },
+                politics_level: { type: "string", description: "Politics level" },
+                analysis: { type: "string", description: "Detailed culture analysis from employee reviews" }
+              }
+            },
+            alternatives: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  meta: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string", description: "Set to 'Company Research'" },
+                      company: { type: "string" },
+                      location: { type: "string" }
+                    }
+                  },
+                  stability: {
+                    type: "object",
+                    properties: {
+                      health: { type: "string" },
+                      risk_score: { type: "number" },
+                      division: { type: "string" },
+                      runway: { type: "string" },
+                      headcount_trend: { type: "string" }
+                    }
+                  },
+                  comp: {
+                    type: "object",
+                    properties: {
+                      headline: { type: "number" },
+                      real_feel: { type: "number" },
+                      leak_label: { type: "string" }
+                    }
+                  },
+                  culture: {
+                    type: "object",
+                    properties: {
+                      type: { type: "string" },
+                      stress_level: { type: "number" },
+                      wlb_score: { type: "number" },
+                      growth_score: { type: "number" },
+                      politics_level: { type: "string" }
+                    }
+                  }
+                }
+              },
+              description: "5 similar companies to research"
+            },
+            sources: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  url: { type: "string" },
+                  publisher: { type: "string" }
+                }
+              },
+              description: "3 vetted sources with real URLs"
+            }
+          }
+        } : {
           type: "object",
           properties: {
             meta: {
@@ -232,7 +370,7 @@ Be specific with numbers. Show your work - reference which source each number co
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search any role... e.g. 'Product Manager at Stripe'"
+            placeholder="Search role or company... e.g. 'Product Manager at Stripe' or just 'Stripe'"
             className="pl-10 pr-4 py-5 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm focus:border-teal-400 focus:ring-teal-400/20"
             disabled={isLoading}
           />
@@ -277,11 +415,11 @@ Be specific with numbers. Show your work - reference which source each number co
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Job Title</label>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Job Title (Optional)</label>
                 <Input
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="e.g. Senior Software Engineer"
+                  placeholder="Leave blank to research company only"
                   className="rounded-lg"
                   disabled={isLoading}
                 />
@@ -330,7 +468,7 @@ Be specific with numbers. Show your work - reference which source each number co
               />
             </div>
             <p className="text-xs text-slate-500">
-              💡 Include job posting text for culture & leadership red flag analysis
+              💡 Leave Job Title blank to research just the company. Include job posting text for red flag analysis.
             </p>
           </motion.div>
         )}
