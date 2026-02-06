@@ -38,23 +38,29 @@ For ALL compensation calculations, you MUST gather data from these specific vett
 4. PayScale - Salary data with cost-of-living adjustments
 
 Calculate the following based on these sources:
-- headline: ${jobPostingText ? 'Calculate the midpoint: (range_min + range_max) / 2. Example: if range is 115.6k to 119k, headline = (115600 + 119000) / 2 = 117300' : 'Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data'}
-- range_min: ${jobPostingText ? 'CRITICAL: Extract the EXACT MINIMUM salary from the job posting. Handle formats: "$115,600", "115.6k", "115.6k/y", "115.6K/year", "$115K". Convert to number: 115.6k = 115600, 119k = 119000. DO NOT estimate or adjust.' : 'Set to null if no range available'}
-- range_max: ${jobPostingText ? 'CRITICAL: Extract the EXACT MAXIMUM salary from the job posting. Handle formats: "$190,000", "190k", "119k/y", "119K/year", "$119K". Convert to number: 119k = 119000, 190k = 190000. DO NOT estimate or adjust.' : 'Set to null if no range available'}
-- base: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate base portion' : 'Base salary from BLS and salary sites'}
+- range_min: ${jobPostingText ? 'LOOK FOR SALARY IN THE JOB POSTING TEXT ABOVE. Examples: "115.6k/y" = 115600, "115.6k" = 115600, "$115,600" = 115600, "115.6K" = 115600. Extract the LOWER number and convert to integer.' : 'null'}
+- range_max: ${jobPostingText ? 'LOOK FOR SALARY IN THE JOB POSTING TEXT ABOVE. Examples: "119k/y" = 119000, "119k" = 119000, "$119,000" = 119000, "119K" = 119000. Extract the HIGHER number and convert to integer.' : 'null'}
+- headline: ${jobPostingText ? 'MUST BE: (range_min + range_max) / 2. If range_min=115600 and range_max=119000, then headline=117300' : 'Total compensation from Levels.fyi/Glassdoor'}
+- base: ${jobPostingText ? 'Use headline value or extract if specified separately in posting' : 'Base salary from BLS and salary sites'}
 - equity: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate equity portion' : 'Annual equity value from Levels.fyi'}
 - real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power after taxes and COL adjustments
 - tax_rate: State + Federal effective tax rate for this income level and location (research actual tax brackets)
 - col_adjustment: Use MIT Living Wage and PayScale COL data (1.0 = national average, <1 = expensive, >1 = affordable)
 - leak_label: Describe what reduces purchasing power (e.g., "SF Tax + COL", "NYC Housing Costs")
 
-${jobPostingText ? `CRITICAL SALARY EXTRACTION RULES:
-1. Find ANY salary/compensation mention in the job posting text
-2. Common formats: "115.6k/y to 119k/y", "$115,600-$119,000", "115.6K - 119K", "$115.6k to $119k/year"
-3. Parse carefully: 115.6k = 115600, 119k = 119000, 190k = 190000
-4. Set range_min to the LOWER number, range_max to the HIGHER number
-5. DO NOT use external data (Glassdoor/Levels) if salary is stated in the posting
-6. If only one number given, set both range_min and range_max to that value` : ''}
+${jobPostingText ? `
+⚠️ MANDATORY SALARY EXTRACTION ⚠️
+The user pasted job details above. YOU MUST:
+1. Search for salary/compensation in that text (look for: k, K, $, /y, /year, per year)
+2. Extract EXACT numbers: "115.6k/y to 119k/y" means range_min=115600, range_max=119000
+3. DO NOT use Glassdoor/Levels data - USE ONLY what's in the pasted text
+4. Parse formats: 115.6k=115600, 119k=119000, 115.6K=115600, $115,600=115600
+5. Set headline to the midpoint: (range_min + range_max) / 2
+
+Example: If text says "115.6k/y to 119k/y":
+- range_min: 115600
+- range_max: 119000  
+- headline: 117300` : ''}
 
 OTHER DATA to gather from web:
 1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
