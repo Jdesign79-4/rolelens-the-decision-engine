@@ -21,6 +21,66 @@ import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 
 const jobDatabase = {
+  standing_stones: {
+    id: "standing_stones",
+    meta: { 
+      title: "Bank Teller", 
+      company: "Standing Stones Credit Union",
+      location: "Portland, ME",
+      date: "Feb 2026",
+      logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%231e40af' width='100' height='100'/%3E%3Crect x='20' y='25' width='60' height='50' fill='%23fff' stroke='%231e40af' stroke-width='2'/%3E%3Cline x1='35' y1='35' x2='35' y2='70' stroke='%231e40af' stroke-width='1.5'/%3E%3Cline x1='50' y1='35' x2='50' y2='70' stroke='%231e40af' stroke-width='1.5'/%3E%3Cline x1='65' y1='35' x2='65' y2='70' stroke='%231e40af' stroke-width='1.5'/%3E%3C/svg%3E"
+    },
+    stability: { 
+      health: "Stable Mutual", 
+      risk_score: 0.12,
+      division: "Core Operations",
+      runway: "60+ months",
+      headcount_trend: "+8%"
+    },
+    sources: [
+      {
+        type: "news",
+        publisher: "Maine Business Journal",
+        title: "Standing Stones Credit Union Announces New Member Services Initiative",
+        summary: "Local credit union strengthens community presence with expanded branch services and employee benefits, reporting steady member growth.",
+        date: "Jan 2026",
+        url: "https://www.mainebusinessjournal.com/news/standing-stones-credit-union-member-services"
+      },
+      {
+        type: "financial",
+        publisher: "Credit Union Times",
+        title: "Regional Credit Unions Show Resilience in Economic Slowdown",
+        summary: "Standing Stones among top-performing regional cooperatives with strong capital ratios and zero recent layoffs, commitment to local employment.",
+        date: "Dec 2025",
+        url: "https://www.cutimes.com/news/regional-credit-unions-resilience"
+      },
+      {
+        type: "news",
+        publisher: "Portland Press Herald",
+        title: "Maine's Community Banks Lead in Employee Satisfaction",
+        summary: "Standing Stones Credit Union recognized for workplace culture, competitive benefits, and strong community ties in regional survey.",
+        date: "Nov 2025",
+        url: "https://www.pressherald.com/maine-community-banks-employee-satisfaction"
+      }
+    ],
+    comp: { 
+      headline: 42000, 
+      real_feel: 40500, 
+      leak_label: "Minimal",
+      base: 38000,
+      equity: 0,
+      tax_rate: 0.18,
+      col_adjustment: 1.15
+    },
+    culture: { 
+      type: "Community Anchor", 
+      stress_level: 0.25,
+      wlb_score: 8.8,
+      growth_score: 6.5,
+      politics_level: "Low"
+    },
+    alternatives: ["zentree", "cherryblossom", "zengarden", "notion", "canva"]
+  },
   zentree: {
     id: "zentree",
     meta: { 
