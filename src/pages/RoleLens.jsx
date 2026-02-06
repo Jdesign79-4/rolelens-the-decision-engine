@@ -139,7 +139,7 @@ const jobDatabase = {
       growth_score: 8.5,
       politics_level: "Very Low"
     },
-    alternatives: ["rivermotion", "cherryblossom", "zengarden", "notion", "spotify"]
+    alternatives: ["rivermotion", "cherryblossom", "zengarden", "notion", "standing_stones"]
   },
   rivermotion: {
     id: "rivermotion",
