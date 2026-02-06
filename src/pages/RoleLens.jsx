@@ -513,6 +513,7 @@ export default function RoleLens() {
   };
 
   const getAlternativeJobs = () => {
+    if (!currentJob?.alternatives) return [];
     let alternatives = currentJob.alternatives.map(id => allJobs[id]).filter(Boolean);
     
     // Apply filters
@@ -542,6 +543,8 @@ export default function RoleLens() {
   };
 
   const getProfileMatch = (alt) => {
+    if (!alt?.stability || !alt?.culture) return 0;
+    
     const isRiskSeeker = tunerSettings.riskAppetite > 0.6;
     const isStabilitySeeker = tunerSettings.riskAppetite < 0.4;
     const isNomad = tunerSettings.lifeAnchors < 0.4;
@@ -1026,6 +1029,8 @@ export default function RoleLens() {
 }
 
 function calculateTrueFit(job, settings) {
+  if (!job?.stability || !job?.culture) return 0;
+  
   const riskFit = 1 - Math.abs(job.stability.risk_score - settings.riskAppetite);
   const stressFit = settings.lifeAnchors > 0.5 
     ? 1 - job.culture.stress_level 
