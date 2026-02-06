@@ -58,9 +58,12 @@ function WaterRipple({ fillPercentage }) {
 }
 
 export default function CompensationCard({ data, tunerSettings }) {
+  // If exact range provided from job posting, don't adjust it
+  const hasExactRange = data.range_min && data.range_max;
+  
   // Adjust headline based on self-reflection (0.5 = average, below = reduced offer, above = premium offer)
   const reflectionAdjustment = 0.7 + (tunerSettings.honestSelfReflection * 0.6); // Range: 0.7 to 1.3
-  const adjustedHeadline = Math.round(data.headline * reflectionAdjustment);
+  const adjustedHeadline = hasExactRange ? data.headline : Math.round(data.headline * reflectionAdjustment);
   
   const fillPercentage = Math.min(100, Math.max(0, (data.real_feel / adjustedHeadline) * 100));
   const leakPercentage = Math.max(0, 100 - fillPercentage);
@@ -270,7 +273,7 @@ export default function CompensationCard({ data, tunerSettings }) {
           </span>
         </div>
         
-        {tunerSettings.honestSelfReflection !== 0.7 && (
+        {!hasExactRange && tunerSettings.honestSelfReflection !== 0.7 && (
           <div className={`flex justify-between items-center p-3 rounded-xl border ${
             tunerSettings.honestSelfReflection > 0.7 
               ? 'bg-emerald-50 border-emerald-200' 

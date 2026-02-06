@@ -39,8 +39,8 @@ For ALL compensation calculations, you MUST gather data from these specific vett
 
 Calculate the following based on these sources:
 - headline: ${jobPostingText ? 'Use the midpoint of the compensation range if given (e.g., for 115.6k-190k, use 152.8k)' : 'Total compensation (base + equity + bonus) from Levels.fyi/Glassdoor data'}
-- range_min: ${jobPostingText ? 'If a compensation range is stated in the job posting (e.g., $115,600), extract the MINIMUM value' : 'Set to null if no range available'}
-- range_max: ${jobPostingText ? 'If a compensation range is stated in the job posting (e.g., $190,000), extract the MAXIMUM value' : 'Set to null if no range available'}
+- range_min: ${jobPostingText ? 'CRITICAL: If a compensation range is stated in the job posting (e.g., "$115,600 - $190,000"), you MUST extract the EXACT MINIMUM value as a number (115600). Look for patterns like "$XXX,XXX - $XXX,XXX" or "XXXk-XXXk".' : 'Set to null if no range available'}
+- range_max: ${jobPostingText ? 'CRITICAL: If a compensation range is stated in the job posting (e.g., "$115,600 - $190,000"), you MUST extract the EXACT MAXIMUM value as a number (190000). Look for patterns like "$XXX,XXX - $XXX,XXX" or "XXXk-XXXk".' : 'Set to null if no range available'}
 - base: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate base portion' : 'Base salary from BLS and salary sites'}
 - equity: ${jobPostingText ? 'Extract from job posting if specified, otherwise estimate equity portion' : 'Annual equity value from Levels.fyi'}
 - real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power after taxes and COL adjustments
