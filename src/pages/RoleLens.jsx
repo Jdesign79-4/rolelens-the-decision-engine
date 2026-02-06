@@ -319,7 +319,7 @@ const jobDatabase = {
       growth_score: 9.0,
       politics_level: "Low"
     },
-    alternatives: ["zentree", "rivermotion", "cherryblossom", "notion", "spotify"]
+    alternatives: ["zentree", "rivermotion", "cherryblossom", "notion", "standing_stones"]
   },
   salesforce: {
     id: "salesforce",
