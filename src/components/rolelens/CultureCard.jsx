@@ -471,7 +471,7 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
         </div>
         
         {/* Bamboo Stalks */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-around items-end px-4">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-around items-end px-4 overflow-hidden" style={{ height: '120px' }}>
           {bambooData.map((bamboo, index) => (
             <BambooStalk 
               key={index}
