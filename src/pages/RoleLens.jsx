@@ -523,7 +523,7 @@ const jobDatabase = {
       growth_score: 8.0,
       politics_level: "Low"
     },
-    alternatives: ["canva", "figma", "salesforce", "zentree", "spotify"]
+    alternatives: ["canva", "figma", "salesforce", "zentree", "standing_stones"]
   },
   spotify: {
     id: "spotify",
