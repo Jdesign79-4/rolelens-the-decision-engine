@@ -18,7 +18,7 @@ const jobDatabase = {
       company: "Zen Tree",
       location: "Remote (US)",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=ZT&background=10b981&color=fff&size=100&bold=true"
+      logo: "https://ui-avatars.com/api/?name=+&background=10b981&color=fff&size=100&length=0"
     },
     stability: { 
       health: "Exceptional", 
@@ -52,7 +52,7 @@ const jobDatabase = {
       company: "River Motion Investments",
       location: "New York, NY",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=RM&background=3b82f6&color=fff&size=100&bold=true"
+      logo: "https://ui-avatars.com/api/?name=+&background=3b82f6&color=fff&size=100&length=0"
     },
     stability: { 
       health: "Stable Growth", 
@@ -86,7 +86,7 @@ const jobDatabase = {
       company: "Cherry Blossom Designs",
       location: "Portland, OR",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=CB&background=ec4899&color=fff&size=100&bold=true"
+      logo: "https://ui-avatars.com/api/?name=+&background=ec4899&color=fff&size=100&length=0"
     },
     stability: { 
       health: "Creative Boutique", 
@@ -120,7 +120,7 @@ const jobDatabase = {
       company: "Zen Garden",
       location: "Austin, TX",
       date: "Feb 2026",
-      logo: "https://ui-avatars.com/api/?name=ZG&background=8b5cf6&color=fff&size=100&bold=true"
+      logo: "https://ui-avatars.com/api/?name=+&background=8b5cf6&color=fff&size=100&length=0"
     },
     stability: { 
       health: "Innovation Hub", 
