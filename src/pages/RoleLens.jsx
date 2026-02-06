@@ -962,6 +962,12 @@ function RoleLensContent() {
                               <span className="w-1 h-1 rounded-full bg-slate-300" />
                             </>
                           )}
+                          {currentJob.isCompanyOnly && currentJob.meta.company_description && (
+                            <>
+                              <span className="font-medium text-slate-700">{currentJob.meta.company_description}</span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300" />
+                            </>
+                          )}
                           <span>{currentJob.meta.location}</span>
                           <span className="w-1 h-1 rounded-full bg-slate-300" />
                           <span>{currentJob.meta.date}</span>

@@ -111,6 +111,7 @@ Be specific with numbers. Show your work - reference which source each number co
               properties: {
                 title: { type: "string", description: "Set to 'Company Research'" },
                 company: { type: "string", description: "Company name" },
+                company_description: { type: "string", description: "Very concise 2-6 word description of what the company does. Examples: 'Automotive Manufacturing', 'EV Automotive Manufacturing', 'Aviation, Healthcare, Energy'. For conglomerates, list only top 2-3 business lines." },
                 location: { type: "string", description: "Primary location or 'Multiple Locations'" },
                 logo_search_term: { type: "string", description: "Search term for company logo" }
               }
