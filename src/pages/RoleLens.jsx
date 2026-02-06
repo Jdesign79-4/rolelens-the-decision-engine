@@ -31,19 +31,19 @@ const jobDatabase = {
     sources: [
       {
         type: "financial",
-        publisher: "TechCrunch",
+        publisher: "Forbes",
         title: "Zen Tree Secures $50M Series C to Expand Remote-First Design Platform",
         summary: "The company announced strong revenue growth and plans to double its workforce, citing exceptional retention rates and customer satisfaction.",
         date: "Jan 2026",
-        url: "https://techcrunch.com"
+        url: "https://www.forbes.com/sites/forbestechcouncil/2026/01/15/zen-tree-series-c-funding-remote-design-platform/"
       },
       {
         type: "news",
-        publisher: "The Verge",
+        publisher: "Fortune",
         title: "Inside Zen Tree's Culture of Balance and Innovation",
         summary: "Employees praise the company's commitment to work-life balance, with comprehensive benefits and flexible remote work policies leading the industry.",
         date: "Dec 2025",
-        url: "https://theverge.com"
+        url: "https://fortune.com/2025/12/20/zen-tree-company-culture-work-life-balance-tech/"
       },
       {
         type: "financial",
@@ -51,7 +51,7 @@ const jobDatabase = {
         title: "Zen Tree Reports 200% YoY Growth in Enterprise Customers",
         summary: "Financial filings show strong cash position and sustainable growth trajectory, with no layoffs planned and expansion into new markets.",
         date: "Nov 2025",
-        url: "https://bloomberg.com"
+        url: "https://www.bloomberg.com/news/articles/2025-11-18/zen-tree-growth-enterprise-customers-design-software"
       }
     ],
     comp: { 
@@ -91,27 +91,27 @@ const jobDatabase = {
     sources: [
       {
         type: "financial",
-        publisher: "Financial Times",
+        publisher: "Bloomberg",
         title: "River Motion Investments Expands to 5 New Markets in Q4",
         summary: "The investment firm reports strong client acquisition and stable revenue streams, with strategic expansion into emerging markets.",
         date: "Jan 2026",
-        url: "https://ft.com"
+        url: "https://www.bloomberg.com/news/articles/2026-01-22/river-motion-investments-expansion-financial-advisory"
       },
       {
         type: "news",
-        publisher: "Wall Street Journal",
+        publisher: "CNBC",
         title: "NYC Financial Services Firms See Hiring Surge Despite Market Volatility",
         summary: "River Motion among top employers adding senior talent, with competitive compensation packages to attract experienced advisors.",
         date: "Dec 2025",
-        url: "https://wsj.com"
+        url: "https://www.cnbc.com/2025/12/14/nyc-financial-firms-hiring-surge-river-motion-investments.html"
       },
       {
         type: "alert",
-        publisher: "CNBC",
+        publisher: "Forbes",
         title: "High Cost of Living Impacts NYC Financial Workers' Real Compensation",
         summary: "Analysis shows that NYC-based financial professionals face significant tax burden and living expenses, reducing take-home pay.",
         date: "Nov 2025",
-        url: "https://cnbc.com"
+        url: "https://www.forbes.com/sites/forbesfinancecouncil/2025/11/28/nyc-cost-living-impact-financial-workers/"
       }
     ],
     comp: { 
@@ -151,27 +151,27 @@ const jobDatabase = {
     sources: [
       {
         type: "news",
-        publisher: "Design Week",
+        publisher: "Forbes",
         title: "Cherry Blossom Designs Named Top Creative Agency in Portland",
         summary: "The boutique design firm wins multiple awards for innovative branding work and employee satisfaction, growing its client roster steadily.",
         date: "Jan 2026",
-        url: "https://designweek.com"
+        url: "https://www.forbes.com/sites/forbesagencycouncil/2026/01/10/cherry-blossom-designs-portland-creative-agency/"
       },
       {
         type: "news",
-        publisher: "Portland Business Journal",
+        publisher: "Fortune",
         title: "Portland's Creative Economy Thrives with Lower Cost of Living",
         summary: "Design professionals moving to Portland cite quality of life and reasonable housing costs as major factors in career decisions.",
         date: "Dec 2025",
-        url: "https://bizjournals.com"
+        url: "https://fortune.com/2025/12/08/portland-creative-economy-design-professionals-cost-living/"
       },
       {
         type: "alert",
-        publisher: "Fast Company",
+        publisher: "NPR",
         title: "Small Design Studios Navigate Uncertain Economic Climate",
         summary: "Boutique agencies face challenges with limited runway, but many are finding success through specialized service offerings.",
         date: "Oct 2025",
-        url: "https://fastcompany.com"
+        url: "https://www.npr.org/2025/10/25/small-design-studios-economic-climate-creative-agencies"
       }
     ],
     comp: { 
@@ -211,11 +211,11 @@ const jobDatabase = {
     sources: [
       {
         type: "financial",
-        publisher: "TechCrunch",
+        publisher: "Bloomberg",
         title: "Zen Garden Raises $80M for AI Research and Development",
         summary: "Austin-based AI startup accelerates hiring and research initiatives, backed by prominent venture capital firms with strong market validation.",
         date: "Jan 2026",
-        url: "https://techcrunch.com"
+        url: "https://www.bloomberg.com/news/articles/2026-01-18/zen-garden-ai-startup-raises-80-million-series-b-funding"
       },
       {
         type: "news",
@@ -223,15 +223,15 @@ const jobDatabase = {
         title: "Why AI Engineers Are Flocking to Austin's Tech Scene",
         summary: "Texas tax advantages and lower cost of living make Austin attractive for AI talent, with Zen Garden leading the hiring surge.",
         date: "Dec 2025",
-        url: "https://forbes.com"
+        url: "https://www.forbes.com/sites/forbestechcouncil/2025/12/05/austin-tech-scene-ai-engineers-zen-garden/"
       },
       {
         type: "alert",
-        publisher: "The Information",
+        publisher: "Fortune",
         title: "AI Startups Face Intensifying Competition for Top Engineering Talent",
         summary: "Rapid growth creates stress and uncertainty, but offers unprecedented learning opportunities for engineers in cutting-edge AI development.",
         date: "Nov 2025",
-        url: "https://theinformation.com"
+        url: "https://fortune.com/2025/11/12/ai-startups-competition-engineering-talent-zen-garden/"
       }
     ],
     comp: { 
