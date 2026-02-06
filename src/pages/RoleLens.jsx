@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DarkModeProvider } from '@/components/DarkModeContext';
+import DarkModeToggle from '@/components/DarkModeToggle';
 import AstrolabePanel from '@/components/rolelens/AstrolabePanel';
 import StabilityCard from '@/components/rolelens/StabilityCard';
 import CompensationCard from '@/components/rolelens/CompensationCard';
