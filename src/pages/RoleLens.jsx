@@ -11,6 +11,40 @@ import Disclaimer from '@/components/rolelens/Disclaimer';
 import SourcesCitation from '@/components/rolelens/SourcesCitation';
 
 const jobDatabase = {
+  zentree: {
+    id: "zentree",
+    meta: { 
+      title: "Senior Product Designer", 
+      company: "Zen Tree",
+      location: "Remote (US)",
+      date: "Feb 2026",
+      logo: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=100&h=100&fit=crop"
+    },
+    stability: { 
+      health: "Exceptional", 
+      risk_score: 0.08,
+      division: "Product Core",
+      runway: "48+ months",
+      headcount_trend: "+18%"
+    },
+    comp: { 
+      headline: 185000, 
+      real_feel: 165000, 
+      leak_label: "Remote-First Bonus",
+      base: 155000,
+      equity: 30000,
+      tax_rate: 0.22,
+      col_adjustment: 1.12
+    },
+    culture: { 
+      type: "Harmonious Oasis", 
+      stress_level: 0.18,
+      wlb_score: 9.2,
+      growth_score: 8.5,
+      politics_level: "Very Low"
+    },
+    alternatives: ["salesforce", "canva", "figma"]
+  },
   salesforce: {
     id: "salesforce",
     meta: { 
@@ -184,7 +218,7 @@ const jobDatabase = {
 };
 
 export default function RoleLens() {
-  const [activeJob, setActiveJob] = useState("salesforce");
+  const [activeJob, setActiveJob] = useState("zentree");
   const [customJobs, setCustomJobs] = useState({});
   const [tunerSettings, setTunerSettings] = useState({
     riskAppetite: 0.3,
