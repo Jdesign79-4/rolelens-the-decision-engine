@@ -992,7 +992,9 @@ export default function RoleLens() {
             </div>
 
             {/* Company Health Score */}
-            <CompanyHealthScore company={currentJob.meta.company} />
+            <div className="mt-6">
+              <CompanyHealthScore company={currentJob.meta.company} />
+            </div>
 
             {/* Compensation Data Sources */}
             <CompensationSources />
