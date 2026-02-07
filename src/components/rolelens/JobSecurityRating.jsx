@@ -222,10 +222,10 @@ export default function JobSecurityRating({ data, isLoading, onRefresh }) {
                 detail="Positive growth indicates expansion"
               />
             )}
-            {data.fundamentals.debt_to_equity !== undefined && (
+            {data.fundamentals.debt_to_equity !== undefined && data.fundamentals.debt_to_equity !== null && (
               <MetricRow
                 label="Debt-to-Equity Ratio"
-                value={data.fundamentals.debt_to_equity.toFixed(2)}
+                value={Number(data.fundamentals.debt_to_equity).toFixed(2)}
                 status={
                   data.fundamentals.debt_to_equity < 0.5
                     ? 'positive'
@@ -236,10 +236,10 @@ export default function JobSecurityRating({ data, isLoading, onRefresh }) {
                 detail="Lower is safer; under 1.0 is ideal"
               />
             )}
-            {data.fundamentals.current_ratio !== undefined && (
+            {data.fundamentals.current_ratio !== undefined && data.fundamentals.current_ratio !== null && (
               <MetricRow
                 label="Current Ratio (Liquidity)"
-                value={data.fundamentals.current_ratio.toFixed(2)}
+                value={Number(data.fundamentals.current_ratio).toFixed(2)}
                 status={
                   data.fundamentals.current_ratio > 1.5
                     ? 'positive'
@@ -250,10 +250,10 @@ export default function JobSecurityRating({ data, isLoading, onRefresh }) {
                 detail="Above 1.0 means can pay short-term debts"
               />
             )}
-            {data.fundamentals.quick_ratio !== undefined && (
+            {data.fundamentals.quick_ratio !== undefined && data.fundamentals.quick_ratio !== null && (
               <MetricRow
                 label="Quick Ratio"
-                value={data.fundamentals.quick_ratio.toFixed(2)}
+                value={Number(data.fundamentals.quick_ratio).toFixed(2)}
                 status={
                   data.fundamentals.quick_ratio > 1
                     ? 'positive'
