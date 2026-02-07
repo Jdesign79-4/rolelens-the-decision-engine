@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Folder, Star, Target, Search, Trash2, Edit2, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const DEFAULT_CATEGORIES = [
   { id: 'dream', name: 'Dream Companies', icon: Star, color: 'from-amber-500 to-orange-500' },
@@ -29,6 +30,8 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   const [showAddCompany, setShowAddCompany] = useState(null);
+  const [showNewListInput, setShowNewListInput] = useState(false);
+  const [newCompanyName, setNewCompanyName] = useState('');
 
   useEffect(() => {
     localStorage.setItem('rolelens-saved-lists', JSON.stringify(lists));
@@ -53,17 +56,19 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
     }));
   };
 
-  const createNewList = () => {
+  const createNewList = (companyName) => {
+    if (!companyName.trim()) return;
+    
     const newList = {
       id: `custom-${Date.now()}`,
-      name: 'New List',
+      name: companyName,
       icon: Folder,
       color: 'from-slate-500 to-slate-600',
       companies: []
     };
     setLists([...lists, newList]);
-    setEditingId(newList.id);
-    setEditName(newList.name);
+    setNewCompanyName('');
+    setShowNewListInput(false);
   };
 
   const saveListName = (listId) => {
@@ -115,6 +120,46 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
 
         {/* Lists */}
         <div className="flex-1 overflow-auto p-6">
+          {/* Add to List Button */}
+          <div className="mb-4">
+            {!showNewListInput ? (
+              <Button
+                onClick={() => setShowNewListInput(true)}
+                className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add to List
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={newCompanyName}
+                  onChange={(e) => setNewCompanyName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && createNewList(newCompanyName)}
+                  placeholder="Enter company name..."
+                  className="flex-1"
+                  autoFocus
+                />
+                <Button
+                  onClick={() => createNewList(newCompanyName)}
+                  disabled={!newCompanyName.trim()}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowNewListInput(false);
+                    setNewCompanyName('');
+                  }}
+                  variant="outline"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {lists.map(list => {
               const Icon = list.icon;
