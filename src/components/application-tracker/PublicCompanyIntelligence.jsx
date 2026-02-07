@@ -360,6 +360,9 @@ H) SECTOR & COMPETITORS:
                 </div>
               </div>
             </div>
+            {companyData.health_explanation && (
+              <p className="text-xs opacity-80 mt-2">{companyData.health_explanation}</p>
+            )}
           </div>
         )}
 
