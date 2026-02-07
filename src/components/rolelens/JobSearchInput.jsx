@@ -137,8 +137,7 @@ Be specific with numbers. Show your work - reference which source each number co
                 runway: { type: "string" },
                 headcount_trend: { type: "string" },
                 analysis: { type: "string" }
-              },
-              required: ["health", "risk_score"]
+              }
             },
             comp: {
               type: "object",
@@ -191,14 +190,16 @@ Be specific with numbers. Show your work - reference which source each number co
       if (!result.meta.company) {
         throw new Error('Response missing company name');
       }
+      
+      // Provide fallbacks for optional fields
       if (!result.stability) {
-        throw new Error('Response missing stability data');
+        result.stability = { health: "Unknown", risk_score: 0.5, division: "N/A", runway: "N/A", headcount_trend: "N/A" };
       }
       if (!result.comp) {
-        throw new Error('Response missing compensation data');
+        result.comp = { headline: 0, base: 0, equity: 0 };
       }
       if (!result.culture) {
-        throw new Error('Response missing culture data');
+        result.culture = { type: "Unknown", stress_level: 0.5, wlb_score: 5, growth_score: 5, politics_level: "Unknown" };
       }
 
       // Generate a unique ID
