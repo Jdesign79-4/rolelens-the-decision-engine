@@ -323,6 +323,11 @@ Be specific with numbers. Show your work - reference which source each number co
         }
       });
 
+      // Validate result structure
+      if (!result || !result.meta || !result.meta.company) {
+        throw new Error('Invalid response structure - missing company data');
+      }
+
       // Generate a unique ID
       const jobId = result.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
       
