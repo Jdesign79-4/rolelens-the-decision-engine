@@ -25,6 +25,9 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
     .sort((a, b) => b.matchScore - a.matchScore);
 
   const getTradeOff = (alt) => {
+    if (!alt?.comp || !alt?.culture || !currentJob?.comp || !currentJob?.culture) {
+      return { text: 'Data unavailable', type: 'neutral', score: 0 };
+    }
     const compDiff = alt.comp.real_feel - currentJob.comp.real_feel;
     const stressDiff = alt.culture.stress_level - currentJob.culture.stress_level;
     

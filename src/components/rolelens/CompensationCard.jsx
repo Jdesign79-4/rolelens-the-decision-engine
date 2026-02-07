@@ -58,6 +58,13 @@ function WaterRipple({ fillPercentage }) {
 }
 
 export default function CompensationCard({ data, tunerSettings, isCompanyOnly = false }) {
+  if (!data) {
+    return (
+      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
+        <p className="text-sm text-slate-500">Compensation data not available</p>
+      </div>
+    );
+  }
   // If exact range provided from job posting, don't adjust it
   const hasExactRange = data.range_min && data.range_max;
   
