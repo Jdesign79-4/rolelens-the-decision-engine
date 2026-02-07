@@ -295,18 +295,7 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    {list.id === 'custom' && (
-                      <button
-                        onClick={() => setShowAddCompany(showAddCompany === list.id ? null : list.id)}
-                        className="flex-1 py-2 px-3 rounded-xl bg-white border-2 border-slate-200 hover:border-violet-300 transition-colors text-sm font-medium text-slate-700"
-                      >
-                        <Plus className="w-4 h-4 inline mr-1" />
-                        Add Company
-                      </button>
-                    )}
-                  </div>
+
 
                   {/* Add Company Input */}
                   <AnimatePresence>
