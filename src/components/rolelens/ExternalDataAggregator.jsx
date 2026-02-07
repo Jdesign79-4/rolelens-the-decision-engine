@@ -172,7 +172,12 @@ CRITICAL: Include direct URLs to each source used.`,
 
   if (!enrichedData && !loading) return null;
 
-  const formatCurrency = (value) => `$${(value / 1000).toFixed(0)}K`;
+  const formatCurrency = (value) => {
+    if (value == null || isNaN(value)) return 'N/A';
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+    return `$${value.toLocaleString()}`;
+  };
   const getSentimentColor = (sentiment) => {
     if (sentiment === 'positive') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
     if (sentiment === 'negative') return 'text-red-600 bg-red-50 border-red-200';
@@ -192,7 +197,7 @@ CRITICAL: Include direct URLs to each source used.`,
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Database className="w-5 h-5 text-blue-600" />
-            <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">Live Data Feed</p>
+            <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">AI-Aggregated Data</p>
           </div>
           <h3 className="text-lg font-semibold text-slate-800">External Data Aggregation</h3>
           {lastUpdated && (
@@ -383,14 +388,16 @@ CRITICAL: Include direct URLs to each source used.`,
                 <div className="flex items-center gap-4 mb-3">
                   <div className="flex items-center gap-2">
                     <div className="text-3xl font-bold text-slate-800">
-                      {enrichedData.employee_sentiment.overall_rating?.toFixed(1)}
+                      {enrichedData.employee_sentiment.overall_rating != null && !isNaN(enrichedData.employee_sentiment.overall_rating) 
+                        ? Math.min(5, Math.max(0, enrichedData.employee_sentiment.overall_rating)).toFixed(1) 
+                        : 'N/A'}
                     </div>
                     <div className="text-xs text-slate-500">out of 5</div>
                   </div>
                   <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-gradient-to-r from-amber-500 to-emerald-500"
-                      style={{ width: `${(enrichedData.employee_sentiment.overall_rating / 5) * 100}%` }}
+                      style={{ width: `${(Math.min(5, Math.max(0, enrichedData.employee_sentiment.overall_rating || 0)) / 5) * 100}%` }}
                     />
                   </div>
                   <div className="text-sm font-medium text-slate-700">
@@ -623,6 +630,14 @@ CRITICAL: Include direct URLs to each source used.`,
                 </div>
               </div>
             )}
+
+            {/* AI Disclaimer */}
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-xs text-amber-800">
+                <span className="font-semibold">⚠️ Note:</span> This data is synthesized by AI from web searches, not from direct API connections to Glassdoor, Crunchbase, or LinkedIn. 
+                Values are estimates and should be verified independently. Source URLs may not always be accurate.
+              </p>
+            </div>
 
             {/* Data Freshness */}
             {enrichedData.data_freshness && (

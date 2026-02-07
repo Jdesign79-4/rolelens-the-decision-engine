@@ -70,7 +70,7 @@ export default function StabilityCard({ data, tunerSettings }) {
          </div>
        </div>
 
-      {/* Stability Score */}
+      {/* Stability Score - bar fills MORE = MORE stable */}
       <div className="mb-6">
         <div className="flex justify-between text-xs text-slate-500 mb-2">
           <span>Stability Score</span>
@@ -79,7 +79,7 @@ export default function StabilityCard({ data, tunerSettings }) {
         <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
-            animate={{ width: `${riskLevel * 100}%` }}
+            animate={{ width: `${(1 - riskLevel) * 100}%` }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className={`h-full rounded-full bg-gradient-to-r ${getHealthColor()}`}
           />
