@@ -60,8 +60,9 @@ B) FUNDAMENTALS:
 - REQUIRED: Current Ratio, Quick Ratio (use balance sheet data from Google Finance or Yahoo Finance)
 
 C) NEWS & SENTIMENT (last 3 months):
-- 5-10 recent articles with sentiment analysis
-- Headlines, excerpts, dates, URLs
+CRITICAL: Use MarketWatch top stories to gather news information for this specific company
+- 5-10 recent articles with sentiment analysis from MarketWatch
+- Headlines, excerpts, dates, URLs from MarketWatch company page
 
 D) ANALYST DATA:
 - Consensus rating, analyst count
