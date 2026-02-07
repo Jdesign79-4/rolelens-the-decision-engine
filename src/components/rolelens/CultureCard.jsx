@@ -383,6 +383,14 @@ function BambooStalk({ bamboo, index, stressLevel, existentialRisk }) {
 }
 
 export default function CultureCard({ data, tunerSettings, postingHealthScore }) {
+  // Safe defaults if data is undefined
+  if (!data) {
+    return (
+      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
+        <p className="text-sm text-slate-500">Culture data not available</p>
+      </div>
+    );
+  }
   const stressLevel = data.stress_level;
   const isSenior = tunerSettings.careerStage > 0.5;
   const isRiskAverse = tunerSettings.riskAppetite < 0.4;

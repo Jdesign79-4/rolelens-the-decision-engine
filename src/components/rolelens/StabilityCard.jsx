@@ -3,6 +3,13 @@ import { motion } from 'framer-motion';
 import { Shield, AlertTriangle, TrendingUp, Clock, Users, Info } from 'lucide-react';
 
 export default function StabilityCard({ data, tunerSettings }) {
+  if (!data) {
+    return (
+      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
+        <p className="text-sm text-slate-500">Stability data not available</p>
+      </div>
+    );
+  }
   // Adjust risk based on self-reflection - underqualified = higher personal risk
   const personalRiskAdjustment = tunerSettings.honestSelfReflection < 0.5 
     ? (0.5 - tunerSettings.honestSelfReflection) * 0.4 // Add up to 0.2 risk if underqualified
