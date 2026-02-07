@@ -103,100 +103,52 @@ OTHER DATA to gather from web:
 
 Be specific with numbers. Show your work - reference which source each number comes from.`,
         add_context_from_internet: true,
-        response_json_schema: isCompanyOnly ? {
+        response_json_schema: {
           type: "object",
           properties: {
             meta: {
               type: "object",
               properties: {
-                title: { type: "string", description: "Set to 'Company Research'" },
-                company: { type: "string", description: "Company name" },
-                company_description: { type: "string", description: "Very concise 2-6 word description of what the company does. Examples: 'Automotive Manufacturing', 'EV Automotive Manufacturing', 'Aviation, Healthcare, Energy'. For conglomerates, list only top 2-3 business lines." },
-                location: { type: "string", description: "Primary location or 'Multiple Locations'" },
-                logo_search_term: { type: "string", description: "Search term for company logo" },
-                website: { type: "string", description: "Official company website URL" }
+                title: { type: "string" },
+                company: { type: "string" },
+                location: { type: "string" },
+                logo_search_term: { type: "string" },
+                website: { type: "string" }
               }
             },
             stability: {
               type: "object",
               properties: {
-                health: { type: "string", description: "Overall company health status" },
-                risk_score: { type: "number", description: "Risk score 0-1" },
-                division: { type: "string", description: "Not applicable for company research, use 'N/A'" },
-                runway: { type: "string", description: "Estimated runway" },
-                headcount_trend: { type: "string", description: "Headcount trend" },
-                analysis: { type: "string", description: "Detailed stability analysis" }
+                health: { type: "string" },
+                risk_score: { type: "number" },
+                division: { type: "string" },
+                runway: { type: "string" },
+                headcount_trend: { type: "string" },
+                analysis: { type: "string" }
               }
             },
             comp: {
               type: "object",
               properties: {
-                headline: { type: "number", description: "Average total comp across all roles (estimate)" },
-                base: { type: "number", description: "Average base salary" },
-                equity: { type: "number", description: "Typical equity value" },
-                real_feel: { type: "number", description: "Purchasing power estimate" },
-                leak_label: { type: "string", description: "General COL factors for main location" },
-                tax_rate: { type: "number", description: "Typical tax rate" },
-                col_adjustment: { type: "number", description: "COL multiplier" },
-                compensation_note: { type: "string", description: "Note that this is company-wide average, not role-specific" }
+                headline: { type: "number" },
+                base: { type: "number" },
+                equity: { type: "number" },
+                real_feel: { type: "number" },
+                leak_label: { type: "string" },
+                tax_rate: { type: "number" },
+                col_adjustment: { type: "number" }
               }
             },
             culture: {
               type: "object",
               properties: {
-                type: { type: "string", description: "Overall culture archetype" },
-                stress_level: { type: "number", description: "General stress level 0-1" },
-                wlb_score: { type: "number", description: "Work-life balance score 1-10" },
-                growth_score: { type: "number", description: "Career growth potential 1-10" },
-                politics_level: { type: "string", description: "Politics level" },
-                analysis: { type: "string", description: "Detailed culture analysis from employee reviews" }
+                type: { type: "string" },
+                stress_level: { type: "number" },
+                wlb_score: { type: "number" },
+                growth_score: { type: "number" },
+                politics_level: { type: "string" },
+                analysis: { type: "string" }
               }
-            },
-            alternatives: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  meta: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string", description: "Set to 'Company Research'" },
-                      company: { type: "string" },
-                      location: { type: "string" }
-                    }
-                  },
-                  stability: {
-                    type: "object",
-                    properties: {
-                      health: { type: "string" },
-                      risk_score: { type: "number" },
-                      division: { type: "string" },
-                      runway: { type: "string" },
-                      headcount_trend: { type: "string" }
-                    }
-                  },
-                  comp: {
-                    type: "object",
-                    properties: {
-                      headline: { type: "number" },
-                      real_feel: { type: "number" },
-                      leak_label: { type: "string" }
-                    }
-                  },
-                  culture: {
-                    type: "object",
-                    properties: {
-                      type: { type: "string" },
-                      stress_level: { type: "number" },
-                      wlb_score: { type: "number" },
-                      growth_score: { type: "number" },
-                      politics_level: { type: "string" }
-                    }
-                  }
-                }
-              },
-              description: "5 similar companies to research"
             },
             sources: {
               type: "array",
@@ -207,117 +159,7 @@ Be specific with numbers. Show your work - reference which source each number co
                   url: { type: "string" },
                   publisher: { type: "string" }
                 }
-              },
-              description: "3 vetted sources with real URLs"
-            }
-          }
-        } : {
-          type: "object",
-          properties: {
-            meta: {
-              type: "object",
-              properties: {
-                title: { type: "string", description: "Job title" },
-                company: { type: "string", description: "Company name" },
-                location: { type: "string", description: "Job location" },
-                logo_search_term: { type: "string", description: "Search term for company logo" },
-                website: { type: "string", description: "Official company website URL" }
               }
-            },
-            stability: {
-              type: "object",
-              properties: {
-                health: { type: "string", description: "Overall health status like 'Stable', 'High Growth', 'At Risk'" },
-                risk_score: { type: "number", description: "Risk score 0-1 where 0 is very stable, 1 is high risk" },
-                division: { type: "string", description: "Division type like 'Revenue Center', 'Cost Center', 'Strategic Core'" },
-                runway: { type: "string", description: "Estimated runway like '24+ months', '12 months'" },
-                headcount_trend: { type: "string", description: "Headcount trend like '+15%', '-10%', 'Stable'" },
-                analysis: { type: "string", description: "Brief analysis of stability factors" }
-              }
-            },
-            comp: {
-              type: "object",
-              properties: {
-                headline: { type: "number", description: "Total compensation (base + equity + bonus)" },
-                base: { type: "number", description: "Base salary" },
-                equity: { type: "number", description: "Annual equity value" },
-                real_feel: { type: "number", description: "After-tax, COL-adjusted purchasing power" },
-                leak_label: { type: "string", description: "What reduces real feel, e.g. 'SF Tax + COL'" },
-                tax_rate: { type: "number", description: "Estimated effective tax rate 0-1" },
-                col_adjustment: { type: "number", description: "Cost of living multiplier where 1.0 is average, <1 is expensive" },
-                range_min: { type: "number", description: "Minimum of compensation range if specified in job posting" },
-                range_max: { type: "number", description: "Maximum of compensation range if specified in job posting" }
-              },
-              required: ["headline", "base", "equity", "real_feel", "leak_label", "tax_rate", "col_adjustment"]
-            },
-            culture: {
-              type: "object",
-              properties: {
-                type: { type: "string", description: "Culture archetype like 'Intensity Chamber', 'Balanced Oasis', 'Startup Chaos'" },
-                stress_level: { type: "number", description: "Stress level 0-1" },
-                wlb_score: { type: "number", description: "Work-life balance score 1-10" },
-                growth_score: { type: "number", description: "Career growth potential 1-10" },
-                politics_level: { type: "string", description: "Politics level: Low, Medium, High" },
-                analysis: { type: "string", description: "Brief culture analysis" }
-              }
-            },
-            alternatives: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  id: { type: "string" },
-                  meta: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string" },
-                      company: { type: "string" },
-                      location: { type: "string" }
-                    }
-                  },
-                  stability: {
-                    type: "object",
-                    properties: {
-                      health: { type: "string" },
-                      risk_score: { type: "number" },
-                      division: { type: "string" },
-                      runway: { type: "string" },
-                      headcount_trend: { type: "string" }
-                    }
-                  },
-                  comp: {
-                    type: "object",
-                    properties: {
-                      headline: { type: "number" },
-                      real_feel: { type: "number" },
-                      leak_label: { type: "string" }
-                    }
-                  },
-                  culture: {
-                    type: "object",
-                    properties: {
-                      type: { type: "string" },
-                      stress_level: { type: "number" },
-                      wlb_score: { type: "number" },
-                      growth_score: { type: "number" },
-                      politics_level: { type: "string" }
-                    }
-                  }
-                }
-              },
-              description: "5 alternative similar roles at competing companies"
-            },
-            sources: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string", description: "Article or page title" },
-                  url: { type: "string", description: "Direct URL to the source" },
-                  publisher: { type: "string", description: "Publisher name like CNBC, Bloomberg, Forbes, LinkedIn, Wired, Fast Company, Money, WSJ" }
-                }
-              },
-              description: "3 vetted sources with direct URLs from reputable publishers (CNBC, Bloomberg, Forbes, LinkedIn, Wired, Fast Company, WSJ, TechCrunch, Business Insider). Must be real, clickable URLs."
             }
           }
         }
