@@ -1467,6 +1467,11 @@ function RoleLensContent() {
               setComparisonJobIds(jobIds);
               setShowComparison(true);
             }}
+            onSearch={(companyName) => {
+              // Trigger search by updating search input and initiating search
+              const searchEvent = new CustomEvent('rolelens-search', { detail: { company: companyName } });
+              window.dispatchEvent(searchEvent);
+            }}
           />
         )}
       </AnimatePresence>

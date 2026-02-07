@@ -10,7 +10,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'research', name: 'Researching', icon: Search, color: 'from-teal-500 to-cyan-500' },
 ];
 
-export default function SavedLists({ allJobs, onClose, onCompare }) {
+export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
   const [lists, setLists] = useState(() => {
     const saved = localStorage.getItem('rolelens-saved-lists');
     if (saved) {
@@ -64,11 +64,19 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
       name: companyName,
       icon: Folder,
       color: 'from-slate-500 to-slate-600',
-      companies: []
+      companies: [],
+      showSearchButton: true
     };
     setLists([...lists, newList]);
     setNewCompanyName('');
     setShowNewListInput(false);
+  };
+  
+  const handleSearch = (companyName) => {
+    if (onSearch) {
+      onSearch(companyName);
+      onClose();
+    }
   };
 
   const saveListName = (listId) => {
@@ -249,24 +257,36 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    {!DEFAULT_CATEGORIES.some(cat => cat.id === list.id) && (
+                    {list.showSearchButton ? (
                       <button
-                        onClick={() => setShowAddCompany(showAddCompany === list.id ? null : list.id)}
-                        className="flex-1 py-2 px-3 rounded-xl bg-white border-2 border-slate-200 hover:border-violet-300 transition-colors text-sm font-medium text-slate-700"
+                        onClick={() => handleSearch(list.name)}
+                        className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-sm font-medium hover:from-teal-600 hover:to-cyan-600 transition-colors"
                       >
-                        <Plus className="w-4 h-4 inline mr-1" />
-                        Add Company
+                        <Search className="w-4 h-4 inline mr-1" />
+                        Search Company
                       </button>
-                    )}
-                    {listCompanies.length > 0 && (
-                      <button
-                        onClick={() => compareListCompanies(list.id)}
-                        className={`py-2 px-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:from-violet-700 hover:to-purple-700 transition-colors ${
-                          DEFAULT_CATEGORIES.some(cat => cat.id === list.id) ? 'flex-1' : ''
-                        }`}
-                      >
-                        Compare
-                      </button>
+                    ) : (
+                      <>
+                        {!DEFAULT_CATEGORIES.some(cat => cat.id === list.id) && (
+                          <button
+                            onClick={() => setShowAddCompany(showAddCompany === list.id ? null : list.id)}
+                            className="flex-1 py-2 px-3 rounded-xl bg-white border-2 border-slate-200 hover:border-violet-300 transition-colors text-sm font-medium text-slate-700"
+                          >
+                            <Plus className="w-4 h-4 inline mr-1" />
+                            Add Company
+                          </button>
+                        )}
+                        {listCompanies.length > 0 && (
+                          <button
+                            onClick={() => compareListCompanies(list.id)}
+                            className={`py-2 px-3 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:from-violet-700 hover:to-purple-700 transition-colors ${
+                              DEFAULT_CATEGORIES.some(cat => cat.id === list.id) ? 'flex-1' : ''
+                            }`}
+                          >
+                            Compare
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
 

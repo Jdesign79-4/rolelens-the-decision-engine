@@ -16,8 +16,19 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
   const [salaryMax, setSalaryMax] = useState('');
   const [jobPostingText, setJobPostingText] = useState('');
 
-  const handleSearch = async () => {
-    if (!query.trim() || isLoading) return;
+  // Listen for search events from SavedLists
+  React.useEffect(() => {
+    const handleSearchEvent = (e) => {
+      setQuery(e.detail.company);
+      setTimeout(() => handleSearch(e.detail.company), 100);
+    };
+    window.addEventListener('rolelens-search', handleSearchEvent);
+    return () => window.removeEventListener('rolelens-search', handleSearchEvent);
+  }, []);
+
+  const handleSearch = async (searchQuery = null) => {
+    const searchTerm = searchQuery || query;
+    if (!searchTerm.trim() || isLoading) return;
     
     setIsLoading(true);
     setError(null);
@@ -36,7 +47,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           // Company-only research prompt
           `Research this company and provide comprehensive data for a job seeker researching potential employers:
 
-Company: "${query}"
+Company: "${searchTerm}"
 ${city ? `Location Focus: ${city}` : ''}
 
 CRITICAL: This is a COMPANY RESEARCH request, NOT a specific role. Provide general company information.
@@ -63,7 +74,7 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
           // Original role-specific prompt
           `Research this job opportunity and provide comprehensive data for a job seeker decision engine:
 
-Company: "${query}"
+Company: "${searchTerm}"
 ${hasStructuredData ? `Job Title: ${jobTitle}` : ''}
 
 ${hasStructuredData ? `
