@@ -490,15 +490,16 @@ Return detailed, accurate data from real financial sources.`,
         <JobSeekerIntelligenceReport intelligence={companyData.job_seeker_intelligence} />
       )}
 
-      {/* Opportunity & Risk Flags */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
-        
-        {(!companyData.opportunity_flags?.green?.length && 
-          !companyData.opportunity_flags?.yellow?.length && 
-          !companyData.opportunity_flags?.red?.length) ? (
-          <p className="text-sm text-slate-500 italic">Analyzing company signals...</p>
-        ) : (
+      {/* Opportunity & Risk Flags - Only show if no full intelligence report */}
+      {!companyData.job_seeker_intelligence && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
+          
+          {(!companyData.opportunity_flags?.green?.length && 
+            !companyData.opportunity_flags?.yellow?.length && 
+            !companyData.opportunity_flags?.red?.length) ? (
+            <p className="text-sm text-slate-500 italic">Analyzing company signals...</p>
+          ) : (
           <>
             <div className="space-y-3">
               {companyData.opportunity_flags?.green?.length > 0 && (
@@ -572,7 +573,8 @@ Return detailed, accurate data from real financial sources.`,
             )}
           </>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Expandable Sections */}
       {/* Stock Performance */}
