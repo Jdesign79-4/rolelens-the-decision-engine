@@ -70,13 +70,15 @@ ANALYST DATA:
 - Number of analysts, average price target, high/low targets
 - Recent rating changes
 
-JOB SEEKER INTELLIGENCE:
+JOB SEEKER INTELLIGENCE (CRITICAL - MUST PROVIDE):
 - Financial health score (1-5) based on profitability, stock trend, sentiment, debt
-- Health explanation
-- Green flags (growing revenue, hiring, stock outperforming, positive sentiment)
-- Yellow flags (flat growth, mixed ratings, high debt)
-- Red flags (declining revenue, layoffs, underperforming stock, negative news)
-- Job security events from news: layoffs, hiring freezes, restructuring (last 90 days)
+- Health explanation (brief summary)
+- Green flags array: MUST provide 2-5 specific positive indicators like "Revenue up 15% YoY", "Hiring 200+ engineers", "Stock up 25% this year"
+- Yellow flags array: MUST provide any caution indicators like "Flat revenue growth", "Mixed analyst ratings"
+- Red flags array: MUST provide any warning signs like "Announced 5% workforce reduction", "Stock down 30% YTD"
+- Job security events: Parse news for specific layoffs, hiring freezes, restructuring events with dates and details (last 90 days)
+
+IMPORTANT: Always populate at least green OR red flags based on the data you find. Don't leave arrays empty.
 
 SECTOR & COMPETITORS:
 - Industry sector
@@ -352,8 +354,14 @@ Return detailed, accurate data from real financial sources.`,
       {/* Opportunity & Risk Flags */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <h4 className="font-semibold text-slate-800 mb-4">Job Seeker Intelligence</h4>
-        <div className="space-y-3">
-          {companyData.opportunity_flags?.green?.length > 0 && (
+        
+        {(!companyData.opportunity_flags?.green?.length && 
+          !companyData.opportunity_flags?.yellow?.length && 
+          !companyData.opportunity_flags?.red?.length) ? (
+          <p className="text-sm text-slate-500 italic">Analyzing company signals...</p>
+        ) : (
+          <div className="space-y-3">
+            {companyData.opportunity_flags?.green?.length > 0 && (
             <div>
               <p className="text-xs font-medium text-emerald-600 mb-2 flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" />
