@@ -360,58 +360,79 @@ Return detailed, accurate data from real financial sources.`,
           !companyData.opportunity_flags?.red?.length) ? (
           <p className="text-sm text-slate-500 italic">Analyzing company signals...</p>
         ) : (
-          <div className="space-y-3">
-            {companyData.opportunity_flags?.green?.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-emerald-600 mb-2 flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" />
-                Green Flags
-              </p>
-              <div className="space-y-1">
-                {companyData.opportunity_flags.green.map((flag, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-emerald-50 p-2 rounded-lg">
-                    <span>✓</span>
-                    <span>{flag}</span>
+          <>
+            <div className="space-y-3">
+              {companyData.opportunity_flags?.green?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-emerald-600 mb-2 flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Green Flags
+                  </p>
+                  <div className="space-y-1">
+                    {companyData.opportunity_flags.green.map((flag, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-emerald-50 p-2 rounded-lg">
+                        <span>✓</span>
+                        <span>{flag}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          {companyData.opportunity_flags?.yellow?.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-amber-600 mb-2 flex items-center gap-1">
-                <Info className="w-4 h-4" />
-                Yellow Flags
-              </p>
-              <div className="space-y-1">
-                {companyData.opportunity_flags.yellow.map((flag, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-amber-50 p-2 rounded-lg">
-                    <span>⚠</span>
-                    <span>{flag}</span>
+              {companyData.opportunity_flags?.yellow?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-amber-600 mb-2 flex items-center gap-1">
+                    <Info className="w-4 h-4" />
+                    Yellow Flags
+                  </p>
+                  <div className="space-y-1">
+                    {companyData.opportunity_flags.yellow.map((flag, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-amber-50 p-2 rounded-lg">
+                        <span>⚠</span>
+                        <span>{flag}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          {companyData.opportunity_flags?.red?.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
-                <AlertTriangle className="w-4 h-4" />
-                Red Flags
-              </p>
-              <div className="space-y-1">
-                {companyData.opportunity_flags.red.map((flag, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-red-50 p-2 rounded-lg">
-                    <span>⚠</span>
-                    <span>{flag}</span>
+              {companyData.opportunity_flags?.red?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
+                    <AlertTriangle className="w-4 h-4" />
+                    Red Flags
+                  </p>
+                  <div className="space-y-1">
+                    {companyData.opportunity_flags.red.map((flag, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-red-50 p-2 rounded-lg">
+                        <span>⚠</span>
+                        <span>{flag}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Job Security Events */}
+            {companyData.job_security_events?.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <p className="text-xs font-medium text-slate-700 mb-2">Recent HR Events (Last 90 Days)</p>
+                <div className="space-y-2">
+                  {companyData.job_security_events.map((event, idx) => (
+                    <div key={idx} className="flex gap-2 text-xs">
+                      <span className="text-slate-400">{event.date}</span>
+                      <div>
+                        <span className="font-medium text-slate-700">{event.event}</span>
+                        <p className="text-slate-600">{event.details}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Expandable Sections */}
