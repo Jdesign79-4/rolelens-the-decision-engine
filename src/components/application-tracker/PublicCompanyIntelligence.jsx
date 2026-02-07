@@ -45,74 +45,28 @@ Check if this company (or parent) is publicly traded on ANY major US exchange (N
 - If public, provide ticker symbol and continue
 
 STEP 2 - CORE DATA (if public):
-Gather ONLY the most critical information:
 
-STOCK PERFORMANCE (if public):
-- Current stock price
-- Price changes: today, 1 week, 1 month, 3 months, 1 year, YTD (as percentages)
-- 52-week high and low
-- Market cap, P/E ratio, dividend yield, volume
-- Historical price data points for chart (monthly for past year)
+A) STOCK BASICS (required):
+- Current price, 1-year % change, market cap
+- Financial health score (1-5)
 
-FUNDAMENTALS:
-- Revenue (TTM), net income, profit margin, employee count
-- Market cap category (small/mid/large/mega-cap)
-- Revenue growth YoY, Earnings growth YoY
-- Debt-to-equity ratio, ROE
+B) AI CAREER INSIGHT (CRITICAL - focus here):
+Provide plain-English guidance in 2-3 sentences each:
+1. JOB SECURITY: Financial stability, layoff risk, red/green flags
+2. STOCK MEANING: What rising/falling stock means for employees
+3. COMPENSATION: Can they pay well? Stock options valuable?
+4. CAREER GROWTH: Expanding or shrinking?
+5. BOTTOM LINE: Overall recommendation, key strength, key concern
 
-NEWS & SENTIMENT (last 60 days):
-- 5-8 recent news articles with: headline, source, date, URL, excerpt
-- Categorize each: Financial Results, Company Strategy, Industry News, Legal/Regulatory, HR/Workplace
-- Sentiment for each: positive, neutral, or negative
+C) QUICK FLAGS (3-5 items max):
+- Green flags (positives)
+- Red flags (concerns)
 
-ANALYST DATA:
-- Consensus rating (Buy/Hold/Sell)
-- Number of analysts, average price target, high/low targets
-- Recent rating changes
+D) OPTIONAL (if time permits):
+- 2-3 recent news headlines
+- Sector and 2-3 competitors
 
-AI JOB SEEKER INTELLIGENCE:
-You are helping a job seeker understand what this company's financial data means for them as a potential employee. Use simple, everyday language - no jargon.
-
-Provide a practical analysis covering:
-
-1. JOB SECURITY (2-3 sentences):
-- Is this financially stable? Are jobs safe or is there layoff risk?
-- Mention cash position, profitability, recent workforce changes
-- Red flags or green flags?
-
-2. WHAT THE STOCK PERFORMANCE MEANS (2-3 sentences):
-- If stock rising: "Growing company = more opportunities, equity gains value"
-- If stock falling: "Struggling = possible layoffs, equity loses value, budget constraints"
-- Connect stock performance to day-to-day employee experience
-
-3. MONEY MATTERS (2-3 sentences):
-- Can they afford competitive salaries?
-- Will bonuses/stock options be valuable?
-- Any cost-cutting affecting pay/benefits?
-
-4. CAREER GROWTH OUTLOOK (2-3 sentences):
-- Is company expanding (promotion opportunities)?
-- Investing in new products/markets?
-- Or shrinking (limited advancement)?
-
-5. BOTTOM LINE (2-3 sentences):
-- Overall: "Strong Opportunity" | "Good Opportunity" | "Proceed with Caution" | "High Risk"
-- One key reason to join
-- One key concern to investigate
-
-Use conversational language. Explain financial terms if used. Be honest and balanced.
-
-ALSO provide backward-compatibility flags:
-- financial_health_score: 1-5
-- health_explanation: Brief summary
-- Green/yellow/red flag arrays
-- Job security events (last 90 days)
-
-SECTOR & COMPETITORS:
-- Industry sector
-- Top 3-5 competitors with brief comparison
-
-Return detailed, accurate data from real financial sources.`,
+OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
