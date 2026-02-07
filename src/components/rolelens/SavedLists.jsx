@@ -14,7 +14,15 @@ export default function SavedLists({ allJobs, onClose, onCompare }) {
     const saved = localStorage.getItem('rolelens-saved-lists');
     if (saved) {
       const parsed = JSON.parse(saved);
-      return parsed.map(list => ({ ...list, companies: list.companies || [] }));
+      return parsed.map(list => {
+        // Restore icon component from DEFAULT_CATEGORIES
+        const defaultCat = DEFAULT_CATEGORIES.find(cat => cat.id === list.id);
+        return {
+          ...list,
+          companies: list.companies || [],
+          icon: defaultCat ? defaultCat.icon : Folder
+        };
+      });
     }
     return DEFAULT_CATEGORIES.map(cat => ({ ...cat, companies: [] }));
   });
