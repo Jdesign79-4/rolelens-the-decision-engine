@@ -394,7 +394,10 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
       </div>
     );
   }
-  const stressLevel = data.stress_level;
+  // Validate and clamp values to expected ranges
+  const stressLevel = Math.min(1, Math.max(0, typeof data.stress_level === 'number' ? data.stress_level : 0.5));
+  const wlbScore = Math.min(10, Math.max(0, typeof data.wlb_score === 'number' ? data.wlb_score : 5));
+  const growthScore = Math.min(10, Math.max(0, typeof data.growth_score === 'number' ? data.growth_score : 5));
   const isSenior = tunerSettings.careerStage > 0.5;
   const isRiskAverse = tunerSettings.riskAppetite < 0.4;
   
@@ -403,8 +406,8 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
 
   // Bamboo heights based on various metrics
   const bambooData = [
-    { height: data.wlb_score * 10, label: 'Balance', healthy: data.wlb_score > 6 },
-    { height: data.growth_score * 10, label: 'Growth', healthy: data.growth_score > 7 },
+    { height: wlbScore * 10, label: 'Balance', healthy: wlbScore > 6 },
+    { height: growthScore * 10, label: 'Growth', healthy: growthScore > 7 },
     { 
       height: (1 - stressLevel) * 100, 
       label: stressLevel > 0.6 ? 'High Stress' : stressLevel > 0.3 ? 'Moderate Stress' : 'Low Stress',

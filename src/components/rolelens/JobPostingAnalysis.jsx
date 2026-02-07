@@ -106,6 +106,13 @@ Calculate an overall Posting Health Score (0-100):
       }
     } catch (error) {
       console.error('Failed to analyze posting:', error);
+      setAnalysis({
+        health_score: 50,
+        red_flags: [],
+        green_flags: [],
+        summary: 'Analysis failed. Please try again.',
+        recommendation: 'Unable to analyze this posting at the moment.'
+      });
     } finally {
       setLoading(false);
     }

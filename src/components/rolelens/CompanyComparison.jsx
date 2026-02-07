@@ -14,7 +14,9 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
   const alternatives = alternativeIds.map(id => allJobs[id]).filter(Boolean).slice(0, 5);
 
   const getMetricDifference = (values, index) => {
+    if (!values || values.length === 0) return 0;
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    if (avg === 0) return 0; // Prevent division by zero
     const diff = ((values[index] - avg) / avg) * 100;
     return diff;
   };
@@ -29,6 +31,8 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
 
   const getComparisonInsight = (alt) => {
     if (!currentJob || !alt) return null;
+    if (!alt.comp?.real_feel || !alt.culture?.wlb_score || !alt.stability?.risk_score || !alt.culture?.growth_score) return [];
+    if (!currentJob.comp?.real_feel || !currentJob.culture?.wlb_score || !currentJob.stability?.risk_score || !currentJob.culture?.growth_score) return [];
     
     const compDiff = alt.comp.real_feel - currentJob.comp.real_feel;
     const wlbDiff = alt.culture.wlb_score - currentJob.culture.wlb_score;
@@ -113,19 +117,19 @@ export default function CompanyComparison({ allJobs, initialJobIds = [], onClose
                 <div className="grid grid-cols-4 gap-3 mt-4">
                   <div className="p-3 rounded-xl bg-white/80">
                     <p className="text-xs text-slate-500 mb-1">Real Feel</p>
-                    <p className="text-lg font-bold text-teal-700">{formatCurrency(currentJob.comp.real_feel)}</p>
+                    <p className="text-lg font-bold text-teal-700">{currentJob.comp?.real_feel ? formatCurrency(currentJob.comp.real_feel) : 'N/A'}</p>
                   </div>
                   <div className="p-3 rounded-xl bg-white/80">
                     <p className="text-xs text-slate-500 mb-1">WLB Score</p>
-                    <p className="text-lg font-bold text-slate-800">{currentJob.culture.wlb_score}/10</p>
+                    <p className="text-lg font-bold text-slate-800">{currentJob.culture?.wlb_score ?? 'N/A'}/10</p>
                   </div>
                   <div className="p-3 rounded-xl bg-white/80">
                     <p className="text-xs text-slate-500 mb-1">Risk</p>
-                    <p className="text-lg font-bold text-slate-800">{Math.round(currentJob.stability.risk_score * 100)}%</p>
+                    <p className="text-lg font-bold text-slate-800">{currentJob.stability?.risk_score != null ? Math.round(currentJob.stability.risk_score * 100) : 'N/A'}%</p>
                   </div>
                   <div className="p-3 rounded-xl bg-white/80">
                     <p className="text-xs text-slate-500 mb-1">Growth</p>
-                    <p className="text-lg font-bold text-slate-800">{currentJob.culture.growth_score}/10</p>
+                    <p className="text-lg font-bold text-slate-800">{currentJob.culture?.growth_score ?? 'N/A'}/10</p>
                   </div>
                 </div>
               </div>

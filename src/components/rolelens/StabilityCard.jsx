@@ -10,11 +10,14 @@ export default function StabilityCard({ data, tunerSettings }) {
       </div>
     );
   }
+  // Validate risk_score is a number in 0-1 range
+  const safeRiskScore = typeof data.risk_score === 'number' ? Math.min(1, Math.max(0, data.risk_score)) : 0.5;
+  
   // Adjust risk based on self-reflection - underqualified = higher personal risk
   const personalRiskAdjustment = tunerSettings.honestSelfReflection < 0.5 
     ? (0.5 - tunerSettings.honestSelfReflection) * 0.4 // Add up to 0.2 risk if underqualified
     : 0;
-  const adjustedRiskScore = Math.min(1, data.risk_score + personalRiskAdjustment);
+  const adjustedRiskScore = Math.min(1, safeRiskScore + personalRiskAdjustment);
   
   const isRiskAverse = tunerSettings.riskAppetite < 0.4;
   const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;

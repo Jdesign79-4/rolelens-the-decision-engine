@@ -54,12 +54,12 @@ Be specific and cite recent events or data points when possible. Focus on inform
     } catch (error) {
       console.error('Failed to fetch company health:', error);
       setHealthData({
-        health_score: 75,
-        risks: ["Market volatility affecting tech sector", "Increasing competition in core markets"],
-        opportunities: ["Expanding into emerging markets", "AI product line development"],
-        news_sentiment: "Positive",
-        financial_stability: "Strong cash position with steady revenue growth",
-        summary: "Company shows solid fundamentals with manageable risks and clear growth paths."
+        health_score: 0,
+        risks: ["Unable to fetch current data — please retry"],
+        opportunities: [],
+        news_sentiment: "Unknown",
+        financial_stability: "Data unavailable",
+        summary: "Could not retrieve company health data. Try refreshing."
       });
       setLastUpdated(new Date());
     }
@@ -94,7 +94,7 @@ Be specific and cite recent events or data points when possible. Focus on inform
     >
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Company Health Monitor</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">AI Company Health Monitor</p>
           <h3 className="text-lg font-semibold text-slate-800">{company}</h3>
           {lastUpdated && (
             <p className="text-xs text-slate-400 mt-1">

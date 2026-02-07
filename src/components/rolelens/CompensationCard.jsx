@@ -58,7 +58,19 @@ function WaterRipple({ fillPercentage }) {
 }
 
 export default function CompensationCard({ data, tunerSettings, isCompanyOnly = false }) {
-  if (!data || !data.headline || !data.real_feel) {
+  if (!data || !data.headline) {
+    return (
+      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
+        <p className="text-sm text-slate-500">Compensation data not available</p>
+      </div>
+    );
+  }
+
+  // Ensure numeric values with safe defaults
+  const safeHeadline = typeof data.headline === 'number' && data.headline > 0 ? data.headline : 0;
+  const safeRealFeel = typeof data.real_feel === 'number' && data.real_feel > 0 ? data.real_feel : safeHeadline;
+  
+  if (safeHeadline === 0) {
     return (
       <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
         <p className="text-sm text-slate-500">Compensation data not available</p>
@@ -70,12 +82,14 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
   
   // Adjust headline based on self-reflection (0.5 = average, below = reduced offer, above = premium offer)
   const reflectionAdjustment = 0.7 + (tunerSettings.honestSelfReflection * 0.6); // Range: 0.7 to 1.3
-  const adjustedHeadline = hasExactRange ? data.headline : Math.round(data.headline * reflectionAdjustment);
+  const adjustedHeadline = hasExactRange ? safeHeadline : Math.round(safeHeadline * reflectionAdjustment);
+  
+  // Prevent division by zero
+  const safeAdjustedHeadline = adjustedHeadline > 0 ? adjustedHeadline : 1;
   
   // Water fills to real_feel level, but headline is the target capacity
-  // If real_feel < headline, the excess overflows out the top
-  const targetFillPercentage = 100; // Always aim for full capacity (headline)
-  const actualFillPercentage = Math.min(100, Math.max(0, (data.real_feel / adjustedHeadline) * 100));
+  const targetFillPercentage = 100;
+  const actualFillPercentage = Math.min(100, Math.max(0, (safeRealFeel / safeAdjustedHeadline) * 100));
   const overflowPercentage = Math.max(0, 100 - actualFillPercentage);
   const isOverflowing = overflowPercentage > 5;
   
@@ -347,7 +361,7 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
             {data.range_min && data.range_max ? (
               `${formatCurrency(data.range_min)} - ${formatCurrency(data.range_max)}`
             ) : (
-              formatCurrency(adjustedHeadline)
+              formatCurrency(adjustedHeadline || 0)
             )}
           </span>
         </div>
@@ -379,7 +393,7 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
 
         <div className="flex justify-between items-center p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border border-teal-200">
           <span className="text-sm font-medium text-teal-700">Real Feel Salary</span>
-          <span className="text-xl font-bold text-teal-700">{formatCurrency(data.real_feel)}</span>
+          <span className="text-xl font-bold text-teal-700">{formatCurrency(safeRealFeel)}</span>
         </div>
       </div>
 

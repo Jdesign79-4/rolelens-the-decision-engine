@@ -14,14 +14,17 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
   const isSeedling = tunerSettings.careerStage < 0.4;
   const isOak = tunerSettings.careerStage > 0.6;
 
-  // Sort alternatives by profile match using advanced algorithm
+  // Sort alternatives by profile match - calculate score once per alternative
   const sortedAlternatives = [...alternatives]
-    .map(alt => ({
-      ...alt,
-      matchScore: calculateJobMatch(alt, tunerSettings),
-      matchLabel: getMatchLabel(calculateJobMatch(alt, tunerSettings)),
-      insights: getMatchInsights(alt, tunerSettings, calculateJobMatch(alt, tunerSettings))
-    }))
+    .map(alt => {
+      const score = calculateJobMatch(alt, tunerSettings);
+      return {
+        ...alt,
+        matchScore: score,
+        matchLabel: getMatchLabel(score),
+        insights: getMatchInsights(alt, tunerSettings, score)
+      };
+    })
     .sort((a, b) => b.matchScore - a.matchScore);
 
   const getTradeOff = (alt) => {
