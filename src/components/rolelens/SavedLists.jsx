@@ -32,19 +32,29 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
   const [showAddCompany, setShowAddCompany] = useState(null);
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState('');
+  const [addCompanyInput, setAddCompanyInput] = useState('');
 
   useEffect(() => {
     localStorage.setItem('rolelens-saved-lists', JSON.stringify(lists));
   }, [lists]);
 
-  const addCompanyToList = (listId, companyId) => {
-    setLists(lists.map(list => {
-      if (list.id === listId && !list.companies.includes(companyId)) {
-        return { ...list, companies: [...list.companies, companyId] };
-      }
-      return list;
-    }));
+  const addCompanyToList = (listId, companyName) => {
+    if (!companyName.trim()) return;
+    
+    // Create a new list entry with search button
+    const newCompanyList = {
+      id: `${listId}-${Date.now()}`,
+      name: companyName,
+      icon: Folder,
+      color: 'from-slate-500 to-slate-600',
+      companies: [],
+      showSearchButton: true,
+      parentListId: listId
+    };
+    
+    setLists([...lists, newCompanyList]);
     setShowAddCompany(null);
+    setAddCompanyInput('');
   };
 
   const removeCompanyFromList = (listId, companyId) => {
@@ -290,7 +300,7 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
                     )}
                   </div>
 
-                  {/* Add Company Dropdown */}
+                  {/* Add Company Input */}
                   <AnimatePresence>
                     {showAddCompany === list.id && (
                       <motion.div
@@ -299,22 +309,31 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
                         exit={{ height: 0, opacity: 0 }}
                         className="mt-3 overflow-hidden"
                       >
-                        <div className="max-h-48 overflow-auto space-y-2 p-3 bg-white rounded-xl border border-slate-200">
-                          {Object.values(allJobs)
-                            .filter(job => !list.companies.includes(job.id))
-                            .map(job => (
-                              <button
-                                key={job.id}
-                                onClick={() => addCompanyToList(list.id, job.id)}
-                                className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors text-left"
-                              >
-                                <img src={job.meta.logo} alt="" className="w-8 h-8 rounded-lg" />
-                                <div>
-                                  <p className="font-semibold text-slate-800 text-sm">{job.meta.company}</p>
-                                  <p className="text-xs text-slate-500">{job.meta.title}</p>
-                                </div>
-                              </button>
-                            ))}
+                        <div className="flex gap-2">
+                          <Input
+                            value={addCompanyInput}
+                            onChange={(e) => setAddCompanyInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCompanyToList(list.id, addCompanyInput)}
+                            placeholder="Enter company name..."
+                            className="flex-1"
+                            autoFocus
+                          />
+                          <Button
+                            onClick={() => addCompanyToList(list.id, addCompanyInput)}
+                            disabled={!addCompanyInput.trim()}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowAddCompany(null);
+                              setAddCompanyInput('');
+                            }}
+                            variant="outline"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                       </motion.div>
                     )}
