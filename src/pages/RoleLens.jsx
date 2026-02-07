@@ -735,6 +735,10 @@ function RoleLensContent() {
     const saved = localStorage.getItem('rolelens-favorites');
     return saved ? JSON.parse(saved) : [];
   });
+  const [targetRoles, setTargetRoles] = useState(() => {
+    const saved = localStorage.getItem('rolelens-target-roles');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [sortBy, setSortBy] = useState('match');
   const [filterBy, setFilterBy] = useState('all');
   const [visibleWidgets, setVisibleWidgets] = useState(() => {
@@ -775,6 +779,29 @@ function RoleLensContent() {
   };
 
   const isFavorite = (jobId) => favorites.includes(jobId);
+
+  // Target Roles management - adds to target roles list
+  const toggleTargetRole = (jobId) => {
+    const newTargetRoles = targetRoles.includes(jobId)
+      ? targetRoles.filter(id => id !== jobId)
+      : [...targetRoles, jobId];
+    setTargetRoles(newTargetRoles);
+    localStorage.setItem('rolelens-target-roles', JSON.stringify(newTargetRoles));
+    
+    // Add to saved lists (default to "Target Roles")
+    if (!targetRoles.includes(jobId)) {
+      const savedLists = localStorage.getItem('rolelens-saved-lists');
+      const lists = savedLists ? JSON.parse(savedLists) : DEFAULT_CATEGORIES.map(cat => ({ ...cat, companies: [] }));
+      
+      const targetList = lists.find(list => list.id === 'target');
+      if (targetList && !targetList.companies.includes(jobId)) {
+        targetList.companies.push(jobId);
+        localStorage.setItem('rolelens-saved-lists', JSON.stringify(lists));
+      }
+    }
+  };
+
+  const isTargetRole = (jobId) => targetRoles.includes(jobId);
 
   // Widget management
   const toggleWidget = (widgetId) => {
@@ -1014,12 +1041,28 @@ function RoleLensContent() {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleTargetRole(activeJob)}
+                        className={`p-3 rounded-xl border-2 transition-all ${
+                          isTargetRole(activeJob)
+                            ? 'bg-violet-50 border-violet-300 text-violet-600'
+                            : 'bg-white border-slate-200 text-slate-400 hover:border-violet-300 hover:text-violet-500'
+                        }`}
+                        title="Add to Target Roles"
+                      >
+                        <svg className="w-5 h-5" fill={isTargetRole(activeJob) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => toggleFavorite(activeJob)}
                         className={`p-3 rounded-xl border-2 transition-all ${
                           isFavorite(activeJob)
                             ? 'bg-rose-50 border-rose-300 text-rose-600'
                             : 'bg-white border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500'
                         }`}
+                        title="Add to Dream Companies"
                       >
                         <svg className="w-5 h-5" fill={isFavorite(activeJob) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
