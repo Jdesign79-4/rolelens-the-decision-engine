@@ -320,23 +320,27 @@ Return detailed, accurate data from real financial sources.`,
         )}
 
         {/* Financial Health Score */}
-        <div className="mt-4 pt-4 border-t border-white/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-80">Financial Health Score</p>
-              <div className="flex items-center gap-2 mt-1">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-2 rounded-full ${i < companyData.financial_health_score ? 'bg-yellow-300' : 'bg-white/30'}`}
-                  />
-                ))}
-                <span className="text-sm font-semibold ml-2">{companyData.financial_health_score}/5</span>
+        {companyData.financial_health_score && (
+          <div className="mt-4 pt-4 border-t border-white/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm opacity-80">Financial Health Score</p>
+                <div className="flex items-center gap-2 mt-1">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-8 h-2 rounded-full ${i < companyData.financial_health_score ? 'bg-yellow-300' : 'bg-white/30'}`}
+                    />
+                  ))}
+                  <span className="text-sm font-semibold ml-2">{companyData.financial_health_score}/5</span>
+                </div>
               </div>
             </div>
+            {companyData.health_explanation && (
+              <p className="text-xs opacity-80 mt-2">{companyData.health_explanation}</p>
+            )}
           </div>
-          <p className="text-xs opacity-80 mt-2">{companyData.health_explanation}</p>
-        </div>
+        )}
 
         {companyData.last_updated && (
           <p className="text-xs opacity-60 mt-4">
