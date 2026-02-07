@@ -57,6 +57,7 @@ CRITICAL: Use Stockanalysis.com to gather ALL stock performance data
 B) FUNDAMENTALS:
 - Revenue, net income, profit margin, employee count
 - Growth rates, debt-to-equity, ROE
+- REQUIRED: Current Ratio, Quick Ratio (use balance sheet data from Stockanalysis.com or Yahoo Finance)
 
 C) NEWS & SENTIMENT (last 3 months):
 - 5-10 recent articles with sentiment analysis
@@ -622,6 +623,135 @@ H) SECTOR & COMPETITORS:
             <MetricCard label="Analyst Count" value={companyData.analyst_data.analyst_count} />
             <MetricCard label="Avg Price Target" value={`$${companyData.analyst_data.price_target_avg}`} />
             <MetricCard label="Target Range" value={`$${companyData.analyst_data.price_target_low} - $${companyData.analyst_data.price_target_high}`} />
+          </div>
+        </ExpandableSection>
+      )}
+
+      {/* Advanced Financial Ratios */}
+      {companyData.fundamentals && (
+        <ExpandableSection
+          title="Advanced Financial Ratios"
+          isExpanded={expandedSections.includes('ratios')}
+          onToggle={() => toggleSection('ratios')}
+        >
+          <div className="space-y-4">
+            {/* Debt-to-Equity Ratio */}
+            {companyData.fundamentals.debt_to_equity != null && (
+              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h5 className="font-semibold text-slate-800">Debt-to-Equity Ratio</h5>
+                    <p className="text-2xl font-bold text-indigo-600 mt-1">
+                      {companyData.fundamentals.debt_to_equity.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    companyData.fundamentals.debt_to_equity < 0.5 ? 'bg-emerald-100 text-emerald-700' :
+                    companyData.fundamentals.debt_to_equity < 1.5 ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {companyData.fundamentals.debt_to_equity < 0.5 ? 'Low Leverage' :
+                     companyData.fundamentals.debt_to_equity < 1.5 ? 'Moderate' : 'High Leverage'}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Measures how much debt a company uses to finance its assets relative to equity. 
+                  Lower ratios (&lt;1) indicate less risk and stronger financial stability. 
+                  Higher ratios suggest greater financial leverage and potential vulnerability during downturns.
+                </p>
+              </div>
+            )}
+
+            {/* Return on Equity (ROE) */}
+            {companyData.fundamentals.roe != null && (
+              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h5 className="font-semibold text-slate-800">Return on Equity (ROE)</h5>
+                    <p className="text-2xl font-bold text-emerald-600 mt-1">
+                      {(companyData.fundamentals.roe * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    companyData.fundamentals.roe > 0.15 ? 'bg-emerald-100 text-emerald-700' :
+                    companyData.fundamentals.roe > 0.10 ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {companyData.fundamentals.roe > 0.15 ? 'Excellent' :
+                     companyData.fundamentals.roe > 0.10 ? 'Good' : 'Below Average'}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Measures profitability by showing how much profit a company generates with shareholders' equity. 
+                  ROE above 15% is generally considered strong, indicating efficient use of investor capital. 
+                  Higher ROE suggests better growth potential and compensation opportunities.
+                </p>
+              </div>
+            )}
+
+            {/* Current Ratio */}
+            {companyData.fundamentals.current_ratio != null && (
+              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h5 className="font-semibold text-slate-800">Current Ratio</h5>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">
+                      {companyData.fundamentals.current_ratio.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    companyData.fundamentals.current_ratio >= 1.5 ? 'bg-emerald-100 text-emerald-700' :
+                    companyData.fundamentals.current_ratio >= 1.0 ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {companyData.fundamentals.current_ratio >= 1.5 ? 'Strong Liquidity' :
+                     companyData.fundamentals.current_ratio >= 1.0 ? 'Adequate' : 'Liquidity Risk'}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Measures ability to pay short-term obligations with current assets. 
+                  A ratio above 1.5 indicates strong liquidity and job security, as the company can easily cover immediate expenses. 
+                  Ratios below 1.0 may signal cash flow issues and potential layoff risk.
+                </p>
+              </div>
+            )}
+
+            {/* Quick Ratio */}
+            {companyData.fundamentals.quick_ratio != null && (
+              <div className="p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h5 className="font-semibold text-slate-800">Quick Ratio (Acid Test)</h5>
+                    <p className="text-2xl font-bold text-violet-600 mt-1">
+                      {companyData.fundamentals.quick_ratio.toFixed(2)}
+                    </p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    companyData.fundamentals.quick_ratio >= 1.0 ? 'bg-emerald-100 text-emerald-700' :
+                    companyData.fundamentals.quick_ratio >= 0.5 ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {companyData.fundamentals.quick_ratio >= 1.0 ? 'Excellent' :
+                     companyData.fundamentals.quick_ratio >= 0.5 ? 'Fair' : 'Concerning'}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  More conservative than current ratio - excludes inventory from assets. 
+                  Shows if a company can meet immediate obligations without selling inventory. 
+                  A ratio above 1.0 indicates strong immediate liquidity and lower short-term financial stress.
+                </p>
+              </div>
+            )}
+
+            {/* Summary Insight */}
+            <div className="mt-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+              <p className="text-xs font-semibold text-indigo-900 mb-2">💡 Job Seeker Impact</p>
+              <p className="text-xs text-indigo-800 leading-relaxed">
+                These ratios reveal financial stability and risk. Strong liquidity ratios (Current & Quick) mean 
+                lower layoff risk. High ROE suggests growth and better compensation. Low debt-to-equity indicates 
+                the company isn't overleveraged and can weather economic downturns.
+              </p>
+            </div>
           </div>
         </ExpandableSection>
       )}
