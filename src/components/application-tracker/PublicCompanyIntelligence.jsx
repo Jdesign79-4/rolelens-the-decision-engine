@@ -545,6 +545,7 @@ Return detailed, accurate data from real financial sources.`,
           </div>
         </div>
       )}
+    
 
       {/* Expandable Sections */}
       {/* Stock Performance */}
