@@ -47,17 +47,17 @@ Check if this company (or parent) is publicly traded on ANY major US exchange (N
 STEP 2 - COMPREHENSIVE DATA (if public):
 
 A) STOCK DATA (complete picture):
-CRITICAL: Use Stockanalysis.com to gather ALL stock performance data
+CRITICAL: Use Google Finance to gather ALL stock performance data
 - Current price, day/week/month/year changes, 52-week high/low
 - Market cap, P/E ratio, dividend yield, volume
-- MANDATORY: 12-month price history array for charting from Stockanalysis.com
+- MANDATORY: 12-month price history array for charting from Google Finance
   Format: [{month: "Jan 2025", price: 150.25}, {month: "Feb 2025", price: 155.80}, ...]
-  MUST include exactly 12 data points for the past 12 months with real prices from Stockanalysis.com
+  MUST include exactly 12 data points for the past 12 months with real prices from Google Finance
 
 B) FUNDAMENTALS:
 - Revenue, net income, profit margin, employee count
 - Growth rates, debt-to-equity, ROE
-- REQUIRED: Current Ratio, Quick Ratio (use balance sheet data from Stockanalysis.com or Yahoo Finance)
+- REQUIRED: Current Ratio, Quick Ratio (use balance sheet data from Google Finance or Yahoo Finance)
 
 C) NEWS & SENTIMENT (last 3 months):
 - 5-10 recent articles with sentiment analysis
