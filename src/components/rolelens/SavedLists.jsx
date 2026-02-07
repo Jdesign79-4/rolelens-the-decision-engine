@@ -109,8 +109,7 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
     }
   };
 
-  const customList = lists.find(l => l.id === 'custom');
-  const hasCustomCompanies = customList?.companies?.length > 0;
+
 
   return (
     <motion.div
@@ -184,7 +183,7 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {lists.filter(list => list.id !== 'custom' || hasCustomCompanies).map(list => {
+            {lists.map(list => {
               const Icon = list.icon;
               const listCompanies = list.companies.map(id => allJobs[id]).filter(Boolean);
               
