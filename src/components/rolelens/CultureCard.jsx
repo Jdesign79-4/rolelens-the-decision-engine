@@ -292,6 +292,9 @@ function BambooStalk({ bamboo, index, stressLevel, existentialRisk }) {
     : bamboo.healthy 
       ? 'from-emerald-500 via-green-500 to-emerald-600'
       : 'from-amber-500 via-yellow-500 to-amber-600';
+  
+  // Ensure valid segment count
+  const segmentCount = Math.max(1, Math.min(10, Math.floor((bamboo.height || 50) / 20)));
 
   return (
     <div className="flex flex-col items-center justify-end" style={{ width: '50px', height: '100%' }}>
@@ -313,7 +316,7 @@ function BambooStalk({ bamboo, index, stressLevel, existentialRisk }) {
         {/* Stalk Body */}
         <div className={`absolute inset-0 bg-gradient-to-t ${stalkColor} rounded-t-full`}>
           {/* Segments with crack effect for withering */}
-          {[...Array(Math.floor(bamboo.height / 20))].map((_, i) => (
+          {[...Array(segmentCount)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-full"
