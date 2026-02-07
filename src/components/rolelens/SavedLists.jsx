@@ -8,6 +8,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'dream', name: 'Dream Companies', icon: Star, color: 'from-amber-500 to-orange-500' },
   { id: 'target', name: 'Target Roles', icon: Target, color: 'from-violet-500 to-purple-500' },
   { id: 'research', name: 'Researching', icon: Search, color: 'from-teal-500 to-cyan-500' },
+  { id: 'custom', name: 'Custom', icon: Folder, color: 'from-slate-500 to-slate-600' },
 ];
 
 export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
@@ -69,15 +70,16 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
   const createNewList = (companyName) => {
     if (!companyName.trim()) return;
     
-    const newList = {
-      id: `custom-${Date.now()}`,
-      name: companyName,
-      icon: Folder,
-      color: 'from-slate-500 to-slate-600',
-      companies: [],
-      showSearchButton: true
-    };
-    setLists([...lists, newList]);
+    // Add to Custom section
+    setLists(lists.map(list => {
+      if (list.id === 'custom') {
+        return {
+          ...list,
+          companies: [...(list.companies || []), companyName]
+        };
+      }
+      return list;
+    }));
     setNewCompanyName('');
     setShowNewListInput(false);
   };
@@ -239,7 +241,33 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
 
                   {/* Companies */}
                   <div className="space-y-2 mb-3">
-                    {listCompanies.length === 0 ? (
+                    {list.id === 'custom' ? (
+                      // Custom list - show company names as text
+                      list.companies?.length === 0 ? (
+                        <p className="text-sm text-slate-400 italic py-4 text-center">No companies added yet</p>
+                      ) : (
+                        list.companies.map((companyName, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200"
+                          >
+                            <p className="font-semibold text-slate-800 text-sm">{companyName}</p>
+                            <button
+                              onClick={() => {
+                                setLists(lists.map(l => 
+                                  l.id === 'custom' 
+                                    ? { ...l, companies: l.companies.filter((_, i) => i !== idx) }
+                                    : l
+                                ));
+                              }}
+                              className="p-1 rounded-lg hover:bg-red-50 transition-colors"
+                            >
+                              <X className="w-4 h-4 text-slate-400 hover:text-red-500" />
+                            </button>
+                          </div>
+                        ))
+                      )
+                    ) : listCompanies.length === 0 ? (
                       <p className="text-sm text-slate-400 italic py-4 text-center">No companies added yet</p>
                     ) : (
                       listCompanies.map(job => (
@@ -267,7 +295,7 @@ export default function SavedLists({ allJobs, onClose, onCompare, onSearch }) {
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    {!DEFAULT_CATEGORIES.some(cat => cat.id === list.id) && !list.showSearchButton && (
+                    {list.id === 'custom' && (
                       <button
                         onClick={() => setShowAddCompany(showAddCompany === list.id ? null : list.id)}
                         className="flex-1 py-2 px-3 rounded-xl bg-white border-2 border-slate-200 hover:border-violet-300 transition-colors text-sm font-medium text-slate-700"
