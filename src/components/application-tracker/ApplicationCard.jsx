@@ -47,7 +47,14 @@ export default function ApplicationCard({ application, isDragging, onRefetch, on
               className="w-8 h-8 rounded-lg flex-shrink-0"
             />
             <div className="min-w-0">
-              <h4 className="font-semibold text-slate-800 text-sm truncate">{application.company_name}</h4>
+              <div className="flex items-center gap-1">
+                <h4 className="font-semibold text-slate-800 text-sm truncate">{application.company_name}</h4>
+                {application.is_public && application.ticker_symbol && (
+                  <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-bold rounded">
+                    {application.ticker_symbol}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-slate-500 truncate">{application.job_title}</p>
             </div>
           </div>

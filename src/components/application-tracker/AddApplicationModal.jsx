@@ -19,8 +19,44 @@ export default function AddApplicationModal({ onClose, onSuccess }) {
     stage: 'saved',
     priority: 'medium',
     notes: '',
-    tags: ''
+    tags: '',
+    is_public: false,
+    ticker_symbol: ''
   });
+  const [isDetectingTicker, setIsDetectingTicker] = useState(false);
+
+  const detectTicker = async (companyName) => {
+    if (!companyName) return;
+    setIsDetectingTicker(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Is "${companyName}" a publicly traded company? If yes, provide the stock ticker symbol. If it's a subsidiary, provide the parent company name and ticker. Return JSON.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            is_public: { type: "boolean" },
+            ticker_symbol: { type: "string" },
+            parent_company: { type: "string" }
+          }
+        }
+      });
+
+      if (result.is_public) {
+        setFormData(prev => ({
+          ...prev,
+          is_public: true,
+          ticker_symbol: result.ticker_symbol,
+          parent_company: result.parent_company
+        }));
+        toast.success(`Public company detected: ${result.ticker_symbol}`);
+      }
+    } catch (error) {
+      // Silent fail - not critical
+    } finally {
+      setIsDetectingTicker(false);
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: (data) => {
@@ -80,11 +116,24 @@ export default function AddApplicationModal({ onClose, onSuccess }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Company Name *</label>
-              <Input
-                value={formData.company_name}
-                onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                placeholder="e.g., Google"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={formData.company_name}
+                  onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                  onBlur={(e) => detectTicker(e.target.value)}
+                  placeholder="e.g., Google"
+                />
+                {formData.is_public && formData.ticker_symbol && (
+                  <div className="flex items-center px-3 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-semibold">
+                    {formData.ticker_symbol}
+                  </div>
+                )}
+                {isDetectingTicker && (
+                  <div className="flex items-center px-3 text-slate-400 text-sm">
+                    Detecting...
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium text-slate-700 mb-1 block">Job Title *</label>

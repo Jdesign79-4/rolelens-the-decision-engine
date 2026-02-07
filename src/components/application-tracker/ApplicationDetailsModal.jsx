@@ -4,14 +4,17 @@ import { X, ExternalLink, Paperclip, Upload, Plus, Calendar, Trash2 } from 'luci
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import PublicCompanyIntelligence from './PublicCompanyIntelligence';
 
 export default function ApplicationDetailsModal({ application, onClose, onRefetch }) {
   const [notes, setNotes] = useState(application.notes || '');
   const [isUploading, setIsUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState('details');
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -80,8 +83,20 @@ export default function ApplicationDetailsModal({ application, onClose, onRefetc
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="px-6 pt-4 border-b border-slate-200">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="intelligence">Financial Intelligence</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
         {/* Content */}
-        <div className="p-6 overflow-auto max-h-[calc(90vh-180px)] space-y-6">
+        <div className="p-6 overflow-auto max-h-[calc(90vh-240px)] space-y-6">
+          {activeTab === 'details' && (
+            <>
           {/* Basic Info */}
           {application.job_url && (
             <a 
@@ -170,6 +185,23 @@ export default function ApplicationDetailsModal({ application, onClose, onRefetc
               Save Notes
             </Button>
           </div>
+            </>
+          )}
+
+          {activeTab === 'intelligence' && (
+            <PublicCompanyIntelligence 
+              companyName={application.company_name}
+              onDataLoaded={(data) => {
+                // Update application with ticker info
+                if (data.is_public && data.ticker_symbol) {
+                  updateMutation.mutate({
+                    is_public: data.is_public,
+                    ticker_symbol: data.ticker_symbol
+                  });
+                }
+              }}
+            />
+          )}
         </div>
       </motion.div>
     </motion.div>
