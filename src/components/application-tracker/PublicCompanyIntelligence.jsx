@@ -55,9 +55,16 @@ CRITICAL: Use Google Finance to gather ALL stock performance data
   MUST include exactly 12 data points for the past 12 months with real prices from Google Finance
 
 B) FUNDAMENTALS:
-- Revenue, net income, profit margin, employee count
-- Growth rates, debt-to-equity, ROE
-- REQUIRED: Current Ratio, Quick Ratio (use balance sheet data from Google Finance or Yahoo Finance)
+CRITICAL: Use SEC EDGAR API (sec.gov/edgar) for ALL growth metrics and fundamentals
+- Revenue (quarterly and annual from 10-K/10-Q filings)
+- Net income, profit margin
+- Employee headcount (from 10-K filings)
+- Revenue growth YoY and QoQ (calculate from historical filings)
+- Earnings growth YoY (from income statements)
+- Total assets, cash and equivalents
+- Total debt, debt-to-equity ratio, ROE
+- REQUIRED: Current Ratio, Quick Ratio (calculate from balance sheet data in SEC filings)
+All data must come from official SEC EDGAR filings for accuracy
 
 C) NEWS & SENTIMENT (last 3 months):
 CRITICAL: Use MarketWatch top stories to gather news information for this specific company
