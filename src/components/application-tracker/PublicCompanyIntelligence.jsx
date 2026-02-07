@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { formatDistanceToNow } from 'date-fns';
 import JobSeekerIntelligenceReport from './JobSeekerIntelligenceReport';
+import JobSecurityRating from '../rolelens/JobSecurityRating';
 
 const SENTIMENT_COLORS = {
   positive: '#10b981',
@@ -306,6 +307,9 @@ H) SECTOR & COMPETITORS:
 
   return (
     <div className="space-y-4">
+      {/* Job Security Rating Widget */}
+      <JobSecurityRating data={companyData} isLoading={isLoading} onRefresh={handleRefresh} />
+
       {/* Public Company Badge & Summary */}
       <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between mb-4">
