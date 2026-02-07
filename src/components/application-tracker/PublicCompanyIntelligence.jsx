@@ -216,10 +216,6 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
             <div>
               <p className="text-sm opacity-80">Current Price</p>
               <p className="text-3xl font-bold">${companyData.stock_data.current_price}</p>
-              <div className={`flex items-center gap-1 text-sm ${companyData.stock_data.price_change_percent >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-                {companyData.stock_data.price_change_percent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                <span>{companyData.stock_data.price_change_percent?.toFixed(2)}% Today</span>
-              </div>
             </div>
             <div>
               <p className="text-sm opacity-80">1-Year Change</p>
@@ -230,7 +226,6 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
             <div>
               <p className="text-sm opacity-80">Market Cap</p>
               <p className="text-xl font-bold">{companyData.stock_data.market_cap}</p>
-              <p className="text-xs opacity-70">{companyData.fundamentals?.market_cap_category}</p>
             </div>
           </div>
         )}
