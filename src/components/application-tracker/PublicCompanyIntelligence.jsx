@@ -247,9 +247,6 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
                 </div>
               </div>
             </div>
-            {companyData.health_explanation && (
-              <p className="text-xs opacity-80 mt-2">{companyData.health_explanation}</p>
-            )}
           </div>
         )}
 
