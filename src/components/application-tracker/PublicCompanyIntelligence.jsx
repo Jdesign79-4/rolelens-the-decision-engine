@@ -527,7 +527,7 @@ H) SECTOR & COMPETITORS:
         isExpanded={expandedSections.includes('stock')}
         onToggle={() => toggleSection('stock')}
       >
-        {companyData.stock_data?.price_history && (
+        {companyData.stock_data?.price_history && companyData.stock_data.price_history.length > 0 ? (
           <div className="mb-4">
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={companyData.stock_data.price_history}>
@@ -539,11 +539,15 @@ H) SECTOR & COMPETITORS:
               </LineChart>
             </ResponsiveContainer>
           </div>
+        ) : (
+          <div className="mb-4 p-4 bg-slate-50 rounded-lg text-center text-sm text-slate-500">
+            Price history data not available
+          </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <MetricCard label="52-Week High" value={`$${companyData.stock_data?.week_52_high}`} />
-          <MetricCard label="52-Week Low" value={`$${companyData.stock_data?.week_52_low}`} />
+          <MetricCard label="52-Week High" value={companyData.stock_data?.week_52_high ? `$${companyData.stock_data.week_52_high}` : null} />
+          <MetricCard label="52-Week Low" value={companyData.stock_data?.week_52_low ? `$${companyData.stock_data.week_52_low}` : null} />
           <MetricCard label="P/E Ratio" value={companyData.stock_data?.pe_ratio} />
           <MetricCard label="Volume" value={companyData.stock_data?.volume} />
         </div>
