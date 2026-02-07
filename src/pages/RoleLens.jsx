@@ -1264,25 +1264,29 @@ function RoleLensContent() {
             </div>
 
             {/* Public Company Financial Intelligence */}
-            <div className="mt-6">
-              <PublicCompanyIntelligence 
-                companyName={currentJob.meta.company}
-                onDataLoaded={(data) => {
-                  console.log('Financial intelligence loaded:', data);
-                }}
-              />
-            </div>
+            {currentJob?.meta?.company && (
+              <div className="mt-6">
+                <PublicCompanyIntelligence 
+                  companyName={currentJob.meta.company}
+                  onDataLoaded={(data) => {
+                    console.log('Financial intelligence loaded:', data);
+                  }}
+                />
+              </div>
+            )}
 
             {/* External Data Aggregation */}
-            <div className="mt-6">
-              <ExternalDataAggregator 
-                company={currentJob.meta.company}
-                jobTitle={currentJob.isCompanyOnly ? null : currentJob.meta.title}
-                onDataLoaded={(data) => {
-                  console.log('Enriched data loaded:', data);
-                }}
-              />
-            </div>
+            {currentJob?.meta?.company && (
+              <div className="mt-6">
+                <ExternalDataAggregator 
+                  company={currentJob.meta.company}
+                  jobTitle={currentJob.isCompanyOnly ? null : currentJob.meta.title}
+                  onDataLoaded={(data) => {
+                    console.log('Enriched data loaded:', data);
+                  }}
+                />
+              </div>
+            )}
 
             {/* Job Posting Analysis - Red/Green Flags (only for specific roles) */}
             {!currentJob.isCompanyOnly && (
