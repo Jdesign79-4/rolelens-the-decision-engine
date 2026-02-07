@@ -202,6 +202,31 @@ Be specific with numbers. Show your work - reference which source each number co
         result.culture = { type: "Unknown", stress_level: 0.5, wlb_score: 5, growth_score: 5, politics_level: "Unknown" };
       }
 
+      // Sanitize stability fields — LLM often returns long prose instead of short values
+      if (result.stability) {
+        const sanitizeShort = (val, maxLen = 40) => {
+          if (!val || typeof val !== 'string') return 'N/A';
+          let clean = val.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/g, '').replace(/\(\s*\)/g, '').trim();
+          if (clean.length > maxLen) return clean.substring(0, maxLen).trim() + '…';
+          return clean || 'N/A';
+        };
+        result.stability.runway = sanitizeShort(result.stability.runway);
+        result.stability.headcount_trend = sanitizeShort(result.stability.headcount_trend);
+        result.stability.division = sanitizeShort(result.stability.division);
+      }
+
+      // Sanitize comp — ensure headline and real_feel are realistic salary numbers
+      if (result.comp) {
+        if (typeof result.comp.headline === 'number' && result.comp.headline < 1000) result.comp.headline = 0;
+        if (typeof result.comp.real_feel === 'number' && result.comp.real_feel < 1000) result.comp.real_feel = 0;
+        // Sanitize leak_label
+        if (result.comp.leak_label && typeof result.comp.leak_label === 'string') {
+          let lbl = result.comp.leak_label.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/g, '').replace(/\(\s*\)/g, '').trim();
+          if (lbl.length > 50) lbl = lbl.substring(0, 50).trim() + '…';
+          result.comp.leak_label = lbl;
+        }
+      }
+
       // Generate a unique ID
       const jobId = result.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
       
