@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, RefreshCw, Building2, AlertTriangle, CheckCir
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { formatDistanceToNow } from 'date-fns';
+import JobSeekerIntelligenceReport from './JobSeekerIntelligenceReport';
 
 const SENTIMENT_COLORS = {
   positive: '#10b981',
@@ -70,15 +71,67 @@ ANALYST DATA:
 - Number of analysts, average price target, high/low targets
 - Recent rating changes
 
-JOB SEEKER INTELLIGENCE (CRITICAL - MUST PROVIDE):
-- Financial health score (1-5) based on profitability, stock trend, sentiment, debt
-- Health explanation (brief summary)
-- Green flags array: MUST provide 2-5 specific positive indicators like "Revenue up 15% YoY", "Hiring 200+ engineers", "Stock up 25% this year"
-- Yellow flags array: MUST provide any caution indicators like "Flat revenue growth", "Mixed analyst ratings"
-- Red flags array: MUST provide any warning signs like "Announced 5% workforce reduction", "Stock down 30% YTD"
-- Job security events: Parse news for specific layoffs, hiring freezes, restructuring events with dates and details (last 90 days)
+JOB SEEKER INTELLIGENCE (CRITICAL - COMPREHENSIVE ANALYSIS REQUIRED):
 
-IMPORTANT: Always populate at least green OR red flags based on the data you find. Don't leave arrays empty.
+You are a career advisor analyzing this company for a job seeker. Provide a comprehensive intelligence report with the following sections:
+
+1. EXECUTIVE SUMMARY:
+- overall_recommendation: "Strong Opportunity" | "Good Opportunity" | "Proceed with Caution" | "High Risk" | "Decline"
+- headline_assessment: One compelling sentence summarizing the opportunity
+- executive_summary: 2-3 sentences highlighting primary strengths and concerns
+
+2. JOB SECURITY & STABILITY:
+- rating: "Very Stable" | "Stable" | "Moderate Risk" | "High Risk" | "Very High Risk"
+- analysis: 2-3 paragraphs analyzing financial stability, cash position, workforce changes, stock performance context, and debt levels in accessible language
+- key_factors: Array of 3-5 specific observations (e.g., "Strong cash reserves of $2B with 36+ months runway", "Recent 8% workforce reduction in Q4 2025")
+- practical_implications: What this means for a potential employee in clear terms
+
+3. CAREER GROWTH POTENTIAL:
+- rating: "Exceptional" | "Strong" | "Moderate" | "Limited" | "Declining"
+- analysis: 2-3 paragraphs on growth stage, expansion indicators, headcount trends, innovation signals, market position
+- opportunity_indicators: Array of 3-5 growth signals (e.g., "Opening 3 new regional offices in 2026", "R&D spending up 40% YoY")
+- development_outlook: Expected career development trajectory for employees
+
+4. COMPENSATION OUTLOOK:
+- rating: "Excellent" | "Good" | "Fair" | "Concerning" | "Poor"
+- analysis: 2-3 paragraphs on salary competitiveness, bonus/incentive likelihood, stock compensation value, benefits sustainability, raise potential
+- compensation_factors: Array of 3-5 insights (e.g., "Stock price up 35% YTD increases equity value", "Recent profitability supports bonus payouts")
+- financial_considerations: Practical advice about negotiation and compensation
+
+5. RISK ASSESSMENT:
+- overall_assessment: Balanced evaluation of potential concerns (2-3 paragraphs)
+- identified_risks: Array of 2-5 risks, each with:
+  - factor: Risk description
+  - likelihood: "High" | "Medium" | "Low"
+  - impact: What would happen if this risk materializes
+- risk_context: Whether risks are manageable, industry-standard, or significant concerns
+
+6. TIMING & MARKET CONDITIONS:
+- analysis: Whether now is an advantageous time to join (2-3 paragraphs)
+- market_context: How broader market and company-specific timing factors align
+- recommendations: Array of 2-4 specific timing-related advice items
+
+7. KEY TAKEAWAYS:
+- Array of 3-5 most important insights presented as clear, actionable bullet points
+
+8. ACTION ITEMS:
+- questions_to_ask: Array of 3-5 interview questions based on identified concerns
+- negotiation_points: Array of 2-4 points to leverage or be cautious about
+- additional_research: Specific areas needing more investigation
+
+9. METADATA:
+- confidence_level: "High" | "Medium" | "Low" (based on data availability)
+- data_freshness: Current date
+
+ALSO PROVIDE ORIGINAL DATA (for backward compatibility):
+- Financial health score (1-5)
+- Health explanation (brief summary)
+- Green flags array: 2-5 specific positive indicators
+- Yellow flags array: Caution indicators
+- Red flags array: Warning signs
+- Job security events: Layoffs, hiring freezes, restructuring (last 90 days)
+
+IMPORTANT: Always populate comprehensive intelligence. Use professional but conversational tone. Be honest about risks without being alarmist. Avoid jargon or explain it. Focus on employment implications, not just financial metrics.
 
 SECTOR & COMPETITORS:
 - Industry sector
