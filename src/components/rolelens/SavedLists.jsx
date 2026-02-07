@@ -12,7 +12,11 @@ const DEFAULT_CATEGORIES = [
 export default function SavedLists({ allJobs, onClose, onCompare }) {
   const [lists, setLists] = useState(() => {
     const saved = localStorage.getItem('rolelens-saved-lists');
-    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES.map(cat => ({ ...cat, companies: [] }));
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.map(list => ({ ...list, companies: list.companies || [] }));
+    }
+    return DEFAULT_CATEGORIES.map(cat => ({ ...cat, companies: [] }));
   });
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
