@@ -326,7 +326,6 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
 
       {/* Quick Flags Summary */}
       {(companyData.opportunity_flags?.green?.length || 
-        companyData.opportunity_flags?.yellow?.length || 
         companyData.opportunity_flags?.red?.length) && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
