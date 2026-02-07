@@ -235,6 +235,87 @@ Return detailed, accurate data from real financial sources.`,
                 }
               }
             },
+            job_seeker_intelligence: {
+              type: "object",
+              properties: {
+                overall_recommendation: { type: "string" },
+                headline_assessment: { type: "string" },
+                executive_summary: { type: "string" },
+                job_security: {
+                  type: "object",
+                  properties: {
+                    rating: { type: "string" },
+                    analysis: { type: "string" },
+                    key_factors: { type: "array", items: { type: "string" } },
+                    practical_implications: { type: "string" }
+                  }
+                },
+                career_growth: {
+                  type: "object",
+                  properties: {
+                    rating: { type: "string" },
+                    analysis: { type: "string" },
+                    opportunity_indicators: { type: "array", items: { type: "string" } },
+                    development_outlook: { type: "string" }
+                  }
+                },
+                market_sentiment: {
+                  type: "object",
+                  properties: {
+                    rating: { type: "string" },
+                    analysis: { type: "string" },
+                    sentiment_signals: { type: "array", items: { type: "string" } },
+                    reputation_considerations: { type: "string" }
+                  }
+                },
+                compensation_outlook: {
+                  type: "object",
+                  properties: {
+                    rating: { type: "string" },
+                    analysis: { type: "string" },
+                    compensation_factors: { type: "array", items: { type: "string" } },
+                    financial_considerations: { type: "string" }
+                  }
+                },
+                risk_assessment: {
+                  type: "object",
+                  properties: {
+                    overall_assessment: { type: "string" },
+                    identified_risks: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          factor: { type: "string" },
+                          likelihood: { type: "string" },
+                          impact: { type: "string" }
+                        }
+                      }
+                    },
+                    risk_context: { type: "string" }
+                  }
+                },
+                timing_assessment: {
+                  type: "object",
+                  properties: {
+                    analysis: { type: "string" },
+                    market_context: { type: "string" },
+                    recommendations: { type: "array", items: { type: "string" } }
+                  }
+                },
+                key_takeaways: { type: "array", items: { type: "string" } },
+                action_items: {
+                  type: "object",
+                  properties: {
+                    questions_to_ask: { type: "array", items: { type: "string" } },
+                    negotiation_points: { type: "array", items: { type: "string" } },
+                    additional_research: { type: "string" }
+                  }
+                },
+                confidence_level: { type: "string" },
+                data_freshness: { type: "string" }
+              }
+            },
             sector: { type: "string" },
             competitors: {
               type: "array",
@@ -404,9 +485,14 @@ Return detailed, accurate data from real financial sources.`,
         )}
       </div>
 
+      {/* Comprehensive Job Seeker Intelligence Report */}
+      {companyData.job_seeker_intelligence && (
+        <JobSeekerIntelligenceReport intelligence={companyData.job_seeker_intelligence} />
+      )}
+
       {/* Opportunity & Risk Flags */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h4 className="font-semibold text-slate-800 mb-4">Job Seeker Intelligence</h4>
+        <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
         
         {(!companyData.opportunity_flags?.green?.length && 
           !companyData.opportunity_flags?.yellow?.length && 
