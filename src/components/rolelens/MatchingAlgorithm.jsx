@@ -12,6 +12,8 @@ function getUserFeedbackWeights() {
 
 // Save updated weights based on user feedback
 function updateFeedbackWeights(jobId, feedback, job, tunerSettings) {
+  if (!job?.stability || !job?.culture || !job?.comp) return;
+  
   const history = JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
   history.push({
     jobId,
@@ -162,6 +164,7 @@ export function calculateJobMatch(job, tunerSettings) {
 }
 
 function calculateStabilityScore(stability, riskAppetite) {
+  if (!stability || typeof stability.risk_score === 'undefined') return 50;
   const riskScore = stability.risk_score;
   
   // Risk seekers prefer higher risk, stability seekers prefer lower risk
@@ -180,6 +183,7 @@ function calculateStabilityScore(stability, riskAppetite) {
 }
 
 function calculateCompensationScore(comp, honestSelfReflection) {
+  if (!comp || !comp.real_feel || !comp.headline) return 50;
   const realFeel = comp.real_feel;
   const headline = comp.headline;
   
@@ -239,6 +243,8 @@ export function getMatchLabel(score) {
 }
 
 export function getMatchInsights(job, tunerSettings, score) {
+  if (!job?.culture || !job?.stability || !job?.comp) return [];
+  
   const insights = [];
   
   if (tunerSettings.lifeAnchors > 0.6 && job.culture.wlb_score > 7.5) {
