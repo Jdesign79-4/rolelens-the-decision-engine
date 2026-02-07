@@ -33,20 +33,19 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
 
       // Fetch fresh data
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Verify if this company is listed on the New York Stock Exchange (NYSE) and gather financial intelligence:
+        prompt: `Check if this company is publicly traded and provide job seeker insights:
 
 Company: "${companyName}"
 
-STEP 1 - NYSE VERIFICATION (CRITICAL):
-Go to Google Finance and verify if this company (or its parent company) is listed on the NYSE.
-- Search Google Finance for: "${companyName}"
-- Check if it trades on NYSE (not NASDAQ, not other exchanges - ONLY NYSE)
-- If it's a subsidiary, find the parent company that trades on NYSE (e.g., "Instagram" → parent: "Meta Platforms", ticker: "META" on NASDAQ - REJECT, not NYSE)
-- Common NYSE-listed companies: General Motors (GM), Ford (F), Walmart (WMT), Disney (DIS), etc.
-- If NOT listed on NYSE, set is_public to false and stop here
+CRITICAL - SPEED OPTIMIZATION: Provide ONLY essential data for job seekers. Skip unnecessary details.
 
-STEP 2 - GATHER DATA (ONLY IF NYSE-VERIFIED):
-If verified as NYSE-listed, gather comprehensive financial intelligence from Google Finance, MSN Money, and Seeking Alpha:
+STEP 1 - PUBLIC COMPANY CHECK:
+Check if this company (or parent) is publicly traded on ANY major US exchange (NYSE, NASDAQ).
+- If NOT public, set is_public=false and STOP
+- If public, provide ticker symbol and continue
+
+STEP 2 - CORE DATA (if public):
+Gather ONLY the most critical information:
 
 STOCK PERFORMANCE (if public):
 - Current stock price
