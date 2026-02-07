@@ -74,73 +74,12 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
             is_public: { type: "boolean" },
             ticker_symbol: { type: "string" },
             parent_company: { type: "string" },
-            parent_ticker: { type: "string" },
             stock_data: {
               type: "object",
               properties: {
                 current_price: { type: "number" },
-                price_change_percent: { type: "number" },
-                week_change_percent: { type: "number" },
-                month_change_percent: { type: "number" },
-                three_month_change_percent: { type: "number" },
                 year_change_percent: { type: "number" },
-                ytd_change_percent: { type: "number" },
-                week_52_high: { type: "number" },
-                week_52_low: { type: "number" },
-                market_cap: { type: "string" },
-                pe_ratio: { type: "number" },
-                dividend_yield: { type: "number" },
-                volume: { type: "string" },
-                price_history: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      month: { type: "string" },
-                      price: { type: "number" }
-                    }
-                  }
-                }
-              }
-            },
-            fundamentals: {
-              type: "object",
-              properties: {
-                revenue_ttm: { type: "string" },
-                net_income: { type: "string" },
-                profit_margin: { type: "number" },
-                employee_count: { type: "number" },
-                market_cap_category: { type: "string" },
-                revenue_growth_yoy: { type: "number" },
-                earnings_growth_yoy: { type: "number" },
-                debt_to_equity: { type: "number" },
-                roe: { type: "number" }
-              }
-            },
-            news_articles: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  headline: { type: "string" },
-                  source: { type: "string" },
-                  date: { type: "string" },
-                  url: { type: "string" },
-                  excerpt: { type: "string" },
-                  category: { type: "string" },
-                  sentiment: { type: "string", enum: ["positive", "neutral", "negative"] }
-                }
-              }
-            },
-            analyst_data: {
-              type: "object",
-              properties: {
-                consensus_rating: { type: "string" },
-                analyst_count: { type: "number" },
-                price_target_avg: { type: "number" },
-                price_target_high: { type: "number" },
-                price_target_low: { type: "number" },
-                recent_changes: { type: "array", items: { type: "string" } }
+                market_cap: { type: "string" }
               }
             },
             ai_career_insight: {
