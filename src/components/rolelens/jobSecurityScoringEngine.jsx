@@ -194,14 +194,18 @@ function calculateMarketSentiment(data) {
     }
   }
 
-  // Analyst consensus
-  if (data.analyst_data?.consensus_rating) {
-    const rating = data.analyst_data.consensus_rating.toLowerCase();
-    if (rating.includes('strong sell') || rating.includes('sell')) {
+  // Analyst consensus - check order matters (strong sell before sell, strong buy before buy)
+  if (data.analyst_data?.consensus_rating && typeof data.analyst_data.consensus_rating === 'string') {
+    const rating = data.analyst_data.consensus_rating.toLowerCase().trim();
+    if (rating.includes('strong sell')) {
+      score -= 20; // Very bearish
+    } else if (rating.includes('sell') || rating.includes('underperform') || rating.includes('underweight')) {
       score -= 15; // Bearish
-    } else if (rating.includes('hold')) {
+    } else if (rating.includes('hold') || rating.includes('neutral') || rating.includes('equal-weight')) {
       score -= 5; // Neutral
-    } else if (rating.includes('buy') || rating.includes('strong buy')) {
+    } else if (rating.includes('strong buy') || rating.includes('conviction buy')) {
+      score += 8; // Very bullish
+    } else if (rating.includes('buy') || rating.includes('outperform') || rating.includes('overweight')) {
       score += 5; // Bullish
     }
   }
@@ -297,13 +301,13 @@ function applyModifiers(baseScore, data) {
   let score = baseScore;
 
   // Market cap / company size (larger = more stable)
-  if (data.stock_data?.market_cap) {
+  if (data.stock_data?.market_cap && typeof data.stock_data.market_cap === 'string') {
     const mcap = data.stock_data.market_cap.toLowerCase();
-    if (mcap.includes('trillion') || mcap.includes('$1t+')) {
+    if (mcap.includes('trillion') || /\d+(\.\d+)?\s*t\b/i.test(mcap)) {
       score += 5; // Mega cap
-    } else if (mcap.includes('billion') && !mcap.startsWith('$0')) {
+    } else if ((mcap.includes('billion') || /\d+(\.\d+)?\s*b\b/i.test(mcap)) && !/^[\$]?0/i.test(mcap)) {
       score += 2; // Large cap
-    } else if (mcap.includes('million')) {
+    } else if (mcap.includes('million') || /\d+(\.\d+)?\s*m\b/i.test(mcap)) {
       score -= 5; // Small cap = higher risk
     }
   }
