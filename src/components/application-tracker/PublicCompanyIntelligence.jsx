@@ -71,21 +71,43 @@ ANALYST DATA:
 - Number of analysts, average price target, high/low targets
 - Recent rating changes
 
-JOB SEEKER INTELLIGENCE (REQUIRED - KEEP IT SIMPLE AND FAST):
-CRITICAL: You MUST provide ALL of these fields. Do not skip any.
+AI JOB SEEKER INTELLIGENCE:
+You are helping a job seeker understand what this company's financial data means for them as a potential employee. Use simple, everyday language - no jargon.
 
-BASIC FLAGS (ALWAYS REQUIRED):
-- financial_health_score: Number 1-5
-- health_explanation: 1 sentence summary
-- Green flags: MUST provide 2-4 positive indicators (e.g., "Stock up 25% YTD", "Revenue growing 15% YoY")
-- Yellow flags: Provide 0-2 caution items if any exist
-- Red flags: Provide 0-2 warning items if any exist  
-- Job security events: Any layoffs/hiring events in last 90 days (or empty array)
+Provide a practical analysis covering:
 
-If you find NO positive indicators, still create at least 1-2 green flags based on available data (e.g., "Established NYSE-listed company", "Long operating history").
-If you find serious issues, add red flags.
+1. JOB SECURITY (2-3 sentences):
+- Is this financially stable? Are jobs safe or is there layoff risk?
+- Mention cash position, profitability, recent workforce changes
+- Red flags or green flags?
 
-Be concise and direct.
+2. WHAT THE STOCK PERFORMANCE MEANS (2-3 sentences):
+- If stock rising: "Growing company = more opportunities, equity gains value"
+- If stock falling: "Struggling = possible layoffs, equity loses value, budget constraints"
+- Connect stock performance to day-to-day employee experience
+
+3. MONEY MATTERS (2-3 sentences):
+- Can they afford competitive salaries?
+- Will bonuses/stock options be valuable?
+- Any cost-cutting affecting pay/benefits?
+
+4. CAREER GROWTH OUTLOOK (2-3 sentences):
+- Is company expanding (promotion opportunities)?
+- Investing in new products/markets?
+- Or shrinking (limited advancement)?
+
+5. BOTTOM LINE (2-3 sentences):
+- Overall: "Strong Opportunity" | "Good Opportunity" | "Proceed with Caution" | "High Risk"
+- One key reason to join
+- One key concern to investigate
+
+Use conversational language. Explain financial terms if used. Be honest and balanced.
+
+ALSO provide backward-compatibility flags:
+- financial_health_score: 1-5
+- health_explanation: Brief summary
+- Green/yellow/red flag arrays
+- Job security events (last 90 days)
 
 SECTOR & COMPETITORS:
 - Industry sector
@@ -166,6 +188,23 @@ Return detailed, accurate data from real financial sources.`,
                 price_target_high: { type: "number" },
                 price_target_low: { type: "number" },
                 recent_changes: { type: "array", items: { type: "string" } }
+              }
+            },
+            ai_career_insight: {
+              type: "object",
+              properties: {
+                job_security: { type: "string", description: "2-3 sentences on financial stability and layoff risk" },
+                stock_performance_meaning: { type: "string", description: "2-3 sentences connecting stock to employee experience" },
+                money_matters: { type: "string", description: "2-3 sentences on salary, bonuses, stock value" },
+                career_growth: { type: "string", description: "2-3 sentences on expansion and opportunities" },
+                bottom_line: {
+                  type: "object",
+                  properties: {
+                    recommendation: { type: "string", enum: ["Strong Opportunity", "Good Opportunity", "Proceed with Caution", "High Risk"] },
+                    key_reason_to_join: { type: "string" },
+                    key_concern: { type: "string" }
+                  }
+                }
               }
             },
             financial_health_score: { type: "number" },
@@ -359,16 +398,81 @@ Return detailed, accurate data from real financial sources.`,
         )}
       </div>
 
-      {/* Opportunity & Risk Flags */}
-      {(
+      {/* AI Career Insight */}
+      {companyData.ai_career_insight && (
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="text-2xl">🤖</div>
+            <h3 className="text-xl font-bold text-slate-800">AI Career Insight</h3>
+          </div>
+
+          <div className="space-y-4">
+            {/* Job Security */}
+            <div className="bg-white/80 rounded-xl p-4">
+              <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                <span>🛡️</span> Job Security
+              </h4>
+              <p className="text-sm text-slate-700 leading-relaxed">{companyData.ai_career_insight.job_security}</p>
+            </div>
+
+            {/* Stock Performance Meaning */}
+            <div className="bg-white/80 rounded-xl p-4">
+              <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                <span>📈</span> What the Stock Price Tells You
+              </h4>
+              <p className="text-sm text-slate-700 leading-relaxed">{companyData.ai_career_insight.stock_performance_meaning}</p>
+            </div>
+
+            {/* Money Matters */}
+            <div className="bg-white/80 rounded-xl p-4">
+              <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                <span>💰</span> Compensation Outlook
+              </h4>
+              <p className="text-sm text-slate-700 leading-relaxed">{companyData.ai_career_insight.money_matters}</p>
+            </div>
+
+            {/* Career Growth */}
+            <div className="bg-white/80 rounded-xl p-4">
+              <h4 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                <span>🚀</span> Career Growth
+              </h4>
+              <p className="text-sm text-slate-700 leading-relaxed">{companyData.ai_career_insight.career_growth}</p>
+            </div>
+
+            {/* Bottom Line */}
+            {companyData.ai_career_insight.bottom_line && (
+              <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4 text-white">
+                <h4 className="font-bold mb-2 flex items-center gap-2">
+                  <span>⚡</span> Bottom Line: {companyData.ai_career_insight.bottom_line.recommendation}
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <span className="font-semibold text-green-300">✓ Key Strength:</span>{' '}
+                    {companyData.ai_career_insight.bottom_line.key_reason_to_join}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-amber-300">⚠ Key Concern:</span>{' '}
+                    {companyData.ai_career_insight.bottom_line.key_concern}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-indigo-200 text-xs text-slate-500 text-center">
+            📊 Based on data as of {new Date().toLocaleDateString()} • Not financial advice
+          </div>
+        </div>
+      )}
+
+      {/* Quick Flags Summary */}
+      {(companyData.opportunity_flags?.green?.length || 
+        companyData.opportunity_flags?.yellow?.length || 
+        companyData.opportunity_flags?.red?.length) && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
           
-          {(!companyData.opportunity_flags?.green?.length && 
-            !companyData.opportunity_flags?.yellow?.length && 
-            !companyData.opportunity_flags?.red?.length) ? (
-            <p className="text-sm text-slate-500 italic">Analyzing company signals...</p>
-          ) : (
+          {(
           <>
             <div className="space-y-3">
               {companyData.opportunity_flags?.green?.length > 0 && (
@@ -441,7 +545,6 @@ Return detailed, accurate data from real financial sources.`,
               </div>
             )}
           </>
-        )}
         </div>
       )}
 
