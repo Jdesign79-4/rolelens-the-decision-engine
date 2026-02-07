@@ -125,7 +125,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 location: { type: "string" },
                 logo_search_term: { type: "string" },
                 website: { type: "string" }
-              }
+              },
+              required: ["company"]
             },
             stability: {
               type: "object",
@@ -136,7 +137,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 runway: { type: "string" },
                 headcount_trend: { type: "string" },
                 analysis: { type: "string" }
-              }
+              },
+              required: ["health", "risk_score"]
             },
             comp: {
               type: "object",
@@ -148,7 +150,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 leak_label: { type: "string" },
                 tax_rate: { type: "number" },
                 col_adjustment: { type: "number" }
-              }
+              },
+              required: ["headline"]
             },
             culture: {
               type: "object",
@@ -159,7 +162,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 growth_score: { type: "number" },
                 politics_level: { type: "string" },
                 analysis: { type: "string" }
-              }
+              },
+              required: ["type", "stress_level", "wlb_score"]
             },
             sources: {
               type: "array",
@@ -172,7 +176,8 @@ Be specific with numbers. Show your work - reference which source each number co
                 }
               }
             }
-          }
+          },
+          required: ["meta", "stability", "comp", "culture"]
         }
       });
 
