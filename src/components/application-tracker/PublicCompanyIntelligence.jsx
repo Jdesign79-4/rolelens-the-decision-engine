@@ -44,13 +44,27 @@ Check if this company (or parent) is publicly traded on ANY major US exchange (N
 - If NOT public, set is_public=false and STOP
 - If public, provide ticker symbol and continue
 
-STEP 2 - CORE DATA (if public):
+STEP 2 - COMPREHENSIVE DATA (if public):
 
-A) STOCK BASICS (required):
-- Current price, 1-year % change, market cap
-- Financial health score (1-5)
+A) STOCK DATA (complete picture):
+- Current price, day/week/month/year changes, 52-week high/low
+- Market cap, P/E ratio, dividend yield, volume
+- 12-month price history for charting
 
-B) AI CAREER INSIGHT (CRITICAL - focus here):
+B) FUNDAMENTALS:
+- Revenue, net income, profit margin, employee count
+- Growth rates, debt-to-equity, ROE
+
+C) NEWS & SENTIMENT (last 3 months):
+- 5-10 recent articles with sentiment analysis
+- Headlines, excerpts, dates, URLs
+
+D) ANALYST DATA:
+- Consensus rating, analyst count
+- Price targets (avg, high, low)
+- Recent rating changes
+
+E) AI CAREER INSIGHT:
 Provide plain-English guidance in 2-3 sentences each.
 IMPORTANT: Do NOT include any URLs, citations, or source links in these insights - only plain text.
 1. JOB SECURITY: Financial stability, layoff risk, red/green flags
@@ -59,15 +73,18 @@ IMPORTANT: Do NOT include any URLs, citations, or source links in these insights
 4. CAREER GROWTH: Expanding or shrinking?
 5. BOTTOM LINE: Overall recommendation, key strength, key concern
 
-C) QUICK FLAGS (3-5 items max):
+F) OPPORTUNITY FLAGS:
 - Green flags (positives)
+- Yellow flags (caution items)
 - Red flags (concerns)
 
-D) OPTIONAL (if time permits):
-- 2-3 recent news headlines
-- Sector and 2-3 competitors
+G) JOB SECURITY EVENTS (last 90 days):
+- Layoffs, hiring freezes, reorganizations
+- Include dates and details
 
-OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists.`,
+H) SECTOR & COMPETITORS:
+- Company's sector/industry
+- 3-5 main competitors with brief comparison`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
