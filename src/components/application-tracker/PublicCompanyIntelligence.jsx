@@ -100,39 +100,14 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
               }
             },
             financial_health_score: { type: "number" },
-            health_explanation: { type: "string" },
             opportunity_flags: {
               type: "object",
               properties: {
                 green: { type: "array", items: { type: "string" } },
-                yellow: { type: "array", items: { type: "string" } },
                 red: { type: "array", items: { type: "string" } }
               }
             },
-            job_security_events: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  date: { type: "string" },
-                  event: { type: "string" },
-                  details: { type: "string" }
-                }
-              }
-            },
-
-            sector: { type: "string" },
-            competitors: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  ticker: { type: "string" },
-                  comparison: { type: "string" }
-                }
-              }
-            }
+            sector: { type: "string" }
           }
         }
       });
