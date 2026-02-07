@@ -30,7 +30,11 @@ export default function AddApplicationModal({ onClose, onSuccess }) {
     setIsDetectingTicker(true);
     try {
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Is "${companyName}" a publicly traded company? If yes, provide the stock ticker symbol. If it's a subsidiary, provide the parent company name and ticker. Return JSON.`,
+        prompt: `Check Google Finance: Is "${companyName}" listed on the New York Stock Exchange (NYSE)? 
+        
+CRITICAL: Only return is_public=true if the company trades on NYSE. Not NASDAQ, not other exchanges.
+If it's a subsidiary, check if the parent company is on NYSE.
+Return JSON with ticker and parent info.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",

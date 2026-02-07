@@ -32,17 +32,20 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
 
       // Fetch fresh data
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze this company for public trading status and financial intelligence:
+        prompt: `Verify if this company is listed on the New York Stock Exchange (NYSE) and gather financial intelligence:
 
 Company: "${companyName}"
 
-CRITICAL TASKS:
-1. Determine if this company is publicly traded
-2. If public, find the stock ticker symbol (handle variations - "Meta" → "META", "Google" → "GOOGL", etc.)
-3. If it's a subsidiary, identify the parent company and parent ticker (e.g., "Instagram" → parent: "Meta Platforms", ticker: "META")
-4. Pull real-time financial data from public sources
+STEP 1 - NYSE VERIFICATION (CRITICAL):
+Go to Google Finance and verify if this company (or its parent company) is listed on the NYSE.
+- Search Google Finance for: "${companyName}"
+- Check if it trades on NYSE (not NASDAQ, not other exchanges - ONLY NYSE)
+- If it's a subsidiary, find the parent company that trades on NYSE (e.g., "Instagram" → parent: "Meta Platforms", ticker: "META" on NASDAQ - REJECT, not NYSE)
+- Common NYSE-listed companies: General Motors (GM), Ford (F), Walmart (WMT), Disney (DIS), etc.
+- If NOT listed on NYSE, set is_public to false and stop here
 
-Gather comprehensive financial intelligence from Google Finance, MSN Money, and public financial sources:
+STEP 2 - GATHER DATA (ONLY IF NYSE-VERIFIED):
+If verified as NYSE-listed, gather comprehensive financial intelligence from Google Finance, MSN Money, and Seeking Alpha:
 
 STOCK PERFORMANCE (if public):
 - Current stock price
