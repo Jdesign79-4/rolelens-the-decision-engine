@@ -24,6 +24,7 @@ import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 import JobFeedback from '@/components/rolelens/JobFeedback';
 import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator';
+import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
 
 const jobDatabase = {
   standing_stones: {
@@ -1258,6 +1259,16 @@ function RoleLensContent() {
                   // Force re-render of alternatives to show updated matches
                   setIsConnecting(true);
                   setTimeout(() => setIsConnecting(false), 400);
+                }}
+              />
+            </div>
+
+            {/* Public Company Financial Intelligence */}
+            <div className="mt-6">
+              <PublicCompanyIntelligence 
+                companyName={currentJob.meta.company}
+                onDataLoaded={(data) => {
+                  console.log('Financial intelligence loaded:', data);
                 }}
               />
             </div>
