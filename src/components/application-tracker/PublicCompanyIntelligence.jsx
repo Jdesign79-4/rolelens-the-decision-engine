@@ -155,7 +155,11 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
     );
   }
 
-  if (!companyData?.is_public) {
+  if (!companyData) {
+    return null;
+  }
+
+  if (!companyData.is_public) {
     return (
       <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
         <div className="flex items-center gap-2">
@@ -169,10 +173,10 @@ OPTIMIZE FOR SPEED: Skip charts, detailed analyst data, and extensive news lists
     );
   }
 
-  const ticker = companyData.ticker_symbol || companyData.parent_ticker;
+  const ticker = companyData.ticker_symbol || companyData.parent_ticker || '';
   const displayName = companyData.parent_company
     ? `${companyName} (${companyData.parent_company} - ${ticker})`
-    : `${companyName} (${ticker})`;
+    : `${companyName}${ticker ? ` (${ticker})` : ''}`;
 
   const sentimentData = companyData.news_articles?.reduce((acc, article) => {
     acc[article.sentiment] = (acc[article.sentiment] || 0) + 1;
