@@ -71,67 +71,21 @@ ANALYST DATA:
 - Number of analysts, average price target, high/low targets
 - Recent rating changes
 
-JOB SEEKER INTELLIGENCE (CRITICAL - COMPREHENSIVE ANALYSIS REQUIRED):
+JOB SEEKER INTELLIGENCE (REQUIRED - KEEP IT SIMPLE AND FAST):
+CRITICAL: You MUST provide ALL of these fields. Do not skip any.
 
-You are a career advisor analyzing this company for a job seeker. Provide a comprehensive intelligence report with the following sections:
+BASIC FLAGS (ALWAYS REQUIRED):
+- financial_health_score: Number 1-5
+- health_explanation: 1 sentence summary
+- Green flags: MUST provide 2-4 positive indicators (e.g., "Stock up 25% YTD", "Revenue growing 15% YoY")
+- Yellow flags: Provide 0-2 caution items if any exist
+- Red flags: Provide 0-2 warning items if any exist  
+- Job security events: Any layoffs/hiring events in last 90 days (or empty array)
 
-1. EXECUTIVE SUMMARY:
-- overall_recommendation: "Strong Opportunity" | "Good Opportunity" | "Proceed with Caution" | "High Risk" | "Decline"
-- headline_assessment: One compelling sentence summarizing the opportunity
-- executive_summary: 2-3 sentences highlighting primary strengths and concerns
+If you find NO positive indicators, still create at least 1-2 green flags based on available data (e.g., "Established NYSE-listed company", "Long operating history").
+If you find serious issues, add red flags.
 
-2. JOB SECURITY & STABILITY:
-- rating: "Very Stable" | "Stable" | "Moderate Risk" | "High Risk" | "Very High Risk"
-- analysis: 2-3 paragraphs analyzing financial stability, cash position, workforce changes, stock performance context, and debt levels in accessible language
-- key_factors: Array of 3-5 specific observations (e.g., "Strong cash reserves of $2B with 36+ months runway", "Recent 8% workforce reduction in Q4 2025")
-- practical_implications: What this means for a potential employee in clear terms
-
-3. CAREER GROWTH POTENTIAL:
-- rating: "Exceptional" | "Strong" | "Moderate" | "Limited" | "Declining"
-- analysis: 2-3 paragraphs on growth stage, expansion indicators, headcount trends, innovation signals, market position
-- opportunity_indicators: Array of 3-5 growth signals (e.g., "Opening 3 new regional offices in 2026", "R&D spending up 40% YoY")
-- development_outlook: Expected career development trajectory for employees
-
-4. COMPENSATION OUTLOOK:
-- rating: "Excellent" | "Good" | "Fair" | "Concerning" | "Poor"
-- analysis: 2-3 paragraphs on salary competitiveness, bonus/incentive likelihood, stock compensation value, benefits sustainability, raise potential
-- compensation_factors: Array of 3-5 insights (e.g., "Stock price up 35% YTD increases equity value", "Recent profitability supports bonus payouts")
-- financial_considerations: Practical advice about negotiation and compensation
-
-5. RISK ASSESSMENT:
-- overall_assessment: Balanced evaluation of potential concerns (2-3 paragraphs)
-- identified_risks: Array of 2-5 risks, each with:
-  - factor: Risk description
-  - likelihood: "High" | "Medium" | "Low"
-  - impact: What would happen if this risk materializes
-- risk_context: Whether risks are manageable, industry-standard, or significant concerns
-
-6. TIMING & MARKET CONDITIONS:
-- analysis: Whether now is an advantageous time to join (2-3 paragraphs)
-- market_context: How broader market and company-specific timing factors align
-- recommendations: Array of 2-4 specific timing-related advice items
-
-7. KEY TAKEAWAYS:
-- Array of 3-5 most important insights presented as clear, actionable bullet points
-
-8. ACTION ITEMS:
-- questions_to_ask: Array of 3-5 interview questions based on identified concerns
-- negotiation_points: Array of 2-4 points to leverage or be cautious about
-- additional_research: Specific areas needing more investigation
-
-9. METADATA:
-- confidence_level: "High" | "Medium" | "Low" (based on data availability)
-- data_freshness: Current date
-
-ALSO PROVIDE ORIGINAL DATA (for backward compatibility):
-- Financial health score (1-5)
-- Health explanation (brief summary)
-- Green flags array: 2-5 specific positive indicators
-- Yellow flags array: Caution indicators
-- Red flags array: Warning signs
-- Job security events: Layoffs, hiring freezes, restructuring (last 90 days)
-
-IMPORTANT: Always populate comprehensive intelligence. Use professional but conversational tone. Be honest about risks without being alarmist. Avoid jargon or explain it. Focus on employment implications, not just financial metrics.
+Be concise and direct.
 
 SECTOR & COMPETITORS:
 - Industry sector
@@ -235,87 +189,7 @@ Return detailed, accurate data from real financial sources.`,
                 }
               }
             },
-            job_seeker_intelligence: {
-              type: "object",
-              properties: {
-                overall_recommendation: { type: "string" },
-                headline_assessment: { type: "string" },
-                executive_summary: { type: "string" },
-                job_security: {
-                  type: "object",
-                  properties: {
-                    rating: { type: "string" },
-                    analysis: { type: "string" },
-                    key_factors: { type: "array", items: { type: "string" } },
-                    practical_implications: { type: "string" }
-                  }
-                },
-                career_growth: {
-                  type: "object",
-                  properties: {
-                    rating: { type: "string" },
-                    analysis: { type: "string" },
-                    opportunity_indicators: { type: "array", items: { type: "string" } },
-                    development_outlook: { type: "string" }
-                  }
-                },
-                market_sentiment: {
-                  type: "object",
-                  properties: {
-                    rating: { type: "string" },
-                    analysis: { type: "string" },
-                    sentiment_signals: { type: "array", items: { type: "string" } },
-                    reputation_considerations: { type: "string" }
-                  }
-                },
-                compensation_outlook: {
-                  type: "object",
-                  properties: {
-                    rating: { type: "string" },
-                    analysis: { type: "string" },
-                    compensation_factors: { type: "array", items: { type: "string" } },
-                    financial_considerations: { type: "string" }
-                  }
-                },
-                risk_assessment: {
-                  type: "object",
-                  properties: {
-                    overall_assessment: { type: "string" },
-                    identified_risks: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          factor: { type: "string" },
-                          likelihood: { type: "string" },
-                          impact: { type: "string" }
-                        }
-                      }
-                    },
-                    risk_context: { type: "string" }
-                  }
-                },
-                timing_assessment: {
-                  type: "object",
-                  properties: {
-                    analysis: { type: "string" },
-                    market_context: { type: "string" },
-                    recommendations: { type: "array", items: { type: "string" } }
-                  }
-                },
-                key_takeaways: { type: "array", items: { type: "string" } },
-                action_items: {
-                  type: "object",
-                  properties: {
-                    questions_to_ask: { type: "array", items: { type: "string" } },
-                    negotiation_points: { type: "array", items: { type: "string" } },
-                    additional_research: { type: "string" }
-                  }
-                },
-                confidence_level: { type: "string" },
-                data_freshness: { type: "string" }
-              }
-            },
+
             sector: { type: "string" },
             competitors: {
               type: "array",
@@ -485,13 +359,8 @@ Return detailed, accurate data from real financial sources.`,
         )}
       </div>
 
-      {/* Comprehensive Job Seeker Intelligence Report */}
-      {companyData.job_seeker_intelligence && (
-        <JobSeekerIntelligenceReport intelligence={companyData.job_seeker_intelligence} />
-      )}
-
-      {/* Opportunity & Risk Flags - Only show if no full intelligence report */}
-      {!companyData.job_seeker_intelligence && (
+      {/* Opportunity & Risk Flags */}
+      {(
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
           
