@@ -19,6 +19,12 @@ import SavedLists from '@/components/rolelens/SavedLists';
 import CompensationSources from '@/components/rolelens/CompensationSources';
 import BenefitsHub from '@/components/rolelens/BenefitsHub';
 import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
+
+const DEFAULT_CATEGORIES = [
+  { id: 'dream', name: 'Dream Companies', icon: 'Star', color: 'from-amber-500 to-orange-500' },
+  { id: 'target', name: 'Target Roles', icon: 'Target', color: 'from-violet-500 to-purple-500' },
+  { id: 'research', name: 'Researching', icon: 'Search', color: 'from-teal-500 to-cyan-500' },
+];
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
@@ -747,13 +753,25 @@ function RoleLensContent() {
   const allJobs = { ...jobDatabase, ...customJobs };
   const currentJob = allJobs[activeJob];
 
-  // Favorites management
+  // Favorites management - adds to saved lists
   const toggleFavorite = (jobId) => {
     const newFavorites = favorites.includes(jobId)
       ? favorites.filter(id => id !== jobId)
       : [...favorites, jobId];
     setFavorites(newFavorites);
     localStorage.setItem('rolelens-favorites', JSON.stringify(newFavorites));
+    
+    // Add to saved lists (default to "Dream Companies")
+    if (!favorites.includes(jobId)) {
+      const savedLists = localStorage.getItem('rolelens-saved-lists');
+      const lists = savedLists ? JSON.parse(savedLists) : DEFAULT_CATEGORIES.map(cat => ({ ...cat, companies: [] }));
+      
+      const dreamList = lists.find(list => list.id === 'dream');
+      if (dreamList && !dreamList.companies.includes(jobId)) {
+        dreamList.companies.push(jobId);
+        localStorage.setItem('rolelens-saved-lists', JSON.stringify(lists));
+      }
+    }
   };
 
   const isFavorite = (jobId) => favorites.includes(jobId);
