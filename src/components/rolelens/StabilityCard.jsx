@@ -27,6 +27,14 @@ export default function StabilityCard({ data, tunerSettings }) {
     return 'from-orange-400 to-red-500';
   };
 
+  const getHealthRating = () => {
+    if (riskLevel < 0.2) return 'Very Stable';
+    if (riskLevel < 0.4) return 'Stable';
+    if (riskLevel < 0.6) return 'Moderate Risk';
+    if (riskLevel < 0.8) return 'High Risk';
+    return 'Very High Risk';
+  };
+
   const getInsight = () => {
     if (isUnderqualified) {
       return { text: "Skill Gap Risk", icon: AlertTriangle, color: "text-amber-600" };
@@ -48,20 +56,25 @@ export default function StabilityCard({ data, tunerSettings }) {
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-6">
-        <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Stability Forensics</p>
-          <h3 className="text-lg font-semibold text-slate-800">{data.health}</h3>
-        </div>
-        <div className={`p-2 rounded-xl bg-gradient-to-br ${getHealthColor()} bg-opacity-10`}>
-          <Shield className="w-5 h-5 text-white" />
-        </div>
-      </div>
+         <div>
+           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Job Security Rating</p>
+           <h3 className="text-lg font-semibold text-slate-800">{getHealthRating()}</h3>
+         </div>
+         <div className={`p-2 rounded-xl bg-gradient-to-br ${getHealthColor()} bg-opacity-10`}>
+           <Shield className={`w-5 h-5 ${
+             riskLevel < 0.2 ? 'text-emerald-600' :
+             riskLevel < 0.4 ? 'text-teal-600' :
+             riskLevel < 0.6 ? 'text-amber-600' :
+             'text-red-600'
+           }`} />
+         </div>
+       </div>
 
-      {/* Risk Gauge */}
+      {/* Stability Score */}
       <div className="mb-6">
         <div className="flex justify-between text-xs text-slate-500 mb-2">
-          <span>Risk Exposure</span>
-          <span>{Math.round(riskLevel * 100)}%</span>
+          <span>Stability Score</span>
+          <span>{Math.round((1 - riskLevel) * 100)}/100</span>
         </div>
         <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
           <motion.div
