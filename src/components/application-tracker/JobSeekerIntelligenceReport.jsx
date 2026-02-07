@@ -238,14 +238,19 @@ export default function JobSeekerIntelligenceReport({ intelligence }) {
         <div className="flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-amber-800 mb-1">Important Notice</p>
-            <p className="text-xs text-amber-700">
-              This analysis is for informational purposes only and should not be considered financial or career advice. 
-              Market conditions and company situations can change rapidly. Conduct your own research and consult with 
+            <p className="text-xs font-semibold text-amber-800 mb-1">Important Notice & Data Sources</p>
+            <p className="text-xs text-amber-700 mb-2">
+              This analysis is synthesized by AI from publicly available sources and is for informational purposes only. 
+              <strong> Do not consider this financial or career advice.</strong> 
+              Market conditions and company situations change rapidly. Conduct independent research and consult with 
               professional advisors before making career decisions.
             </p>
+            <p className="text-xs text-amber-700 mb-2">
+              <strong>Data Sources:</strong> SEC filings, public salary databases, news articles, and analyst reports. 
+              Financial metrics may be estimates. Stock prices typically delayed 15+ minutes. All data should be verified independently.
+            </p>
             {intelligence.data_freshness && (
-              <p className="text-xs text-amber-600 mt-2">
+              <p className="text-xs text-amber-600">
                 Analysis based on data as of {intelligence.data_freshness} • 
                 Confidence: {intelligence.confidence_level || 'Medium'}
               </p>
