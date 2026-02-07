@@ -51,7 +51,8 @@ A) STOCK BASICS (required):
 - Financial health score (1-5)
 
 B) AI CAREER INSIGHT (CRITICAL - focus here):
-Provide plain-English guidance in 2-3 sentences each:
+Provide plain-English guidance in 2-3 sentences each.
+IMPORTANT: Do NOT include any URLs, citations, or source links in these insights - only plain text.
 1. JOB SECURITY: Financial stability, layoff risk, red/green flags
 2. STOCK MEANING: What rising/falling stock means for employees
 3. COMPENSATION: Can they pay well? Stock options valuable?
