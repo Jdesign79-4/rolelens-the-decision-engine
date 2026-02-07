@@ -400,12 +400,12 @@ function extractKeyIndicators(data, score) {
   }
 
   // Debt
-  if (data.fundamentals?.debt_to_equity !== undefined) {
+  if (data.fundamentals?.debt_to_equity !== undefined && data.fundamentals.debt_to_equity !== null) {
     const dte = data.fundamentals.debt_to_equity;
     if (dte < 0.5) {
       indicators.push({ icon: '✅', text: 'Low debt levels', type: 'positive' });
     } else if (dte > 2.0) {
-      indicators.push({ icon: '❌', text: `High debt (${dte.toFixed(1)}x equity)`, type: 'negative' });
+      indicators.push({ icon: '❌', text: `High debt (${Number(dte).toFixed(1)}x equity)`, type: 'negative' });
     }
   }
 
