@@ -104,10 +104,10 @@ function calculateFinancialHealth(data) {
   }
 
   // Cash position (estimated from market cap and growth)
-  if (data.stock_data?.market_cap && data.fundamentals?.revenue_ttm) {
-    // Companies with strong cash positions are safer
-    const hasGoodMarketCap = data.stock_data.market_cap.includes('B') || 
-                              data.stock_data.market_cap.includes('T');
+  if (data.stock_data?.market_cap && typeof data.stock_data.market_cap === 'string') {
+    const mcap = data.stock_data.market_cap.toLowerCase();
+    // Check for trillion or billion scale (B, T)
+    const hasGoodMarketCap = /\d+[t]|[0-9]{2,}b(?!illions)/i.test(mcap);
     if (hasGoodMarketCap) {
       score += 5; // Large cap = better cash position
     }
@@ -132,7 +132,9 @@ function calculateWorkforceTrends(data) {
       const totalLayoffImpact = recentLayoffs.reduce((sum, event) => {
         // Extract percentage from event details if available
         const percentMatch = event.details?.match(/(\d+)%/);
-        return sum + (percentMatch ? parseInt(percentMatch[1]) : 5);
+        const percent = percentMatch ? parseInt(percentMatch[1]) : 5;
+        // Clamp percentage to 0-100 range
+        return sum + Math.min(100, Math.max(0, percent));
       }, 0);
 
       if (totalLayoffImpact > 20) {
@@ -180,20 +182,8 @@ function calculateWorkforceTrends(data) {
 function calculateMarketSentiment(data) {
   let score = 100;
 
-  // Stock performance (6-month trend)
-  if (data.stock_data?.six_month_change_percent !== undefined) {
-    const change = data.stock_data.six_month_change_percent;
-    if (change < -40) {
-      score -= 25; // Stock crashed
-    } else if (change < -20) {
-      score -= 15; // Significant decline
-    } else if (change < 0) {
-      score -= 5; // Minor decline
-    } else if (change > 30) {
-      score += 5; // Strong performance
-    }
-  } else if (data.stock_data?.year_change_percent !== undefined) {
-    // Fallback to year change
+  // Stock performance (prefer 6-month, fallback to year change)
+  if (data.stock_data?.year_change_percent !== undefined && typeof data.stock_data.year_change_percent === 'number') {
     const change = data.stock_data.year_change_percent;
     if (change < -30) {
       score -= 20;
@@ -217,7 +207,7 @@ function calculateMarketSentiment(data) {
   }
 
   // Price target vs current price (upside/downside)
-  if (data.analyst_data?.price_target_avg && data.stock_data?.current_price) {
+  if (data.analyst_data?.price_target_avg && data.stock_data?.current_price && data.stock_data.current_price > 0) {
     const upside = ((data.analyst_data.price_target_avg - data.stock_data.current_price) / 
                     data.stock_data.current_price) * 100;
     if (upside > 30) {
@@ -338,36 +328,37 @@ function calculateConfidence(data) {
   let dataPoints = 0;
   let maxDataPoints = 0;
 
-  // Count available data points
+  // Count available AND VALID data points
   if (data.fundamentals) {
-    if (data.fundamentals.profit_margin !== undefined) dataPoints++;
-    if (data.fundamentals.revenue_growth_yoy !== undefined) dataPoints++;
-    if (data.fundamentals.debt_to_equity !== undefined) dataPoints++;
-    if (data.fundamentals.current_ratio !== undefined) dataPoints++;
+    // Only count valid numeric values
+    if (data.fundamentals.profit_margin !== undefined && typeof data.fundamentals.profit_margin === 'number') dataPoints++;
+    if (data.fundamentals.revenue_growth_yoy !== undefined && typeof data.fundamentals.revenue_growth_yoy === 'number') dataPoints++;
+    if (data.fundamentals.debt_to_equity !== undefined && typeof data.fundamentals.debt_to_equity === 'number' && data.fundamentals.debt_to_equity > 0) dataPoints++;
+    if (data.fundamentals.current_ratio !== undefined && typeof data.fundamentals.current_ratio === 'number' && data.fundamentals.current_ratio > 0) dataPoints++;
     maxDataPoints += 4;
   }
 
-  if (data.job_security_events) {
+  if (data.job_security_events && Array.isArray(data.job_security_events) && data.job_security_events.length > 0) {
     dataPoints++;
     maxDataPoints++;
   }
 
   if (data.stock_data) {
-    if (data.stock_data.year_change_percent !== undefined) dataPoints++;
+    if (data.stock_data.year_change_percent !== undefined && typeof data.stock_data.year_change_percent === 'number') dataPoints++;
     maxDataPoints++;
   }
 
   if (data.analyst_data) {
-    if (data.analyst_data.consensus_rating) dataPoints++;
+    if (data.analyst_data.consensus_rating && typeof data.analyst_data.consensus_rating === 'string') dataPoints++;
     maxDataPoints++;
   }
 
-  if (data.news_articles) {
+  if (data.news_articles && Array.isArray(data.news_articles) && data.news_articles.length > 0) {
     dataPoints++;
     maxDataPoints++;
   }
 
-  maxDataPoints = Math.max(1, maxDataPoints); // Avoid division by zero
+  maxDataPoints = Math.max(1, maxDataPoints);
   const completeness = dataPoints / maxDataPoints;
 
   if (completeness > 0.8) return 'High';

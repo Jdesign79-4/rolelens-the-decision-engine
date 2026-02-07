@@ -187,8 +187,13 @@ function calculateCompensationScore(comp, honestSelfReflection) {
   const realFeel = comp.real_feel;
   const headline = comp.headline;
   
+  // Guard against invalid values
+  if (typeof realFeel !== 'number' || typeof headline !== 'number' || realFeel <= 0 || headline <= 0) return 50;
+  
   // Adjust expectations based on self-assessment
   const expectedComp = headline * (0.7 + honestSelfReflection * 0.6);
+  if (expectedComp === 0) return 50;
+  
   const ratio = realFeel / expectedComp;
   
   // Score based on how well real_feel meets adjusted expectations
