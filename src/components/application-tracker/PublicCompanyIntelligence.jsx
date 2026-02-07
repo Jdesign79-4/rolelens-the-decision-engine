@@ -47,10 +47,12 @@ Check if this company (or parent) is publicly traded on ANY major US exchange (N
 STEP 2 - COMPREHENSIVE DATA (if public):
 
 A) STOCK DATA (complete picture):
+CRITICAL: Use Stockanalysis.com to gather ALL stock performance data
 - Current price, day/week/month/year changes, 52-week high/low
 - Market cap, P/E ratio, dividend yield, volume
-- CRITICAL: 12-month price history array for charting (e.g., [{month: "Jan", price: 150}, {month: "Feb", price: 155}, ...])
-  MUST include at least 12 data points for the past year
+- MANDATORY: 12-month price history array for charting from Stockanalysis.com
+  Format: [{month: "Jan 2025", price: 150.25}, {month: "Feb 2025", price: 155.80}, ...]
+  MUST include exactly 12 data points for the past 12 months with real prices from Stockanalysis.com
 
 B) FUNDAMENTALS:
 - Revenue, net income, profit margin, employee count
