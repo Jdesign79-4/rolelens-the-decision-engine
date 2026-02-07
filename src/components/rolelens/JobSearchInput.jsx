@@ -324,8 +324,23 @@ Be specific with numbers. Show your work - reference which source each number co
       });
 
       // Validate result structure
-      if (!result || !result.meta || !result.meta.company) {
-        throw new Error('Invalid response structure - missing company data');
+      if (!result) {
+        throw new Error('No response from AI');
+      }
+      if (!result.meta) {
+        throw new Error('Response missing meta data');
+      }
+      if (!result.meta.company) {
+        throw new Error('Response missing company name');
+      }
+      if (!result.stability) {
+        throw new Error('Response missing stability data');
+      }
+      if (!result.comp) {
+        throw new Error('Response missing compensation data');
+      }
+      if (!result.culture) {
+        throw new Error('Response missing culture data');
       }
 
       // Generate a unique ID
@@ -341,14 +356,14 @@ Be specific with numbers. Show your work - reference which source each number co
           logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(result.meta.company)}&background=random&size=100`
         },
         sources: result.sources || [],
-        alternatives: result.alternatives?.map((alt, i) => ({
+        alternatives: (result.alternatives || []).map((alt, i) => ({
           ...alt,
-          id: alt.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + i,
+          id: (alt?.meta?.company || `alt_${i}`).toLowerCase().replace(/\s+/g, '_') + '_' + i,
           meta: {
             ...alt.meta,
-            logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(alt.meta.company)}&background=random&size=100`
+            logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(alt?.meta?.company || 'Company')}&background=random&size=100`
           }
-        })) || []
+        }))
       };
 
       onJobDataLoaded(processedJob, jobPostingText);
