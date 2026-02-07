@@ -2,6 +2,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, AlertTriangle, TrendingUp, Clock, Users, Info } from 'lucide-react';
 
+// Strip markdown links and truncate long AI-generated text to short display values
+function truncateField(value, maxLen = 50) {
+  if (!value || typeof value !== 'string') return 'N/A';
+  // Remove markdown links like [text](url) → text
+  let clean = value.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+  // Remove raw URLs
+  clean = clean.replace(/https?:\/\/\S+/g, '').trim();
+  // Remove parentheses that contained only URLs
+  clean = clean.replace(/\(\s*\)/g, '').trim();
+  if (clean.length > maxLen) return clean.substring(0, maxLen).trim() + '…';
+  return clean || 'N/A';
+}
+
 export default function StabilityCard({ data, tunerSettings }) {
   if (!data) {
     return (
@@ -101,21 +114,21 @@ export default function StabilityCard({ data, tunerSettings }) {
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-xs text-slate-500">Runway</span>
           </div>
-          <p className="text-sm font-semibold text-slate-700">{data.runway}</p>
+          <p className="text-sm font-semibold text-slate-700 line-clamp-2">{truncateField(data.runway)}</p>
         </div>
         <div className="p-3 rounded-xl bg-slate-50">
           <div className="flex items-center gap-2 mb-1">
             <Users className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-xs text-slate-500">Headcount</span>
           </div>
-          <p className="text-sm font-semibold text-slate-700">{data.headcount_trend}</p>
+          <p className="text-sm font-semibold text-slate-700 line-clamp-2">{truncateField(data.headcount_trend)}</p>
         </div>
       </div>
 
       {/* Division Type */}
       <div className="p-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100 mb-4">
         <span className="text-xs text-slate-500">Division Type</span>
-        <p className="text-sm font-medium text-slate-700 mt-0.5">{data.division}</p>
+        <p className="text-sm font-medium text-slate-700 mt-0.5 line-clamp-1">{truncateField(data.division)}</p>
       </div>
 
       {/* Personalized Insight */}

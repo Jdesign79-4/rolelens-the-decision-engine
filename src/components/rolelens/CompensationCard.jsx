@@ -67,8 +67,9 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
   }
 
   // Ensure numeric values with safe defaults
-  const safeHeadline = typeof data.headline === 'number' && data.headline > 0 ? data.headline : 0;
-  const safeRealFeel = typeof data.real_feel === 'number' && data.real_feel > 0 ? data.real_feel : safeHeadline;
+  // Salary values under $1,000 are clearly invalid (LLM returned garbage)
+  const safeHeadline = typeof data.headline === 'number' && data.headline >= 1000 ? data.headline : 0;
+  const safeRealFeel = typeof data.real_feel === 'number' && data.real_feel >= 1000 ? data.real_feel : safeHeadline;
   
   if (safeHeadline === 0) {
     return (
@@ -381,13 +382,13 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
           </div>
         )}
         
-        {overflowPercentage > 0 && (
+        {overflowPercentage > 0 && data.leak_label && data.leak_label.length < 60 && (
           <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100">
             <div className="flex items-center gap-2">
               <TrendingDown className="w-4 h-4 text-red-400" />
-              <span className="text-sm text-red-600">{data.leak_label}</span>
+              <span className="text-sm text-red-600 line-clamp-1">{data.leak_label}</span>
             </div>
-            <span className="text-sm font-medium text-red-500">-{Math.round(overflowPercentage)}%</span>
+            <span className="text-sm font-medium text-red-500 flex-shrink-0 ml-2">-{Math.round(overflowPercentage)}%</span>
           </div>
         )}
 
