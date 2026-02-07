@@ -25,7 +25,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
     .sort((a, b) => b.matchScore - a.matchScore);
 
   const getTradeOff = (alt) => {
-    if (!alt?.comp || !alt?.culture || !currentJob?.comp || !currentJob?.culture) {
+    if (!alt?.comp?.real_feel || !alt?.culture || !currentJob?.comp?.real_feel || !currentJob?.culture) {
       return { text: 'Data unavailable', type: 'neutral', score: 0 };
     }
     const compDiff = alt.comp.real_feel - currentJob.comp.real_feel;
@@ -195,17 +195,17 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                         <div className="grid grid-cols-3 gap-2">
                           <div className="p-2 rounded-xl bg-white text-center">
                             <DollarSign className="w-4 h-4 mx-auto text-teal-500 mb-1" />
-                            <p className="text-sm font-bold text-slate-800">{formatCurrency(alt.comp.real_feel)}</p>
+                            <p className="text-sm font-bold text-slate-800">{alt.comp?.real_feel ? formatCurrency(alt.comp.real_feel) : 'N/A'}</p>
                             <p className="text-[10px] text-slate-500">Real Feel</p>
                           </div>
                           <div className="p-2 rounded-xl bg-white text-center">
                             <Heart className="w-4 h-4 mx-auto text-rose-500 mb-1" />
-                            <p className="text-sm font-bold text-slate-800">{alt.culture.wlb_score}</p>
+                            <p className="text-sm font-bold text-slate-800">{alt.culture?.wlb_score || 'N/A'}</p>
                             <p className="text-[10px] text-slate-500">WLB</p>
                           </div>
                           <div className="p-2 rounded-xl bg-white text-center">
                             <Clock className="w-4 h-4 mx-auto text-violet-500 mb-1" />
-                            <p className="text-sm font-bold text-slate-800">{alt.stability.runway}</p>
+                            <p className="text-sm font-bold text-slate-800">{alt.stability?.runway || 'N/A'}</p>
                             <p className="text-[10px] text-slate-500">Runway</p>
                           </div>
                         </div>
@@ -213,7 +213,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                         {/* Culture Type */}
                         <div className="p-3 rounded-xl bg-white">
                           <p className="text-xs text-slate-500">Culture Profile</p>
-                          <p className="text-sm font-medium text-slate-700 mt-0.5">{alt.culture.type}</p>
+                          <p className="text-sm font-medium text-slate-700 mt-0.5">{alt.culture?.type || 'N/A'}</p>
                         </div>
 
                         {/* Swap Button */}
