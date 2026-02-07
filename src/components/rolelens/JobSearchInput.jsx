@@ -188,6 +188,23 @@ Be specific with numbers. Show your work - reference which source each number co
       // Generate a unique ID
       const jobId = result.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
       
+      // Generate simplified alternatives (max 3 instead of 5)
+      const simplifiedAlternatives = [];
+      for (let i = 0; i < Math.min(3, 5); i++) {
+        simplifiedAlternatives.push({
+          id: `alt_${i}`,
+          meta: {
+            title: isCompanyOnly ? "Company Research" : "Similar Role",
+            company: `Alternative ${i + 1}`,
+            location: city || "Various",
+            logo: `https://ui-avatars.com/api/?name=Alt${i+1}&background=random&size=100`
+          },
+          stability: { health: "Unknown", risk_score: 0.5, division: "N/A", runway: "N/A", headcount_trend: "N/A" },
+          comp: { headline: 100000, real_feel: 80000, leak_label: "Standard" },
+          culture: { type: "Standard", stress_level: 0.5, wlb_score: 5, growth_score: 5, politics_level: "Medium" }
+        });
+      }
+      
       // Add logo URL (using company initial as fallback concept)
       const processedJob = {
         ...result,
@@ -198,14 +215,7 @@ Be specific with numbers. Show your work - reference which source each number co
           logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(result.meta.company)}&background=random&size=100`
         },
         sources: result.sources || [],
-        alternatives: (result.alternatives || []).map((alt, i) => ({
-          ...alt,
-          id: (alt?.meta?.company || `alt_${i}`).toLowerCase().replace(/\s+/g, '_') + '_' + i,
-          meta: {
-            ...alt.meta,
-            logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(alt?.meta?.company || 'Company')}&background=random&size=100`
-          }
-        }))
+        alternatives: simplifiedAlternatives
       };
 
       onJobDataLoaded(processedJob, jobPostingText);
