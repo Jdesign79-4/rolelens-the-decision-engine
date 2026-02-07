@@ -49,7 +49,8 @@ STEP 2 - COMPREHENSIVE DATA (if public):
 A) STOCK DATA (complete picture):
 - Current price, day/week/month/year changes, 52-week high/low
 - Market cap, P/E ratio, dividend yield, volume
-- 12-month price history for charting
+- CRITICAL: 12-month price history array for charting (e.g., [{month: "Jan", price: 150}, {month: "Feb", price: 155}, ...])
+  MUST include at least 12 data points for the past year
 
 B) FUNDAMENTALS:
 - Revenue, net income, profit margin, employee count
