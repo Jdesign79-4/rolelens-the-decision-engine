@@ -48,10 +48,12 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import RoleLens from './pages/RoleLens';
+import ApplicationTracker from './pages/ApplicationTracker';
 
 
 export const PAGES = {
     "RoleLens": RoleLens,
+    "ApplicationTracker": ApplicationTracker,
 }
 
 export const pagesConfig = {
