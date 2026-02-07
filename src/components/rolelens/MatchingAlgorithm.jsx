@@ -3,43 +3,55 @@
  * Calculates personalized fit scores based on weighted factors, semantic analysis, and user feedback
  */
 
-// Load user feedback history from localStorage
+// User feedback system - stores job preference history for future personalization
+// NOTE: This system requires 5+ feedback entries to be useful
+// Cold start: First few jobs won't benefit from feedback weighting
 function getUserFeedbackWeights() {
-  const saved = localStorage.getItem('rolelens-feedback-weights');
-  if (!saved) return null;
-  return JSON.parse(saved);
+  try {
+    const saved = localStorage.getItem('rolelens-feedback-weights');
+    if (!saved) return null;
+    return JSON.parse(saved);
+  } catch {
+    return null; // Return null if localStorage corrupted
+  }
 }
 
-// Save updated weights based on user feedback
+// Save feedback with error handling
 function updateFeedbackWeights(jobId, feedback, job, tunerSettings) {
   if (!job?.stability || !job?.culture || !job?.comp) return;
   
-  const history = JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
-  history.push({
-    jobId,
-    feedback,
-    timestamp: Date.now(),
-    job: {
-      stability: job.stability.risk_score,
-      wlb: job.culture.wlb_score,
-      growth: job.culture.growth_score,
-      comp: job.comp.real_feel,
-      stress: job.culture.stress_level
-    },
-    settings: { ...tunerSettings }
-  });
-  
-  // Keep last 50 feedbacks
-  if (history.length > 50) history.shift();
-  localStorage.setItem('rolelens-feedback-history', JSON.stringify(history));
-  
-  // Recalculate weights based on feedback patterns
-  recalculateWeights(history);
+  try {
+    const history = JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
+    history.push({
+      jobId,
+      feedback,
+      timestamp: Date.now(),
+      job: {
+        stability: job.stability.risk_score,
+        wlb: job.culture.wlb_score,
+        growth: job.culture.growth_score,
+        comp: job.comp.real_feel,
+        stress: job.culture.stress_level
+      },
+      settings: { ...tunerSettings }
+    });
+    
+    // Keep last 50 feedbacks
+    if (history.length > 50) history.shift();
+    localStorage.setItem('rolelens-feedback-history', JSON.stringify(history));
+    
+    if (history.length >= 5) {
+      recalculateWeights(history);
+    }
+  } catch (err) {
+    console.warn('Could not save feedback:', err);
+    // Silently fail - app continues without feedback learning
+  }
 }
 
-// Use ML-like approach to adjust weights based on feedback
+// Adjust weights based on feedback patterns
 function recalculateWeights(history) {
-  if (history.length < 5) return; // Need minimum data
+  if (history.length < 5) return;
   
   const adjustments = {
     stability: 0,
@@ -49,12 +61,10 @@ function recalculateWeights(history) {
     stressAlignment: 0
   };
   
-  // Analyze positive vs negative feedback patterns
   history.forEach(entry => {
     const multiplier = entry.feedback === 'love' ? 1 : entry.feedback === 'like' ? 0.5 : 
                        entry.feedback === 'dislike' ? -0.5 : -1;
     
-    // Adjust based on what attributes were present in liked/disliked jobs
     if (entry.job.stability < 0.3) adjustments.stability += multiplier * 0.08;
     if (entry.job.wlb > 7) adjustments.workLifeBalance += multiplier * 0.08;
     if (entry.job.growth > 7.5) adjustments.growth += multiplier * 0.08;
@@ -62,7 +72,11 @@ function recalculateWeights(history) {
     if (entry.job.stress < 0.4) adjustments.stressAlignment += multiplier * 0.08;
   });
   
-  localStorage.setItem('rolelens-feedback-weights', JSON.stringify(adjustments));
+  try {
+    localStorage.setItem('rolelens-feedback-weights', JSON.stringify(adjustments));
+  } catch (err) {
+    console.warn('Could not save feedback weights:', err);
+  }
 }
 
 // Simple keyword-based job attribute analysis (NOT true NLP)
@@ -287,10 +301,18 @@ export function submitJobFeedback(jobId, feedback, job, tunerSettings) {
 }
 
 export function getFeedbackHistory() {
-  return JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
+  try {
+    return JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
+  } catch {
+    return [];
+  }
 }
 
 export function clearFeedbackHistory() {
-  localStorage.removeItem('rolelens-feedback-history');
-  localStorage.removeItem('rolelens-feedback-weights');
+  try {
+    localStorage.removeItem('rolelens-feedback-history');
+    localStorage.removeItem('rolelens-feedback-weights');
+  } catch (err) {
+    console.warn('Could not clear feedback history:', err);
+  }
 }
