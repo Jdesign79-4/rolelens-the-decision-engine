@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ChevronDown, ChevronUp, RefreshCw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { calculateJobSecurityScore, getRatingTier } from './jobSecurityScoringEngine.js';
+import { calculateJobSecurityScore, getRatingTier } from './jobSecurityScoringEngine';
 
 export default function JobSecurityRating({ data, isLoading, onRefresh }) {
   const [expandedSections, setExpandedSections] = useState(['summary']);
