@@ -472,9 +472,7 @@ Return detailed, accurate data from real financial sources.`,
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <h4 className="font-semibold text-slate-800 mb-4">Quick Intelligence Summary</h4>
           
-          {(
-          <>
-            <div className="space-y-3">
+          <div className="space-y-3">
               {companyData.opportunity_flags?.green?.length > 0 && (
                 <div>
                   <p className="text-xs font-medium text-emerald-600 mb-2 flex items-center gap-1">
@@ -544,7 +542,7 @@ Return detailed, accurate data from real financial sources.`,
                 </div>
               </div>
             )}
-          </>
+          </div>
         </div>
       )}
 
