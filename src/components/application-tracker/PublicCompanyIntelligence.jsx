@@ -465,6 +465,23 @@ H) SECTOR & COMPETITORS:
                 </div>
               )}
 
+              {companyData.opportunity_flags?.yellow?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-amber-600 mb-2 flex items-center gap-1">
+                    <Info className="w-4 h-4" />
+                    Yellow Flags
+                  </p>
+                  <div className="space-y-1">
+                    {companyData.opportunity_flags.yellow.map((flag, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 bg-amber-50 p-2 rounded-lg">
+                        <span>⚠</span>
+                        <span>{flag}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {companyData.opportunity_flags?.red?.length > 0 && (
                 <div>
                   <p className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
