@@ -224,23 +224,40 @@ function calculateMarketSentiment(data) {
 function calculateNewsScore(data) {
   let score = 100;
 
-  // Analyze news sentiment
+  // Analyze news sentiment with date freshness weighting
   if (data.news_articles && Array.isArray(data.news_articles)) {
-    const sentiments = data.news_articles.reduce((acc, article) => {
-      acc[article.sentiment] = (acc[article.sentiment] || 0) + 1;
-      return acc;
-    }, {});
+    let weightedSentiments = { positive: 0, neutral: 0, negative: 0 };
+    let totalWeight = 0;
 
-    const total = data.news_articles.length;
-    const negativeRatio = (sentiments.negative || 0) / total;
-    const positiveRatio = (sentiments.positive || 0) / total;
+    data.news_articles.forEach(article => {
+      // Calculate freshness weight (recent news weighted more heavily)
+      const articleDate = new Date(article.date);
+      const daysSincePublished = (Date.now() - articleDate) / (1000 * 60 * 60 * 24);
+      let dateWeight = 1.0;
+      
+      if (daysSincePublished < 7) {
+        dateWeight = 1.5; // Very recent = 1.5x weight
+      } else if (daysSincePublished < 30) {
+        dateWeight = 1.2; // Recent = 1.2x weight
+      } else if (daysSincePublished > 180) {
+        dateWeight = 0.5; // Stale = 0.5x weight
+      }
 
-    if (negativeRatio > 0.6) {
-      score -= 20; // Predominantly negative
-    } else if (negativeRatio > 0.4) {
-      score -= 10; // Mixed with negative tilt
-    } else if (positiveRatio > 0.5) {
-      score += 5; // Positive coverage
+      weightedSentiments[article.sentiment] = (weightedSentiments[article.sentiment] || 0) + dateWeight;
+      totalWeight += dateWeight;
+    });
+
+    if (totalWeight > 0) {
+      const negativeRatio = weightedSentiments.negative / totalWeight;
+      const positiveRatio = weightedSentiments.positive / totalWeight;
+
+      if (negativeRatio > 0.6) {
+        score -= 20; // Predominantly negative
+      } else if (negativeRatio > 0.4) {
+        score -= 10; // Mixed with negative tilt
+      } else if (positiveRatio > 0.5) {
+        score += 5; // Positive coverage
+      }
     }
   }
 

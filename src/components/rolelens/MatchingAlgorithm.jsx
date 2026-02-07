@@ -65,7 +65,8 @@ function recalculateWeights(history) {
   localStorage.setItem('rolelens-feedback-weights', JSON.stringify(adjustments));
 }
 
-// NLP-based semantic understanding of job attributes
+// Simple keyword-based job attribute analysis (NOT true NLP)
+// This is a basic pattern matcher - not actual semantic understanding
 function analyzeJobSemantics(job) {
   const keywords = {
     innovation: ['innovation', 'cutting-edge', 'research', 'ai', 'creative', 'groundbreaking', 'pioneering', 'experimental'],
@@ -77,6 +78,7 @@ function analyzeJobSemantics(job) {
   
   const text = `${job.meta?.title || ''} ${job.meta?.company || ''} ${job.culture?.type || ''} ${job.stability?.health || ''}`.toLowerCase();
   
+  // Basic keyword frequency analysis (not semantic understanding)
   const semanticScores = {
     innovation: keywords.innovation.filter(k => text.includes(k)).length / keywords.innovation.length,
     stability: keywords.stability.filter(k => text.includes(k)).length / keywords.stability.length,
