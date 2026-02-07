@@ -387,6 +387,14 @@ H) SECTOR & COMPETITORS:
             Updated {formatDistanceToNow(new Date(companyData.last_updated), { addSuffix: true })}
           </p>
         )}
+
+        {/* Data Source Notice */}
+        <div className="mt-6 p-3 rounded-lg bg-white/20 border border-white/30">
+          <p className="text-xs opacity-90">
+            <span className="font-semibold">ℹ️ Data Sources:</span> Financial data from public SEC filings, stock prices delayed 15+ minutes, news aggregated from public sources. 
+            <span className="block mt-1">Always verify independently before making decisions.</span>
+          </p>
+        </div>
       </div>
 
       {/* AI Career Insight */}
@@ -395,6 +403,7 @@ H) SECTOR & COMPETITORS:
           <div className="flex items-center gap-2 mb-4">
             <div className="text-2xl">🤖</div>
             <h3 className="text-xl font-bold text-slate-800">AI Career Insight</h3>
+            <span className="text-xs font-semibold text-indigo-600 ml-auto">Generated from public data</span>
           </div>
 
           <div className="space-y-4">
