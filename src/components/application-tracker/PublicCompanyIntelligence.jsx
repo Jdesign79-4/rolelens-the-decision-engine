@@ -46,6 +46,7 @@ Check if this company (or parent) is publicly traded on ANY major US exchange (N
 - If public, provide ticker symbol and continue
 
 STEP 2 - COMPREHENSIVE DATA (if public):
+CRITICAL: You MUST provide data for ALL sections below (A through H). Do NOT skip any section. Every field matters for accurate job security scoring.
 
 A) STOCK DATA (complete picture):
 CRITICAL: Use Google Finance to gather ALL stock performance data
