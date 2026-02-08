@@ -109,9 +109,16 @@ export default function JobSecurityRating({ data, isLoading, onRefresh }) {
         </p>
 
         {/* Confidence Level */}
-        <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between text-sm">
-          <span className="opacity-80">Analysis Confidence</span>
-          <span className="font-semibold">{confidence}</span>
+        <div className="mt-4 pt-4 border-t border-white/20 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="opacity-80">Analysis Confidence</span>
+            <span className="font-semibold">{confidence.level} ({confidence.available}/{confidence.total} sources)</span>
+          </div>
+          {confidence.missingData && confidence.missingData.length > 0 && (
+            <p className="text-xs opacity-70 mt-1">
+              Missing: {confidence.missingData.join(', ')}
+            </p>
+          )}
         </div>
       </div>
 
