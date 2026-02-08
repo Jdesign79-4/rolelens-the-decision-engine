@@ -28,6 +28,7 @@ const DEFAULT_CATEGORIES = [
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
+import SalaryNegotiationPlanner from '@/components/rolelens/SalaryNegotiationPlanner';
 import JobFeedback from '@/components/rolelens/JobFeedback';
 import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator';
 import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
@@ -753,6 +754,7 @@ function RoleLensContent() {
   const [postingHealthScore, setPostingHealthScore] = useState(undefined);
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
   const [showApplicationStrategy, setShowApplicationStrategy] = useState(false);
+  const [showSalaryNegotiation, setShowSalaryNegotiation] = useState(false);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -1095,6 +1097,12 @@ function RoleLensContent() {
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 text-white font-medium text-sm hover:from-rose-600 hover:to-pink-700 transition-all"
                 >
                   Application Plan
+                </button>
+                <button
+                  onClick={() => setShowSalaryNegotiation(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium text-sm hover:from-emerald-600 hover:to-teal-700 transition-all"
+                >
+                  Negotiate Salary
                 </button>
                 <button
                   onClick={() => {
@@ -1500,6 +1508,16 @@ function RoleLensContent() {
           <ApplicationStrategyPlanner
             job={currentJob}
             onClose={() => setShowApplicationStrategy(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Salary Negotiation Modal */}
+      <AnimatePresence>
+        {showSalaryNegotiation && (
+          <SalaryNegotiationPlanner
+            job={currentJob}
+            onClose={() => setShowSalaryNegotiation(false)}
           />
         )}
       </AnimatePresence>
