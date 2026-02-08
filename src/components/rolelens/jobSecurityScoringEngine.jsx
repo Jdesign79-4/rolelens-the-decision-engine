@@ -164,6 +164,14 @@ function calculateFinancialHealth(data) {
     missing.push('market_cap');
   }
 
+  // If ALL financial data is missing but we have LLM health score, use it as rough proxy
+  if (missing.length >= 4 && data.financial_health_score && typeof data.financial_health_score === 'number') {
+    // LLM gave an overall health score 1-5, map to 30-80 range
+    const proxyScore = 30 + (data.financial_health_score / 5) * 50;
+    console.log('[JobSecurity] Using LLM health score as financial proxy:', proxyScore.toFixed(0));
+    return Math.round(proxyScore);
+  }
+
   // If ALL data is missing, return explicit unknown
   if (missing.length >= 5) return 50;
 
