@@ -459,19 +459,9 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                 <div className="space-y-3">
                   {(strategy.coverLetterTalkingPoints || []).map((point, idx) => (
                     <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <p className="font-semibold text-slate-800">{idx + 1}. {point.point}</p>
-                        <button
-                          onClick={() => copyToClipboard(point.point, `point-${idx}`)}
-                          className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
-                        >
-                          {copiedText === `point-${idx}` ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-4 h-4 text-slate-400" />
-                          )}
-                        </button>
-                      </div>
+                    <div className="mb-2">
+                      <p className="font-semibold text-slate-800">{idx + 1}. {point.point}</p>
+                    </div>
                       <p className="text-sm text-slate-600 mb-2"><strong>Evidence:</strong> {point.evidence}</p>
                       <p className="text-xs text-slate-500"><strong>Relevance:</strong> {point.relevance}</p>
                     </div>
