@@ -20,9 +20,8 @@ export default function ApplicationStrategyPlanner({ job, onClose }) {
     setIsLoading(true);
     setError(null);
 
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Create a comprehensive application strategy for this job opportunity:
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Create a comprehensive application strategy for this job opportunity:
 
 Company: ${job.meta.company}
 Position: ${job.meta.title || 'General roles at this company'}
@@ -38,80 +37,75 @@ Generate:
 6. Estimated time needed for each application component
 
 Be specific and actionable.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            applicationDeadline: {
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          applicationDeadline: {
+            type: "object",
+            properties: {
+              estimatedDate: { type: "string" },
+              reasoning: { type: "string" }
+            }
+          },
+          timeline: {
+            type: "array",
+            items: {
               type: "object",
               properties: {
-                estimatedDate: { type: "string" },
-                reasoning: { type: "string" }
+                week: { type: "number" },
+                milestone: { type: "string" },
+                tasks: { type: "array", items: { type: "string" } },
+                estimatedHours: { type: "number" }
               }
-            },
-            timeline: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  week: { type: "number" },
-                  milestone: { type: "string" },
-                  tasks: { type: "array", items: { type: "string" } },
-                  estimatedHours: { type: "number" }
-                }
-              }
-            },
-            checklist: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  item: { type: "string" },
-                  description: { type: "string" },
-                  estimatedHours: { type: "number" },
-                  priority: { type: "string", enum: ["critical", "important", "optional"] }
-                }
-              }
-            },
-            coverLetterTalkingPoints: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  point: { type: "string" },
-                  evidence: { type: "string" },
-                  relevance: { type: "string" }
-                }
-              }
-            },
-            networkingSuggestions: {
+            }
+          },
+          checklist: {
+            type: "array",
+            items: {
               type: "object",
               properties: {
-                targetRoles: { type: "array", items: { type: "string" } },
-                strategy: { type: "string" },
-                searchQueries: { type: "array", items: { type: "string" } }
+                item: { type: "string" },
+                description: { type: "string" },
+                estimatedHours: { type: "number" },
+                priority: { type: "string", enum: ["critical", "important", "optional"] }
               }
+            }
+          },
+          coverLetterTalkingPoints: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                point: { type: "string" },
+                evidence: { type: "string" },
+                relevance: { type: "string" }
+              }
+            }
+          },
+          networkingSuggestions: {
+            type: "object",
+            properties: {
+              targetRoles: { type: "array", items: { type: "string" } },
+              strategy: { type: "string" },
+              searchQueries: { type: "array", items: { type: "string" } }
             }
           }
         }
-      });
+      }
+    });
 
-      setStrategy(result);
-      
-      // Initialize checklist with unchecked items
-      setChecklist(result.checklist.map(item => ({
-        ...item,
-        completed: false
-      })));
+    setStrategy(result);
+    
+    // Initialize checklist with unchecked items
+    setChecklist((result.checklist || []).map(item => ({
+      ...item,
+      completed: false
+    })));
 
-      // Initialize timeline
-      setTimeline(result.timeline);
-    } catch (err) {
-      console.error('Failed to generate strategy:', err);
-      setError('Failed to generate application strategy. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    // Initialize timeline
+    setTimeline(result.timeline || []);
+    setIsLoading(false);
   };
 
   const toggleChecklistItem = (index) => {
