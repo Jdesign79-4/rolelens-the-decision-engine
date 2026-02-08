@@ -152,24 +152,20 @@ function calculateFinancialHealth(data) {
   return Math.max(0, Math.min(100, score));
 }
 
-// Parse market cap string like "$1.2B", "$850M", "$1.5 Trillion" into numeric value
-function parseMarketCapValue(mcapStr) {
-  if (!mcapStr || typeof mcapStr !== 'string') return 0;
-  const clean = mcapStr.replace(/[,$\s]/g, '').toLowerCase();
+// Parse market cap string like "$1.2B", "$1,200M", "1.2 billion", "$500K"
+function parseMarketCapValue(marketCapString) {
+  if (!marketCapString) return 0;
   
-  // Match patterns like "1.2t", "1.2 trillion", "850b", "850 billion", "100m", "100 million"
-  const trillionMatch = clean.match(/([\d.]+)\s*(?:t(?:rillion)?)\b/i);
-  if (trillionMatch) return parseFloat(trillionMatch[1]) * 1e12;
+  const str = marketCapString.toLowerCase().replace(/[^0-9.tbmk]/g, '');
+  let value = parseFloat(str);
+  if (isNaN(value)) return 0;
   
-  const billionMatch = clean.match(/([\d.]+)\s*(?:b(?:illion)?)\b/i);
-  if (billionMatch) return parseFloat(billionMatch[1]) * 1e9;
+  if (str.includes('t')) return value * 1e12;
+  if (str.includes('b')) return value * 1e9;
+  if (str.includes('m')) return value * 1e6;
+  if (str.includes('k')) return value * 1e3;
   
-  const millionMatch = clean.match(/([\d.]+)\s*(?:m(?:illion)?)\b/i);
-  if (millionMatch) return parseFloat(millionMatch[1]) * 1e6;
-  
-  // Try raw number
-  const num = parseFloat(clean);
-  return isNaN(num) ? 0 : num;
+  return value;
 }
 
 // Workforce Trends Score (30% weight)
