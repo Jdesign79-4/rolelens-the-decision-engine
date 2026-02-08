@@ -55,7 +55,13 @@ REALISTIC TIME ESTIMATES PER TASK (from the perspective of a qualified applicant
 Given these realities, generate:
 1. Estimated application deadline — be aggressive and realistic. If the posting date is recent, the window is likely 7-14 days. Factor in that early applications get more attention.
 2. A compressed, actionable preparation timeline measured in DAYS (not weeks/months). Use "Day 1", "Day 2-3", "Day 4-5" format. Do NOT include estimated hours.
-3. Customized checklist of application components. Do NOT include estimated hours or time estimates.
+3. Customized checklist of application components TAILORED TO THIS SPECIFIC ROLE AND COMPANY. Go beyond generic items like "update resume" — include role-specific deliverables. Examples:
+   - Video editor → "Update demo reel with latest work showcasing editing style"
+   - Designer → "Prepare portfolio case studies relevant to this company's product"
+   - Software engineer → "Build a small project using their tech stack to discuss in interviews"
+   - Sales role → "Research their product line and prepare a mock pitch"
+   - Marketing → "Audit their current campaigns and prepare 2-3 improvement ideas"
+   Think about what THIS company and role specifically would want to see. Include 8-12 items mixing universal best practices with role-specific preparation. Do NOT include estimated hours or time estimates.
 4. First-draft cover letter talking points (3-5 key points that match job requirements)
 5. LinkedIn networking suggestions — this is critical. Provide:
    - targetRoles: 4-6 SPECIFIC job titles of people at this company who would be relevant to connect with (e.g. "Design Manager", "Head of Product Design", "Senior UX Researcher", "VP of Design", "Hiring Manager - Design", "Technical Recruiter"). These should be real titles people actually use on LinkedIn at this company.
