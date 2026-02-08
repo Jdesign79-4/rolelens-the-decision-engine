@@ -290,10 +290,19 @@ function calculateMarketSentiment(data) {
   const missing = [];
 
   // Stock performance: undefined vs declining vs growing
-  if (data.stock_data?.year_change_percent === undefined || typeof data.stock_data.year_change_percent !== 'number') {
+  // Guard: if the LLM copied the same value for all time periods, treat year_change as unreliable
+  const yearChange = data.stock_data?.year_change_percent;
+  const dayChange = data.stock_data?.price_change_percent;
+  const isSuspiciousDuplicate = yearChange !== undefined && dayChange !== undefined && yearChange === dayChange && Math.abs(yearChange) < 10;
+  
+  if (yearChange === undefined || typeof yearChange !== 'number' || isSuspiciousDuplicate) {
     missing.push('stock_performance');
+    if (isSuspiciousDuplicate) {
+      // LLM duplicated day change as year change — don't penalize, stay neutral
+      console.log('[JobSecurity] Suspicious duplicate: year_change equals day_change, treating as unknown');
+    }
   } else {
-    const change = data.stock_data.year_change_percent;
+    const change = yearChange;
     if (change < -40) {
       score -= 20; // Known: severe decline
     } else if (change < -20) {
