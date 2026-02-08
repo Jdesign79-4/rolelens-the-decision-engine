@@ -146,7 +146,9 @@ H) SECTOR & COMPETITORS:
                 revenue_growth_yoy: { type: "number" },
                 earnings_growth_yoy: { type: "number" },
                 debt_to_equity: { type: "number" },
-                roe: { type: "number" }
+                roe: { type: "number" },
+                current_ratio: { type: "number" },
+                quick_ratio: { type: "number" }
               }
             },
             news_articles: {
