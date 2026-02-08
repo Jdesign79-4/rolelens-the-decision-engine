@@ -214,16 +214,6 @@ Be specific to ${companyName} and the ${jobTitle} role. No generic advice.`,
                 <span className="truncate">{query}</span>
                 <span className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">↗ Open</span>
               </a>
-              <button
-                onClick={() => copyToClipboard(query, `search-${idx}`)}
-                className="p-1 hover:bg-slate-100 rounded transition-colors ml-2 flex-shrink-0"
-              >
-                {copiedText === `search-${idx}` ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                ) : (
-                  <Copy className="w-4 h-4 text-slate-400" />
-                )}
-              </button>
             </div>
           );
         })}
