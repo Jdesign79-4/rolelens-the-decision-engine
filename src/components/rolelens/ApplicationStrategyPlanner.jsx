@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Copy, Zap } from 'lucide-react';
+import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Copy, Zap, Pencil, Check } from 'lucide-react';
 import LinkedInNetworkingHub from './LinkedInNetworkingHub';
 import { Button } from "@/components/ui/button";
 
@@ -146,13 +146,46 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
     setChecklist(prev => prev.filter((_, i) => i !== index));
   };
 
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editItem, setEditItem] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+
   const addChecklistItem = () => {
-    setChecklist(prev => [...prev, {
-      item: 'New item',
+    const newItem = {
+      item: '',
       description: '',
       priority: 'important',
-      completed: false
-    }]);
+      completed: false,
+      isNew: true
+    };
+    setChecklist(prev => [...prev, newItem]);
+    const newIdx = checklist.length;
+    setEditingIndex(newIdx);
+    setEditItem('');
+    setEditDescription('');
+  };
+
+  const startEditing = (index) => {
+    setEditingIndex(index);
+    setEditItem(checklist[index].item);
+    setEditDescription(checklist[index].description || '');
+  };
+
+  const saveEdit = (index) => {
+    if (!editItem.trim()) {
+      // Remove if empty and new
+      if (checklist[index].isNew) {
+        deleteChecklistItem(index);
+      }
+      setEditingIndex(null);
+      return;
+    }
+    setChecklist(prev => {
+      const newList = [...prev];
+      newList[index] = { ...newList[index], item: editItem.trim(), description: editDescription.trim(), isNew: false };
+      return newList;
+    });
+    setEditingIndex(null);
   };
 
   const copyToClipboard = (text, id) => {
@@ -322,8 +355,9 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                     >
                       <div className="flex items-start gap-3">
                         <button
-                          onClick={() => toggleChecklistItem(idx)}
+                          onClick={() => editingIndex !== idx && toggleChecklistItem(idx)}
                           className="mt-1 flex-shrink-0"
+                          disabled={editingIndex === idx}
                         >
                           {item.completed ? (
                             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -332,11 +366,33 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                           )}
                         </button>
                         <div className="flex-1">
-                          <p className={`font-medium ${item.completed ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
-                            {item.item}
-                          </p>
-                          {item.description && (
-                            <p className="text-sm text-slate-600 mt-1">{item.description}</p>
+                          {editingIndex === idx ? (
+                            <div className="space-y-2">
+                              <input
+                                autoFocus
+                                value={editItem}
+                                onChange={e => setEditItem(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && saveEdit(idx)}
+                                placeholder="Item name..."
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-800 focus:outline-none focus:border-indigo-400"
+                              />
+                              <input
+                                value={editDescription}
+                                onChange={e => setEditDescription(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && saveEdit(idx)}
+                                placeholder="Description (optional)"
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 focus:outline-none focus:border-indigo-400"
+                              />
+                            </div>
+                          ) : (
+                            <>
+                              <p className={`font-medium ${item.completed ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
+                                {item.item}
+                              </p>
+                              {item.description && (
+                                <p className="text-sm text-slate-600 mt-1">{item.description}</p>
+                              )}
+                            </>
                           )}
                           <div className="flex items-center gap-3 mt-2">
                             <span className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -346,15 +402,31 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                             }`}>
                               {item.priority}
                             </span>
-
                           </div>
                         </div>
-                        <button
-                          onClick={() => deleteChecklistItem(idx)}
-                          className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-slate-400 hover:text-red-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          {editingIndex === idx ? (
+                            <button
+                              onClick={() => saveEdit(idx)}
+                              className="p-1.5 hover:bg-emerald-50 rounded-lg transition-colors text-emerald-600"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => startEditing(idx)}
+                              className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteChecklistItem(idx)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-slate-400 hover:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
