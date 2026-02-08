@@ -244,6 +244,20 @@ H) SECTOR & COMPETITORS:
         await base44.entities.PublicCompanyData.create(dataToSave);
       }
 
+      console.log('Financial intelligence loaded:', JSON.stringify({
+        is_public: result.is_public,
+        ticker_symbol: result.ticker_symbol,
+        parent_company: result.parent_company,
+        parent_ticker: result.parent_ticker,
+        stock_data: result.stock_data,
+        fundamentals: result.fundamentals,
+        financial_health_score: result.financial_health_score,
+        job_security_events: result.job_security_events,
+        opportunity_flags: result.opportunity_flags,
+        analyst_data: result.analyst_data,
+        news_count: result.news_articles?.length
+      }));
+
       if (onDataLoaded) onDataLoaded(result);
       return dataToSave;
     },
