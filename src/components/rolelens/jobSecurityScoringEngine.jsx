@@ -81,6 +81,11 @@ function calculateFinancialHealth(data) {
   let score = getBaselineScore(mcapValue);
   const missing = [];
 
+  // Also check if LLM stored financial_health_score — use it as a fallback signal
+  if (data.financial_health_score && typeof data.financial_health_score === 'number' && missing.length === 0) {
+    // Will be handled in modifiers, just note it
+  }
+
   // Profitability: undefined vs unprofitable vs profitable
   if (data.fundamentals?.profit_margin === undefined || typeof data.fundamentals.profit_margin !== 'number') {
     missing.push('profitability');
