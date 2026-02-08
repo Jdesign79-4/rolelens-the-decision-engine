@@ -31,13 +31,24 @@ Location: ${job.meta.location || 'Not specified'}
 Posting Date: ${job.meta.date || 'Recent'}
 Today's Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-CRITICAL HIRING TIMELINE REALITY CHECK:
-- Most job postings at large companies stay open 10-21 days, NOT months
-- Competitive roles (design, engineering, product) often close in 7-14 days once posted
-- Many companies use rolling reviews — early applicants get priority
-- "Open until filled" typically means 2-4 weeks in practice
-- Internal recruiter KPIs target 30-45 days from posting to OFFER, not just to close applications
-- The best candidates apply within the FIRST WEEK of a posting going live
+CRITICAL HIRING TIMELINE DATA (based on Indeed research, Dec 2025):
+- Most job postings stay active for 30 days. This is the MAXIMUM window, not the target.
+- The best time to apply is within the FIRST 1-2 WEEKS of posting. After 2 weeks, chances decrease significantly.
+- Many companies use rolling reviews — early applicants get priority. Some postings explicitly state "applications reviewed in order received."
+- Job search sites often enforce 30 or 60 day expiration, but the real hiring window is much shorter.
+- Larger companies take longer to review applications but also receive far more — early submission matters even more.
+- Management and supervisory positions take longer to fill due to specialized skill requirements.
+- In-demand companies and popular positions have more competition — applying late means your application may never be seen.
+- Even when a posting appears active, the role may already be filled — managers sometimes don't remove listings promptly.
+
+USE THESE RULES to estimate the deadline:
+- Entry/mid-level roles at large companies: Apply within 7-10 days of posting
+- Senior/specialized roles: Apply within 10-14 days (more vetting, but also more competition)
+- Management/director+ roles: Apply within 14-21 days (longer hiring cycle, but still don't wait)
+- Startup/small company roles: Apply within 5-7 days (faster process, fewer bureaucratic steps)
+- High-demand tech/design roles: Apply within 7 days (rolling review, first-come advantage)
+- If the posting date is unknown or "Recent": Assume it was posted within the last few days and recommend applying within 5-7 days
+- NEVER suggest a deadline more than 30 days out. That's the absolute maximum a posting stays up, not a comfortable timeline.
 
 REALISTIC TIME ESTIMATES PER TASK (from the perspective of a qualified applicant who already has relevant experience):
 Given these realities, generate:
