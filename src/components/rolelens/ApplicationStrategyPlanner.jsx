@@ -40,24 +40,14 @@ CRITICAL HIRING TIMELINE REALITY CHECK:
 - The best candidates apply within the FIRST WEEK of a posting going live
 
 REALISTIC TIME ESTIMATES PER TASK (from the perspective of a qualified applicant who already has relevant experience):
-- Tailoring an existing resume to a specific role: 1-2 hours (not starting from scratch — updating bullet points, reordering, keyword optimization)
-- Writing a targeted cover letter: 1-1.5 hours (using talking points, not a generic template)
-- Updating/curating a portfolio for this role: 2-4 hours (selecting relevant case studies, writing brief context — NOT creating new work)
-- Gathering and prepping references: 30 min - 1 hour (emailing 2-3 people, giving them context)
-- Filling out the actual online application: 30 min - 1 hour (most large companies use Workday/Greenhouse — tedious but not hard)
-- LinkedIn networking outreach (identifying people, writing personalized messages): 1-2 hours total
-- Company research for interview prep: 1-2 hours
-- Total realistic prep time for a qualified candidate: 8-14 hours spread over 3-5 days, NOT weeks
-
 Given these realities, generate:
 1. Estimated application deadline — be aggressive and realistic. If the posting date is recent, the window is likely 7-14 days. Factor in that early applications get more attention.
-2. A compressed, actionable preparation timeline measured in DAYS (not weeks/months). Use "Day 1", "Day 2-3", "Day 4-5" format.
-3. Customized checklist of application components with REALISTIC hour estimates per the guidelines above. Do NOT inflate hours.
+2. A compressed, actionable preparation timeline measured in DAYS (not weeks/months). Use "Day 1", "Day 2-3", "Day 4-5" format. Do NOT include estimated hours.
+3. Customized checklist of application components. Do NOT include estimated hours or time estimates.
 4. First-draft cover letter talking points (3-5 key points that match job requirements)
 5. Specific LinkedIn networking suggestions (types of people to connect with at this company)
-6. Estimated time needed for each application component — use the realistic ranges above
 
-Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hour estimates. A qualified applicant is updating existing materials, not creating from scratch.`,
+Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
@@ -77,7 +67,6 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
                 week: { type: "number" },
                 milestone: { type: "string" },
                 tasks: { type: "array", items: { type: "string" } },
-                estimatedHours: { type: "number" }
               }
             }
           },
@@ -88,7 +77,6 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
               properties: {
                 item: { type: "string" },
                 description: { type: "string" },
-                estimatedHours: { type: "number" },
                 priority: { type: "string", enum: ["critical", "important", "optional"] }
               }
             }
@@ -119,7 +107,7 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
     setStrategy(result);
     
     // Initialize checklist with unchecked items
-    setChecklist((result.checklist || []).map(item => ({
+    setChecklist((result.checklist || []).map(({ estimatedHours, ...item }) => ({
       ...item,
       completed: false
     })));
@@ -145,7 +133,6 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
     setChecklist(prev => [...prev, {
       item: 'New item',
       description: '',
-      estimatedHours: 1,
       priority: 'important',
       completed: false
     }]);
@@ -158,7 +145,7 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
   };
 
   const completionPercentage = checklist.length > 0 ? Math.round((checklist.filter(c => c.completed).length / checklist.length) * 100) : 0;
-  const totalHours = checklist.reduce((sum, item) => sum + (item.estimatedHours || 0), 0);
+
 
   return (
     <motion.div
@@ -250,7 +237,7 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
                   />
                 </div>
                 <p className="text-xs text-slate-600 mt-3">
-                  {checklist.filter(c => c.completed).length} of {checklist.length} items completed • ~{totalHours} hours estimated
+                  {checklist.filter(c => c.completed).length} of {checklist.length} items completed
                 </p>
               </motion.div>
 
@@ -278,7 +265,7 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
                               </li>
                             ))}
                           </ul>
-                          <p className="text-xs text-slate-500 mt-2">Est. {week.estimatedHours} hours</p>
+
                         </div>
                       </div>
                     </div>
@@ -342,7 +329,7 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines or inflate hou
                             }`}>
                               {item.priority}
                             </span>
-                            <span className="text-xs text-slate-500">~{item.estimatedHours}h</span>
+
                           </div>
                         </div>
                         <button
