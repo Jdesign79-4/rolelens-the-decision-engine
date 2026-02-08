@@ -270,7 +270,7 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                     <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white hover:shadow-md transition-shadow">
                       <div className="flex items-start gap-3">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white font-bold text-sm flex-shrink-0">
-                          W{week.week}
+                          {idx + 1}
                         </div>
                         <div className="flex-1">
                           <p className="font-semibold text-slate-800">{week.milestone}</p>
