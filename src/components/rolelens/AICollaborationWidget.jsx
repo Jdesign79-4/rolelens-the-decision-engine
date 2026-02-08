@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Loader2, ChevronDown, ChevronUp, Sparkles, Camera } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp, Sparkles, Camera, AlertTriangle, Shield, Zap } from 'lucide-react';
 import {
   calculateAICollaborationScore,
   getScoreColor,
@@ -100,9 +100,9 @@ Return a JSON object with:
 
     // Calculate score
     const scoring = calculateAICollaborationScore(result, companyStrategy);
-    const adaptationPath = generateAdaptationPath(scoring.score, result);
+    const adaptationPath = generateAdaptationPath(scoring.score, result, companyStrategy);
     const opportunityMessage = generateOpportunityMessage(scoring.score, result);
-    const bottomLine = generateBottomLine(scoring.score, scoring.category);
+    const bottomLine = generateBottomLine(scoring.score, scoring.category, companyStrategy);
 
     setData({
       ...scoring,
@@ -115,7 +115,9 @@ Return a JSON object with:
         photographerAnalogy: result.photographer_analogy,
         roleEvolution: result.role_evolution_summary
       },
-      knownPrograms
+      knownPrograms,
+      hasDirectThreat: adaptationPath.hasDirectThreat,
+      hasAnyReplacement: adaptationPath.hasAnyReplacement
     });
 
     setIsLoading(false);
@@ -288,6 +290,16 @@ Return a JSON object with:
         isExpanded={expandedSections.includes('adaptation')}
         onToggle={() => toggleSection('adaptation')}
       >
+        {/* Urgency banner when direct threat detected */}
+        {data.hasDirectThreat && (
+          <div className="mb-4 p-3 rounded-xl bg-red-100 border border-red-300 flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-red-800 font-medium">
+              <span className="font-bold">Urgency elevated:</span> A known AI program at this company directly targets your role type. Adaptation timeline and priorities have been adjusted accordingly.
+            </p>
+          </div>
+        )}
+
         <div className="mb-3 flex flex-wrap gap-3 text-xs">
           <span className="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 font-medium">
             Difficulty: {data.adaptationPath.difficulty}
@@ -296,6 +308,8 @@ Return a JSON object with:
             Timeline: {data.adaptationPath.timeline}
           </span>
           <span className={`px-3 py-1.5 rounded-full font-medium ${
+            data.adaptationPath.urgency === 'Critical' ? 'bg-red-200 text-red-800 ring-2 ring-red-300' :
+            data.adaptationPath.urgency === 'Moderate-High' ? 'bg-orange-200 text-orange-800' :
             data.adaptationPath.urgency === 'High' ? 'bg-red-100 text-red-700' :
             data.adaptationPath.urgency === 'Moderate' ? 'bg-amber-100 text-amber-700' :
             'bg-emerald-100 text-emerald-700'
@@ -306,9 +320,16 @@ Return a JSON object with:
 
         <div className="space-y-3">
           {data.adaptationPath.strategies.map((strategy, idx) => (
-            <div key={idx} className="p-3 bg-white rounded-xl border border-slate-200">
+            <div key={idx} className={`p-3 rounded-xl border ${
+              strategy.isProgramSpecific
+                ? 'bg-red-50 border-red-200 ring-1 ring-red-100'
+                : 'bg-white border-slate-200'
+            }`}>
               <div className="flex items-start justify-between gap-2 mb-1">
-                <p className="font-semibold text-slate-900 text-sm">{strategy.action}</p>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {strategy.isProgramSpecific && <Zap className="w-4 h-4 text-red-500 flex-shrink-0" />}
+                  <p className="font-semibold text-slate-900 text-sm">{strategy.action}</p>
+                </div>
                 <span className={`px-2 py-0.5 rounded text-xs font-medium border flex-shrink-0 ${
                   strategy.priority === 'CRITICAL' ? 'bg-red-100 text-red-800 border-red-300' :
                   strategy.priority === 'HIGH' ? 'bg-orange-100 text-orange-800 border-orange-300' :
@@ -326,6 +347,75 @@ Return a JSON object with:
           ))}
         </div>
       </ExpandableSection>
+
+      {/* Active AI Initiatives — highlighted section for direct threats */}
+      {data.knownPrograms?.length > 0 && data.knownPrograms.some(p => p.roleMatch) && (
+        <div className="rounded-2xl border-2 border-red-300 bg-gradient-to-br from-red-50 to-orange-50 overflow-hidden">
+          <div className="p-4 bg-red-100/60 border-b border-red-200 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-red-200">
+              <AlertTriangle className="w-5 h-5 text-red-700" />
+            </div>
+            <div>
+              <h4 className="font-bold text-red-900">⚡ Active AI Initiative Targeting Your Role</h4>
+              <p className="text-xs text-red-700 mt-0.5">This company has deployed AI programs that directly impact this role type</p>
+            </div>
+          </div>
+          <div className="p-4 space-y-3">
+            {data.knownPrograms.filter(p => p.roleMatch).map((prog, idx) => (
+              <div key={idx} className="rounded-xl bg-white border border-red-200 shadow-sm overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h5 className="font-bold text-slate-900 text-base">{prog.program}</h5>
+                      <p className="text-sm text-slate-600 mt-1">{prog.details}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex-shrink-0 ${
+                      prog.severity === 'CRITICAL' ? 'bg-red-600 text-white' :
+                      prog.severity === 'HIGH' ? 'bg-orange-500 text-white' :
+                      prog.severity === 'MODERATE' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                      'bg-slate-100 text-slate-600'
+                    }`}>
+                      {prog.severity} IMPACT
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="p-2.5 rounded-lg bg-red-50 border border-red-100">
+                      <p className="text-xs text-red-600 font-semibold mb-0.5">Impact Timeline</p>
+                      <p className="text-sm font-bold text-red-900">{prog.impactTimeline || 'Unknown'}</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-orange-50 border border-orange-100">
+                      <p className="text-xs text-orange-600 font-semibold mb-0.5">Workforce Impact</p>
+                      <p className="text-xs font-semibold text-orange-900">{prog.headcountImpact || 'Not disclosed'}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-red-50 border border-red-100 mb-3">
+                    <p className="text-xs text-red-600 font-semibold mb-0.5">Score Impact</p>
+                    <p className="text-sm font-bold text-red-900">−{prog.effectiveRiskIncrease} points{prog.severity === 'CRITICAL' ? ' + critical severity penalty' : prog.severity === 'HIGH' ? ' + high severity penalty' : ''}</p>
+                  </div>
+
+                  {prog.mitigations && prog.mitigations.length > 0 && (
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <p className="text-xs font-bold text-emerald-700 mb-2 flex items-center gap-1">
+                        <Shield className="w-3.5 h-3.5" /> Recommended Counter-Moves
+                      </p>
+                      <ul className="space-y-1.5">
+                        {prog.mitigations.map((m, mIdx) => (
+                          <li key={mIdx} className="text-xs text-emerald-800 flex items-start gap-2">
+                            <span className="text-emerald-500 font-bold mt-0.5">→</span>
+                            <span>{m}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Company AI Strategy */}
       {data.companyStrategy && (
@@ -354,16 +444,51 @@ Return a JSON object with:
 
           {data.knownPrograms?.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-slate-500 uppercase">Known AI Programs:</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase">Known AI Programs at This Company:</p>
               {data.knownPrograms.map((prog, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-amber-50 border border-amber-200">
-                  <p className="text-sm font-semibold text-amber-900">{prog.program}</p>
-                  <p className="text-xs text-amber-700 mt-1">{prog.details}</p>
+                <div key={idx} className={`p-3 rounded-lg border ${
+                  prog.roleMatch
+                    ? 'bg-red-50 border-red-200'
+                    : prog.strategy === 'AUGMENTATION'
+                    ? 'bg-emerald-50 border-emerald-200'
+                    : 'bg-amber-50 border-amber-200'
+                }`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className={`text-sm font-semibold ${prog.roleMatch ? 'text-red-900' : 'text-amber-900'}`}>{prog.program}</p>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      prog.severity === 'CRITICAL' ? 'bg-red-200 text-red-800' :
+                      prog.severity === 'HIGH' ? 'bg-orange-200 text-orange-800' :
+                      prog.severity === 'MODERATE' ? 'bg-amber-200 text-amber-800' :
+                      'bg-slate-200 text-slate-600'
+                    }`}>{prog.severity}</span>
+                  </div>
+                  <p className={`text-xs mt-1 ${prog.roleMatch ? 'text-red-700' : 'text-amber-700'}`}>{prog.details}</p>
                   {prog.roleMatch && (
-                    <p className="text-xs text-red-600 font-semibold mt-1">⚠️ Directly affects this role type</p>
+                    <p className="text-xs text-red-600 font-bold mt-1.5">⚠️ Directly targets this role type • Score impact: −{prog.effectiveRiskIncrease} pts</p>
+                  )}
+                  {!prog.roleMatch && prog.strategy !== 'AUGMENTATION' && (
+                    <p className="text-xs text-amber-600 mt-1">Indirect impact • Score impact: −{prog.effectiveRiskIncrease} pts</p>
+                  )}
+                  {prog.strategy === 'AUGMENTATION' && (
+                    <p className="text-xs text-emerald-600 mt-1">✅ Positive signal • Score boost: +{Math.abs(prog.effectiveRiskIncrease)} pts</p>
                   )}
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Score Breakdown */}
+          {data.scoreBreakdown && (
+            <div className="mt-4 pt-4 border-t border-slate-200">
+              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Score Breakdown</p>
+              <div className="space-y-1.5 text-xs">
+                <ScoreFactorRow label="Human Judgment Required" value={data.scoreBreakdown.humanJudgment?.value} delta={data.scoreBreakdown.humanJudgment?.delta} />
+                <ScoreFactorRow label="Routine Work %" value={data.scoreBreakdown.routineWork?.value} delta={data.scoreBreakdown.routineWork?.delta} />
+                <ScoreFactorRow label="Task Balance" delta={data.scoreBreakdown.taskBalance?.delta} />
+                <ScoreFactorRow label="Company Strategy" extra={data.scoreBreakdown.companyStrategy?.strategy} delta={data.scoreBreakdown.companyStrategy?.delta} />
+                <ScoreFactorRow label="Known AI Programs" extra={`${data.scoreBreakdown.knownPrograms?.count || 0} detected`} delta={data.scoreBreakdown.knownPrograms?.delta} />
+                <ScoreFactorRow label="Evidence Signal" delta={data.scoreBreakdown.evidenceSignal?.delta} />
+              </div>
             </div>
           )}
         </ExpandableSection>
@@ -389,6 +514,24 @@ Return a JSON object with:
       <div className="text-center text-xs text-slate-400 pt-2">
         AI impact analysis based on current industry trends • Not career advice • Always verify independently
       </div>
+    </div>
+  );
+}
+
+function ScoreFactorRow({ label, value, delta, extra }) {
+  if (delta === undefined || delta === 0 && !value && !extra) return null;
+  return (
+    <div className="flex items-center justify-between py-1.5 px-2 rounded bg-slate-50">
+      <span className="text-slate-600">
+        {label}
+        {value !== undefined && <span className="text-slate-400 ml-1">({value})</span>}
+        {extra && <span className="text-slate-400 ml-1">({extra})</span>}
+      </span>
+      <span className={`font-semibold ${
+        delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-red-600' : 'text-slate-400'
+      }`}>
+        {delta > 0 ? '+' : ''}{delta || 0}
+      </span>
     </div>
   );
 }
