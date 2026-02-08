@@ -960,7 +960,7 @@ function RoleLensContent() {
         </AnimatePresence>
 
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50 dark:bg-slate-900/50">
+        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50 dark:bg-slate-900/50" style={{ background: 'linear-gradient(45deg, #D7D0C2 66%, #CDD5C6 100%)' }}>
           <div className="absolute top-4 right-4">
             <DarkModeToggle />
           </div>
