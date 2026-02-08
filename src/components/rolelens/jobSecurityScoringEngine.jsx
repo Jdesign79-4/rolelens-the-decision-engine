@@ -468,45 +468,27 @@ export function getRatingTier(score) {
 }
 
 function calculateConfidence(data) {
-  let dataPoints = 0;
-  let maxDataPoints = 0;
+  const dataPoints = {
+    'Profitability data': data.fundamentals?.profit_margin !== undefined && typeof data.fundamentals.profit_margin === 'number',
+    'Revenue growth data': data.fundamentals?.revenue_growth_yoy !== undefined && typeof data.fundamentals.revenue_growth_yoy === 'number',
+    'Workforce / headcount data': data.job_security_events && Array.isArray(data.job_security_events) && data.job_security_events.length > 0,
+    'Stock performance data': data.stock_data?.year_change_percent !== undefined && typeof data.stock_data.year_change_percent === 'number',
+    'Analyst ratings': data.analyst_data?.consensus_rating && typeof data.analyst_data.consensus_rating === 'string',
+    'News sentiment': data.news_articles && Array.isArray(data.news_articles) && data.news_articles.length > 0
+  };
 
-  // Count available AND VALID data points
-  if (data.fundamentals) {
-    // Only count valid numeric values
-    if (data.fundamentals.profit_margin !== undefined && typeof data.fundamentals.profit_margin === 'number') dataPoints++;
-    if (data.fundamentals.revenue_growth_yoy !== undefined && typeof data.fundamentals.revenue_growth_yoy === 'number') dataPoints++;
-    if (data.fundamentals.debt_to_equity !== undefined && typeof data.fundamentals.debt_to_equity === 'number' && data.fundamentals.debt_to_equity > 0) dataPoints++;
-    if (data.fundamentals.current_ratio !== undefined && typeof data.fundamentals.current_ratio === 'number' && data.fundamentals.current_ratio > 0) dataPoints++;
-    maxDataPoints += 4;
-  }
+  const available = Object.values(dataPoints).filter(Boolean).length;
+  const total = Object.keys(dataPoints).length;
+  const completeness = (available / total) * 100;
+  const missingData = Object.keys(dataPoints).filter(k => !dataPoints[k]);
 
-  if (data.job_security_events && Array.isArray(data.job_security_events) && data.job_security_events.length > 0) {
-    dataPoints++;
-    maxDataPoints++;
-  }
-
-  if (data.stock_data) {
-    if (data.stock_data.year_change_percent !== undefined && typeof data.stock_data.year_change_percent === 'number') dataPoints++;
-    maxDataPoints++;
-  }
-
-  if (data.analyst_data) {
-    if (data.analyst_data.consensus_rating && typeof data.analyst_data.consensus_rating === 'string') dataPoints++;
-    maxDataPoints++;
-  }
-
-  if (data.news_articles && Array.isArray(data.news_articles) && data.news_articles.length > 0) {
-    dataPoints++;
-    maxDataPoints++;
-  }
-
-  maxDataPoints = Math.max(1, maxDataPoints);
-  const completeness = dataPoints / maxDataPoints;
-
-  if (completeness > 0.8) return 'High';
-  if (completeness > 0.6) return 'Medium';
-  return 'Low';
+  return {
+    level: completeness > 75 ? 'High' : completeness > 50 ? 'Medium' : 'Low',
+    available,
+    total,
+    percentage: Math.round(completeness),
+    missingData
+  };
 }
 
 function extractKeyIndicators(data, score) {
