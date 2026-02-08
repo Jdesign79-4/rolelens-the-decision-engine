@@ -296,10 +296,39 @@ function calculateMarketSentiment(data) {
   const isSuspiciousDuplicate = yearChange !== undefined && dayChange !== undefined && yearChange === dayChange && Math.abs(yearChange) < 10;
   
   if (yearChange === undefined || typeof yearChange !== 'number' || isSuspiciousDuplicate) {
-    missing.push('stock_performance');
+    // Try to estimate year change from price history as fallback
+    const priceHistory = data.stock_data?.price_history;
+    let estimatedYearChange = null;
+    if (priceHistory && Array.isArray(priceHistory) && priceHistory.length >= 2) {
+      const oldest = priceHistory[0]?.price;
+      const newest = priceHistory[priceHistory.length - 1]?.price;
+      if (oldest && newest && oldest > 0) {
+        estimatedYearChange = ((newest - oldest) / oldest) * 100;
+        console.log('[JobSecurity] Estimated year change from price history:', estimatedYearChange.toFixed(1) + '%');
+      }
+    }
+    
+    if (estimatedYearChange !== null) {
+      const change = estimatedYearChange;
+      if (change < -40) {
+        score -= 20;
+      } else if (change < -20) {
+        score -= 12;
+      } else if (change < -10) {
+        score -= 5;
+      } else if (change <= 10) {
+        score += 5;
+      } else if (change <= 30) {
+        score += 10;
+      } else {
+        score += 15;
+      }
+    } else {
+      missing.push('stock_performance');
+    }
+    
     if (isSuspiciousDuplicate) {
-      // LLM duplicated day change as year change — don't penalize, stay neutral
-      console.log('[JobSecurity] Suspicious duplicate: year_change equals day_change, treating as unknown');
+      console.log('[JobSecurity] Suspicious duplicate: year_change equals day_change, using price history fallback');
     }
   } else {
     const change = yearChange;
