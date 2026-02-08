@@ -48,98 +48,104 @@ export function calculateJobSecurityScore(data) {
 }
 
 // Financial Health Score (40% weight)
+// Uses 3-way checks: undefined = unknown (neutral), known bad (penalize), known good (reward)
 function calculateFinancialHealth(data) {
-  // Start at 60 (neutral baseline) — data moves it up or down
-  let score = 60;
-  let hasAnyData = false;
+  let score = 50; // True neutral — no assumptions
+  const missing = [];
 
-  // Profitability check
-  if (data.fundamentals?.profit_margin !== undefined && typeof data.fundamentals.profit_margin === 'number') {
-    hasAnyData = true;
+  // Profitability: undefined vs unprofitable vs profitable
+  if (data.fundamentals?.profit_margin === undefined || typeof data.fundamentals.profit_margin !== 'number') {
+    missing.push('profitability');
+    // score stays at neutral contribution for this factor
+  } else {
     const margin = data.fundamentals.profit_margin;
     if (margin < -10) {
-      score -= 25; // Large losses
+      score -= 20; // Known: large losses
     } else if (margin < 0) {
-      score -= 15; // Unprofitable
+      score -= 10; // Known: unprofitable
     } else if (margin < 5) {
-      score += 5; // Profitable but thin — still a positive
+      score += 8; // Known: profitable but thin
     } else if (margin < 15) {
-      score += 15; // Healthy margins
-    } else if (margin >= 15) {
-      score += 20; // Strong margins
+      score += 15; // Known: healthy margins
+    } else {
+      score += 20; // Known: strong margins
     }
   }
 
-  // Revenue growth trend
-  if (data.fundamentals?.revenue_growth_yoy !== undefined && typeof data.fundamentals.revenue_growth_yoy === 'number') {
-    hasAnyData = true;
+  // Revenue growth: undefined vs declining vs growing
+  if (data.fundamentals?.revenue_growth_yoy === undefined || typeof data.fundamentals.revenue_growth_yoy !== 'number') {
+    missing.push('revenue_growth');
+  } else {
     const growth = data.fundamentals.revenue_growth_yoy;
     if (growth < -20) {
-      score -= 15; // Sharp decline
+      score -= 15; // Known: sharp decline
     } else if (growth < -5) {
-      score -= 8; // Moderate decline
+      score -= 8; // Known: moderate decline
     } else if (growth < 0) {
-      score -= 3; // Slight decline
-    } else if (growth >= 0 && growth <= 5) {
-      score += 5; // Stable / slight growth — still positive
-    } else if (growth > 5 && growth <= 15) {
-      score += 10; // Healthy growth
-    } else if (growth > 15) {
-      score += 15; // Strong growth
+      score -= 3; // Known: slight decline
+    } else if (growth <= 5) {
+      score += 5; // Known: stable
+    } else if (growth <= 15) {
+      score += 10; // Known: healthy growth
+    } else {
+      score += 15; // Known: strong growth
     }
   }
 
-  // Debt-to-equity ratio
-  if (data.fundamentals?.debt_to_equity !== undefined && typeof data.fundamentals.debt_to_equity === 'number') {
-    hasAnyData = true;
+  // Debt-to-equity: undefined vs high vs low
+  if (data.fundamentals?.debt_to_equity === undefined || typeof data.fundamentals.debt_to_equity !== 'number') {
+    missing.push('debt_levels');
+  } else {
     const dte = data.fundamentals.debt_to_equity;
     if (dte < 0.5) {
-      score += 10; // Very low debt
+      score += 10; // Known: very low debt
     } else if (dte < 1.0) {
-      score += 5; // Manageable debt
+      score += 5; // Known: manageable
     } else if (dte < 2.0) {
-      score -= 3; // Moderate leverage
+      score -= 3; // Known: moderate leverage
     } else if (dte < 3.0) {
-      score -= 10; // High leverage
+      score -= 10; // Known: high leverage
     } else {
-      score -= 18; // Dangerously high
+      score -= 18; // Known: dangerously high
     }
   }
 
-  // Current and Quick ratios (liquidity)
-  if (data.fundamentals?.current_ratio !== undefined && typeof data.fundamentals.current_ratio === 'number') {
-    hasAnyData = true;
+  // Current ratio (liquidity): undefined vs tight vs strong
+  if (data.fundamentals?.current_ratio === undefined || typeof data.fundamentals.current_ratio !== 'number') {
+    missing.push('liquidity');
+  } else {
     const cr = data.fundamentals.current_ratio;
     if (cr < 0.8) {
-      score -= 12; // Liquidity crisis risk
+      score -= 12; // Known: liquidity crisis risk
     } else if (cr < 1.0) {
-      score -= 5; // Tight liquidity
-    } else if (cr >= 1.0 && cr < 1.5) {
-      score += 3; // Adequate liquidity
-    } else if (cr >= 1.5) {
-      score += 8; // Strong liquidity
+      score -= 5; // Known: tight
+    } else if (cr < 1.5) {
+      score += 3; // Known: adequate
+    } else {
+      score += 8; // Known: strong
     }
   }
 
   // Market cap as stability proxy
   if (data.stock_data?.market_cap && typeof data.stock_data.market_cap === 'string') {
-    hasAnyData = true;
     const mcapValue = parseMarketCapValue(data.stock_data.market_cap);
     if (mcapValue >= 1e12) {
-      score += 10; // Mega cap — very stable
+      score += 10; // Mega cap
     } else if (mcapValue >= 10e9) {
       score += 7; // Large cap
     } else if (mcapValue >= 1e9) {
-      score += 4; // Mid cap — still established
+      score += 4; // Mid cap
     } else if (mcapValue >= 100e6) {
       score += 0; // Small cap — neutral
     } else if (mcapValue > 0) {
-      score -= 5; // Micro cap — higher risk
+      score -= 5; // Micro cap
     }
+  } else {
+    missing.push('market_cap');
   }
 
-  // If we had no data at all, return neutral 50 instead of penalized
-  if (!hasAnyData) return 50;
+  // If ALL data is missing, return explicit unknown
+  if (missing.length >= 5) return 50;
 
   return Math.max(0, Math.min(100, score));
 }
@@ -165,15 +171,16 @@ function parseMarketCapValue(mcapStr) {
 }
 
 // Workforce Trends Score (30% weight)
+// 3-way: no events data = unknown (neutral), events with layoffs = bad, events without layoffs = good
 function calculateWorkforceTrends(data) {
-  // Start at 70 — no layoffs = good baseline
-  let score = 70;
-  let hasAnyData = false;
+  let score = 50; // True neutral
+  const missing = [];
 
-  // Recent layoff announcements are critical
-  if (data.job_security_events && Array.isArray(data.job_security_events)) {
-    hasAnyData = true;
-    
+  // Workforce events: undefined vs has layoffs vs no layoffs
+  if (!data.job_security_events || !Array.isArray(data.job_security_events) || data.job_security_events.length === 0) {
+    missing.push('workforce_events');
+    // Stay neutral — don't assume good or bad
+  } else {
     // Only count actual layoffs, not CEO transitions, reorgs, etc.
     const recentLayoffs = data.job_security_events.filter(event => {
       const eventDate = new Date(event.date);
@@ -181,11 +188,9 @@ function calculateWorkforceTrends(data) {
       const eventLower = (event.event || '').toLowerCase();
       const detailsLower = (event.details || '').toLowerCase();
       
-      // Must explicitly be about layoffs/terminations, not just any HR event
       const isActualLayoff = eventLower.includes('layoff') || eventLower.includes('laid off') || 
                              eventLower.includes('rif') || eventLower.includes('workforce reduction');
       
-      // Exclude CEO/leadership changes that aren't layoffs
       const isLeadershipChange = (eventLower.includes('ceo') || eventLower.includes('executive') || 
                                    eventLower.includes('leadership')) && 
                                   (eventLower.includes('transition') || eventLower.includes('retire') || 
@@ -196,9 +201,10 @@ function calculateWorkforceTrends(data) {
     });
 
     if (recentLayoffs.length === 0) {
-      // No layoffs is a positive signal
-      score += 15;
+      // Known: no layoffs — positive
+      score += 20;
     } else {
+      // Known: has layoffs — negative, scale by severity
       const totalLayoffImpact = recentLayoffs.reduce((sum, event) => {
         const percentMatch = event.details?.match(/(\d+)%/);
         const percent = percentMatch ? parseInt(percentMatch[1]) : 5;
@@ -206,19 +212,19 @@ function calculateWorkforceTrends(data) {
       }, 0);
 
       if (totalLayoffImpact > 20) {
-        score -= 35; // Major layoffs
+        score -= 35;
       } else if (totalLayoffImpact > 10) {
-        score -= 20; // Significant layoffs
+        score -= 20;
       } else if (totalLayoffImpact > 5) {
-        score -= 12; // Notable layoffs
+        score -= 12;
       } else if (recentLayoffs.length > 1) {
-        score -= 15; // Multiple rounds
+        score -= 15;
       } else {
-        score -= 8; // Some layoffs
+        score -= 8;
       }
     }
     
-    // Check for leadership transitions (mild concern, not a crisis)
+    // Leadership transitions: planned = minor, sudden = moderate
     const leadershipEvents = data.job_security_events.filter(event => {
       const eventLower = (event.event || '').toLowerCase();
       const detailsLower = (event.details || '').toLowerCase();
@@ -229,18 +235,16 @@ function calculateWorkforceTrends(data) {
     });
     
     if (leadershipEvents.length > 0) {
-      // Leadership change is a mild uncertainty, not a major risk
-      // Check if it seems planned/orderly vs sudden/chaotic
       const isOrderly = leadershipEvents.some(e => {
         const d = ((e.details || '') + ' ' + (e.event || '')).toLowerCase();
         return d.includes('retire') || d.includes('transition') || d.includes('successor') || 
                d.includes('designat') || d.includes('planned') || d.includes('appoint');
       });
-      score -= isOrderly ? 3 : 8; // Planned transition = minor, sudden = moderate
+      score -= isOrderly ? 3 : 8;
     }
   }
 
-  // Use hiring signals from opportunity flags
+  // Hiring signals: undefined vs positive vs negative
   if (data.opportunity_flags?.green) {
     const hiringSignals = data.opportunity_flags.green.filter(flag => {
       const f = flag.toLowerCase();
@@ -248,74 +252,72 @@ function calculateWorkforceTrends(data) {
              f.includes('headcount growth') || f.includes('new positions');
     });
     if (hiringSignals.length > 0) {
-      hasAnyData = true;
-      score += 8;
+      score += 8; // Known: actively hiring
     }
   }
 
   if (data.opportunity_flags?.red) {
     const hiringFreezeSignals = data.opportunity_flags.red.filter(flag => {
       const f = flag.toLowerCase();
-      // Use word boundary logic — "contract" as in "hiring freeze/contraction" not "new contract"
       return f.includes('hiring freeze') || f.includes('contraction') || 
              f.includes('shrinking') || f.includes('headcount reduction');
     });
     if (hiringFreezeSignals.length > 0) {
-      hasAnyData = true;
-      score -= 12;
+      score -= 12; // Known: contracting
     }
   }
 
-  if (!hasAnyData) return 60; // Neutral if no workforce data
+  if (missing.length > 0 && !data.opportunity_flags?.green && !data.opportunity_flags?.red) return 50;
 
   return Math.max(0, Math.min(100, score));
 }
 
 // Market Sentiment Score (20% weight)
+// 3-way: undefined = unknown, known negative = penalize, known positive = reward
 function calculateMarketSentiment(data) {
-  // Start at 60 — neutral baseline
-  let score = 60;
-  let hasAnyData = false;
+  let score = 50; // True neutral
+  const missing = [];
 
-  // Stock performance
-  if (data.stock_data?.year_change_percent !== undefined && typeof data.stock_data.year_change_percent === 'number') {
-    hasAnyData = true;
+  // Stock performance: undefined vs declining vs growing
+  if (data.stock_data?.year_change_percent === undefined || typeof data.stock_data.year_change_percent !== 'number') {
+    missing.push('stock_performance');
+  } else {
     const change = data.stock_data.year_change_percent;
     if (change < -40) {
-      score -= 20; // Severe decline
+      score -= 20; // Known: severe decline
     } else if (change < -20) {
-      score -= 12; // Significant decline
+      score -= 12;
     } else if (change < -10) {
-      score -= 5; // Moderate decline
-    } else if (change >= -10 && change <= 10) {
-      score += 5; // Stable — this is fine for job security
-    } else if (change > 10 && change <= 30) {
-      score += 10; // Good performance
-    } else if (change > 30) {
-      score += 15; // Strong performance
+      score -= 5;
+    } else if (change <= 10) {
+      score += 5; // Known: stable
+    } else if (change <= 30) {
+      score += 10; // Known: good
+    } else {
+      score += 15; // Known: strong
     }
   }
 
-  // Analyst consensus
-  if (data.analyst_data?.consensus_rating && typeof data.analyst_data.consensus_rating === 'string') {
-    hasAnyData = true;
+  // Analyst consensus: undefined vs bearish vs bullish
+  if (!data.analyst_data?.consensus_rating || typeof data.analyst_data.consensus_rating !== 'string') {
+    missing.push('analyst_ratings');
+  } else {
     const rating = data.analyst_data.consensus_rating.toLowerCase().trim();
     if (rating.includes('strong sell')) {
-      score -= 15;
+      score -= 15; // Known: very bearish
     } else if (rating.includes('sell') || rating.includes('underperform') || rating.includes('underweight')) {
-      score -= 10;
+      score -= 10; // Known: bearish
     } else if (rating.includes('hold') || rating.includes('neutral') || rating.includes('equal-weight')) {
-      score += 3; // Hold is neutral-to-positive for job security (company is stable)
+      score += 3; // Known: stable (positive for job security)
     } else if (rating.includes('strong buy') || rating.includes('conviction buy')) {
-      score += 12;
+      score += 12; // Known: very bullish
     } else if (rating.includes('buy') || rating.includes('outperform') || rating.includes('overweight')) {
-      score += 8;
+      score += 8; // Known: bullish
     }
   }
 
-  // Price target vs current price
+  // Price target vs current: undefined vs downside vs upside
   if (data.analyst_data?.price_target_avg && data.stock_data?.current_price && data.stock_data.current_price > 0) {
-    hasAnyData = true;
     const upside = ((data.analyst_data.price_target_avg - data.stock_data.current_price) / 
                     data.stock_data.current_price) * 100;
     if (upside > 30) {
@@ -327,20 +329,21 @@ function calculateMarketSentiment(data) {
     }
   }
 
-  if (!hasAnyData) return 50;
+  if (missing.length >= 2) return 50; // All market data missing
 
   return Math.max(0, Math.min(100, score));
 }
 
 // News & Events Score (10% weight)
+// 3-way: no news = unknown, negative news = penalize, positive news = reward
 function calculateNewsScore(data) {
-  // Start at 60 — neutral baseline
-  let score = 60;
-  let hasAnyData = false;
+  let score = 50; // True neutral
+  const missing = [];
 
-  // Analyze news sentiment with date freshness weighting
-  if (data.news_articles && Array.isArray(data.news_articles) && data.news_articles.length > 0) {
-    hasAnyData = true;
+  // News sentiment: undefined vs negative vs positive
+  if (!data.news_articles || !Array.isArray(data.news_articles) || data.news_articles.length === 0) {
+    missing.push('news_sentiment');
+  } else {
     let weightedSentiments = { positive: 0, neutral: 0, negative: 0 };
     let totalWeight = 0;
 
@@ -368,51 +371,48 @@ function calculateNewsScore(data) {
       const neutralRatio = weightedSentiments.neutral / totalWeight;
 
       if (negativeRatio > 0.6) {
-        score -= 15; // Predominantly negative
+        score -= 15; // Known: predominantly negative
       } else if (negativeRatio > 0.4) {
-        score -= 8; // Mixed with negative tilt
+        score -= 8; // Known: mixed negative
       } else if (positiveRatio > 0.5) {
-        score += 15; // Positive coverage
+        score += 15; // Known: positive
       } else if (positiveRatio > 0.3) {
-        score += 8; // Mostly positive
+        score += 8; // Known: mostly positive
       } else if (neutralRatio > 0.5) {
-        score += 3; // Neutral is fine — no drama
+        score += 3; // Known: neutral (no drama = fine)
       }
     }
   }
 
-  // Check for red flag events in opportunity flags
+  // Red flags: undefined vs present
   if (data.opportunity_flags?.red) {
     data.opportunity_flags.red.forEach(flag => {
-      hasAnyData = true;
       const flagLower = flag.toLowerCase();
       if (flagLower.includes('bankruptcy') || flagLower.includes('insolvency')) {
-        score -= 40; // Extreme risk
+        score -= 40; // Known: extreme risk
       } else if (flagLower.includes('investigation') || flagLower.includes('sec ') || flagLower.includes('fraud')) {
-        score -= 12; // Legal trouble
+        score -= 12; // Known: legal trouble
       } else if (flagLower.includes('mass layoff') || flagLower.includes('workforce reduction')) {
-        score -= 10; // Workforce risk
+        score -= 10; // Known: workforce risk
       }
-      // Note: CEO transitions are handled in workforce section, not double-penalized here
     });
   }
 
-  // Check for positive events
+  // Green flags: undefined vs present
   if (data.opportunity_flags?.green) {
     data.opportunity_flags.green.forEach(flag => {
-      hasAnyData = true;
       const flagLower = flag.toLowerCase();
       if (flagLower.includes('new contract') || flagLower.includes('partnership') || flagLower.includes('deal')) {
-        score += 5;
+        score += 5; // Known: new revenue
       } else if (flagLower.includes('revenue growth') || flagLower.includes('expanding') || flagLower.includes('record')) {
-        score += 5;
+        score += 5; // Known: growing
       } else if (flagLower.includes('product launch') || flagLower.includes('innovation') || flagLower.includes('ai')) {
-        score += 3;
+        score += 3; // Known: innovating
       }
     });
   }
 
-  if (!hasAnyData) return 50;
+  if (missing.length > 0 && !data.opportunity_flags?.red && !data.opportunity_flags?.green) return 50;
 
   return Math.max(0, Math.min(100, score));
 }
