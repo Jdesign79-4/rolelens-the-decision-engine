@@ -1325,6 +1325,13 @@ function RoleLensContent() {
               />
             </div>
 
+            {/* AI Collaboration Opportunity Widget */}
+            {currentJob?.meta?.company && (
+              <div className="mt-6">
+                <AICollaborationWidget job={currentJob} />
+              </div>
+            )}
+
             {/* Public Company Financial Intelligence */}
             {currentJob?.meta?.company && (
               <div className="mt-6">
