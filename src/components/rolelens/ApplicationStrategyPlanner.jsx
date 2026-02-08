@@ -45,7 +45,11 @@ Given these realities, generate:
 2. A compressed, actionable preparation timeline measured in DAYS (not weeks/months). Use "Day 1", "Day 2-3", "Day 4-5" format. Do NOT include estimated hours.
 3. Customized checklist of application components. Do NOT include estimated hours or time estimates.
 4. First-draft cover letter talking points (3-5 key points that match job requirements)
-5. Specific LinkedIn networking suggestions (types of people to connect with at this company)
+5. LinkedIn networking suggestions — this is critical. Provide:
+   - targetRoles: 4-6 SPECIFIC job titles of people at this company who would be relevant to connect with (e.g. "Design Manager", "Head of Product Design", "Senior UX Researcher", "VP of Design", "Hiring Manager - Design", "Technical Recruiter"). These should be real titles people actually use on LinkedIn at this company.
+   - strategy: A brief networking approach (who to message first, what to say, when to reach out relative to applying)
+   - searchQueries: 3-5 EXACT LinkedIn people-search queries that will find the right contacts. Format each as a precise search string using the company name + role, e.g. "Senior Product Designer Zen Tree" or "Design Manager Zen Tree". These should work when typed directly into LinkedIn's search bar. Be specific to the company name and relevant departments.
+   - searchUrls: For EACH searchQuery, provide a working LinkedIn search URL in this exact format: https://www.linkedin.com/search/results/people/?keywords=QUERY_HERE (URL-encode the query). These must be real, clickable LinkedIn people search URLs.
 
 Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
       add_context_from_internet: true,
@@ -97,7 +101,8 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
             properties: {
               targetRoles: { type: "array", items: { type: "string" } },
               strategy: { type: "string" },
-              searchQueries: { type: "array", items: { type: "string" } }
+              searchQueries: { type: "array", items: { type: "string" } },
+              searchUrls: { type: "array", items: { type: "string" } }
             }
           }
         }
@@ -398,22 +403,35 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                     ))}
                   </div>
                   <div className="mt-4 pt-4 border-t border-blue-200">
-                    <p className="text-sm font-medium text-slate-700 mb-2">Search queries to use on LinkedIn:</p>
-                    {(strategy.networkingSuggestions?.searchQueries || []).map((query, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-lg mb-2">
-                        <code className="text-xs text-slate-600">{query}</code>
-                        <button
-                          onClick={() => copyToClipboard(query, `search-${idx}`)}
-                          className="p-1 hover:bg-slate-100 rounded transition-colors"
-                        >
-                          {copiedText === `search-${idx}` ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-4 h-4 text-slate-400" />
-                          )}
-                        </button>
-                      </div>
-                    ))}
+                    <p className="text-sm font-medium text-slate-700 mb-2">Search on LinkedIn:</p>
+                    {(strategy.networkingSuggestions?.searchQueries || []).map((query, idx) => {
+                      const urls = strategy.networkingSuggestions?.searchUrls || [];
+                      const linkedinUrl = urls[idx] || `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(query)}`;
+                      return (
+                        <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-lg mb-2 group">
+                          <a
+                            href={linkedinUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-900 font-medium flex-1 min-w-0"
+                          >
+                            <Linkedin className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{query}</span>
+                            <span className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">↗ Open</span>
+                          </a>
+                          <button
+                            onClick={() => copyToClipboard(query, `search-${idx}`)}
+                            className="p-1 hover:bg-slate-100 rounded transition-colors ml-2 flex-shrink-0"
+                          >
+                            {copiedText === `search-${idx}` ? (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-4 h-4 text-slate-400" />
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </motion.div>
