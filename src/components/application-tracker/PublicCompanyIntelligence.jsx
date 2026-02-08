@@ -49,8 +49,15 @@ STEP 2 - COMPREHENSIVE DATA (if public):
 
 A) STOCK DATA (complete picture):
 CRITICAL: Use Google Finance to gather ALL stock performance data
-- Current price, day/week/month/year changes, 52-week high/low
-- Market cap, P/E ratio, dividend yield, volume
+- Current price, daily price change (dollar and percent)
+- IMPORTANT: Each time period change MUST be calculated independently:
+  * week_change_percent = price change over the last 7 calendar days
+  * month_change_percent = price change over the last 30 calendar days  
+  * three_month_change_percent = price change over the last 90 calendar days
+  * year_change_percent = price change over the last 365 calendar days (THIS IS DIFFERENT FROM DAILY CHANGE)
+  * ytd_change_percent = price change since January 1st of current year
+  DO NOT copy the daily change into other time periods. Each must reflect its actual time window.
+- 52-week high/low, Market cap, P/E ratio, dividend yield, volume
 - MANDATORY: 12-month price history array for charting from Google Finance
   Format: [{month: "Jan 2025", price: 150.25}, {month: "Feb 2025", price: 155.80}, ...]
   MUST include exactly 12 data points for the past 12 months with real prices from Google Finance
