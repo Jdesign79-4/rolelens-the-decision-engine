@@ -961,6 +961,7 @@ function RoleLensContent() {
 
         {/* Desktop Sidebar */}
         <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50 dark:bg-slate-900/50" style={{ background: 'linear-gradient(45deg, #D7D0C2 66%, #CDD5C6 100%)' }}>
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" style={{ backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.03) 100%)' }} />
           <div className="absolute top-4 right-4">
             <DarkModeToggle />
           </div>
