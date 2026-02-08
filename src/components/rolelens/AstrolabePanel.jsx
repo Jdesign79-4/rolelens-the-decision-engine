@@ -81,7 +81,7 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
   const innerColors = getInnerRingColor();
 
   return (
-    <div className="h-full flex flex-col p-6 lg:p-8 bg-gradient-to-b from-[#D7D0C2] to-[#CDD5C6]">
+    <div className="h-full flex flex-col p-6 lg:p-8 ">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-xl font-semibold text-slate-800 tracking-tight">RoleLens</h1>
