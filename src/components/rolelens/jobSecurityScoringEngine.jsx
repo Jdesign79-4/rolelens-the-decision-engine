@@ -30,20 +30,25 @@ export function calculateJobSecurityScore(data) {
     (newsScore * weights.news);
 
   // Apply modifiers
-  const finalScore = applyModifiers(score, data);
+  const modifiedScore = applyModifiers(score, data);
+
+  // Validate for sanity
+  const componentScores = {
+    financial: Math.round(financialScore),
+    workforce: Math.round(workforceScore),
+    market: Math.round(marketScore),
+    news: Math.round(newsScore)
+  };
+  const { score: finalScore, warnings } = validateScore(modifiedScore, data, componentScores);
 
   return {
     score: Math.round(finalScore),
     rating: getSecurityLabel(finalScore),
-    components: {
-      financial: Math.round(financialScore),
-      workforce: Math.round(workforceScore),
-      market: Math.round(marketScore),
-      news: Math.round(newsScore)
-    },
+    components: componentScores,
     confidence: calculateConfidence(data),
     color: getSecurityColor(finalScore),
-    indicators: extractKeyIndicators(data, finalScore)
+    indicators: extractKeyIndicators(data, finalScore),
+    warnings
   };
 }
 
@@ -489,6 +494,39 @@ function calculateConfidence(data) {
     percentage: Math.round(completeness),
     missingData
   };
+}
+
+// Sanity-check the final score against obvious contradictions
+function validateScore(score, data, componentScores) {
+  const warnings = [];
+
+  // Sanity check 1: Profitable + growing company can't be "Very High Risk"
+  if (data.fundamentals?.profit_margin > 0 &&
+      data.fundamentals?.revenue_growth_yoy > 10 &&
+      score < 30) {
+    warnings.push('Score seems too low for profitable growing company');
+    score = Math.max(score, 50);
+  }
+
+  // Sanity check 2: Recent major layoffs can't be "Very High Security"
+  if (data.job_security_events && Array.isArray(data.job_security_events)) {
+    const majorLayoff = data.job_security_events.some(e => {
+      const pctMatch = e.details?.match(/(\d+)%/);
+      return pctMatch && parseInt(pctMatch[1]) > 15 &&
+        (e.event || '').toLowerCase().includes('layoff');
+    });
+    if (majorLayoff && score > 80) {
+      warnings.push('Score seems too high given recent major layoffs');
+      score = Math.min(score, 65);
+    }
+  }
+
+  // Sanity check 3: All component scores at neutral default → likely no real data
+  if (Object.values(componentScores).every(s => s === 50)) {
+    warnings.push('All component scores are default - likely missing data');
+  }
+
+  return { score, warnings };
 }
 
 function extractKeyIndicators(data, score) {
