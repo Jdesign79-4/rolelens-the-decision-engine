@@ -136,7 +136,7 @@ Be specific and actionable.`,
     setTimeout(() => setCopiedText(null), 2000);
   };
 
-  const completionPercentage = Math.round((checklist.filter(c => c.completed).length / checklist.length) * 100);
+  const completionPercentage = checklist.length > 0 ? Math.round((checklist.filter(c => c.completed).length / checklist.length) * 100) : 0;
   const totalHours = checklist.reduce((sum, item) => sum + (item.estimatedHours || 0), 0);
 
   return (
@@ -193,9 +193,9 @@ Be specific and actionable.`,
                   <Calendar className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-sm text-red-600 font-medium">Estimated Application Deadline</p>
-                    <p className="text-2xl font-bold text-red-700 mt-1">{strategy.applicationDeadline.estimatedDate}</p>
+                    <p className="text-2xl font-bold text-red-700 mt-1">{strategy.applicationDeadline?.estimatedDate}</p>
                     <p className="text-sm text-red-600 mt-2">
-                      {(strategy.applicationDeadline.reasoning || '').split(/(https?:\/\/[^\s)]+)/g).map((part, i) =>
+                      {(strategy.applicationDeadline?.reasoning || '').split(/(https?:\/\/[^\s)]+)/g).map((part, i) =>
                         /^https?:\/\//.test(part) ? (
                           <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline font-medium hover:text-red-800 break-all">
                             {(() => { try { return new URL(part).hostname.replace('www.', ''); } catch { return part; } })()}
@@ -344,7 +344,7 @@ Be specific and actionable.`,
               >
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Cover Letter Talking Points</h3>
                 <div className="space-y-3">
-                  {strategy.coverLetterTalkingPoints.map((point, idx) => (
+                  {(strategy.coverLetterTalkingPoints || []).map((point, idx) => (
                     <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-white">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <p className="font-semibold text-slate-800">{idx + 1}. {point.point}</p>
@@ -377,13 +377,13 @@ Be specific and actionable.`,
                   <Linkedin className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold text-slate-800">LinkedIn Networking Strategy</p>
-                    <p className="text-sm text-slate-600 mt-1">{strategy.networkingSuggestions.strategy}</p>
+                    <p className="text-sm text-slate-600 mt-1">{strategy.networkingSuggestions?.strategy}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-700">Target roles to connect with:</p>
                   <div className="flex flex-wrap gap-2">
-                    {strategy.networkingSuggestions.targetRoles.map((role, idx) => (
+                    {(strategy.networkingSuggestions?.targetRoles || []).map((role, idx) => (
                       <span key={idx} className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
                         {role}
                       </span>
@@ -391,7 +391,7 @@ Be specific and actionable.`,
                   </div>
                   <div className="mt-4 pt-4 border-t border-blue-200">
                     <p className="text-sm font-medium text-slate-700 mb-2">Search queries to use on LinkedIn:</p>
-                    {strategy.networkingSuggestions.searchQueries.map((query, idx) => (
+                    {(strategy.networkingSuggestions?.searchQueries || []).map((query, idx) => (
                       <div key={idx} className="flex items-center justify-between p-2 bg-white rounded-lg mb-2">
                         <code className="text-xs text-slate-600">{query}</code>
                         <button
