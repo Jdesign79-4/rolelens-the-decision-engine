@@ -55,6 +55,16 @@ REALISTIC TIME ESTIMATES PER TASK (from the perspective of a qualified applicant
 Given these realities, generate:
 1. Estimated application deadline — be aggressive and realistic. If the posting date is recent, the window is likely 7-14 days. Factor in that early applications get more attention.
 2. A compressed, actionable preparation timeline measured in DAYS (not weeks/months). Use "Day 1", "Day 2-3", "Day 4-5" format. Do NOT include estimated hours.
+   CRITICAL STEP ORDER: The timeline MUST follow this logical flow:
+   - FIRST steps: Research, networking, preparation (resume tailoring, portfolio updates, cover letter drafting, etc.)
+   - MIDDLE steps: Refinement, review, getting feedback on materials
+   - SECOND TO LAST step: Application Submission — only submit AFTER all preparation is complete
+   - LAST step: Follow-Up Strategy — after submitting, wait 3-5 business days, then follow up. Include specific tactics like:
+     * Reaching out to the hiring manager with a brief, professional follow-up email expressing continued interest
+     * Calling HR to politely ask if they can answer any questions about your application and thank them for their consideration
+     * Engaging with the company on LinkedIn (commenting on posts, sharing relevant content)
+     * If you connected with employees during networking, send a thank-you note and mention you applied
+   Do NOT put application submission as the first step. Preparation comes first, submission comes near the end, follow-up is the final step.
 3. Customized checklist of application components TAILORED TO THIS SPECIFIC ROLE AND COMPANY. Go beyond generic items like "update resume" — include role-specific deliverables. Examples:
    - Video editor → "Update demo reel with latest work showcasing editing style"
    - Designer → "Prepare portfolio case studies relevant to this company's product"
