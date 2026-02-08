@@ -27,7 +27,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
   }, []);
 
   const handleSearch = async (searchQuery = null) => {
-    const searchTerm = searchQuery || query;
+    const searchTerm = (typeof searchQuery === 'string' ? searchQuery : null) || query;
     if (!searchTerm.trim() || isLoading) return;
     
     setIsLoading(true);
