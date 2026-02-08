@@ -22,6 +22,19 @@ export function calculateJobSecurityScore(data) {
   const marketScore = calculateMarketSentiment(data);
   const newsScore = calculateNewsScore(data);
 
+  console.log('[JobSecurity] Component scores:', {
+    financial: Math.round(financialScore),
+    workforce: Math.round(workforceScore),
+    market: Math.round(marketScore),
+    news: Math.round(newsScore),
+    dataKeys: Object.keys(data),
+    hasFundamentals: !!data.fundamentals,
+    fundamentalsKeys: data.fundamentals ? Object.keys(data.fundamentals) : [],
+    marketCap: data.stock_data?.market_cap,
+    yearChange: data.stock_data?.year_change_percent,
+    healthScore: data.financial_health_score
+  });
+
   // Weighted average
   score = 
     (financialScore * weights.financial) +
