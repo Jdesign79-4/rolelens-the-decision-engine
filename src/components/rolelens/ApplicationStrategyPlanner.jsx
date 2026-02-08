@@ -25,9 +25,9 @@ export default function ApplicationStrategyPlanner({ job, onClose }) {
         prompt: `Create a comprehensive application strategy for this job opportunity:
 
 Company: ${job.meta.company}
-Position: ${job.meta.title}
-Location: ${job.meta.location}
-Posting Date: ${job.meta.date}
+Position: ${job.meta.title || 'General roles at this company'}
+Location: ${job.meta.location || 'Not specified'}
+Posting Date: ${job.meta.date || 'Recent'}
 
 Generate:
 1. Estimated application deadline (consider typical 30-45 day hiring cycles from posting)
