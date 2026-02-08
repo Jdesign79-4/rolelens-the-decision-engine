@@ -21,22 +21,33 @@ export default function ApplicationStrategyPlanner({ job, onClose }) {
     setError(null);
 
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Create a comprehensive application strategy for this job opportunity:
+      prompt: `You are a senior HR recruiter at a large publicly traded company. You know how fast hiring actually moves today.
+
+Create a realistic application strategy for this job opportunity:
 
 Company: ${job.meta.company}
 Position: ${job.meta.title || 'General roles at this company'}
 Location: ${job.meta.location || 'Not specified'}
 Posting Date: ${job.meta.date || 'Recent'}
+Today's Date: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
 
-Generate:
-1. Estimated application deadline (consider typical 30-45 day hiring cycles from posting)
-2. Detailed timeline with weekly milestones for preparing application materials
+CRITICAL HIRING TIMELINE REALITY CHECK:
+- Most job postings at large companies stay open 10-21 days, NOT months
+- Competitive roles (design, engineering, product) often close in 7-14 days once posted
+- Many companies use rolling reviews — early applicants get priority
+- "Open until filled" typically means 2-4 weeks in practice
+- Internal recruiter KPIs target 30-45 days from posting to OFFER, not just to close applications
+- The best candidates apply within the FIRST WEEK of a posting going live
+
+Given these realities, generate:
+1. Estimated application deadline — be aggressive and realistic. If the posting date is recent, the window is likely 7-14 days. Factor in that early applications get more attention.
+2. A compressed, actionable preparation timeline (days, not weeks/months)
 3. Customized checklist of application components (resume, cover letter, portfolio, references, etc.)
 4. First-draft cover letter talking points (3-5 key points that match job requirements)
 5. Specific LinkedIn networking suggestions (types of people to connect with at this company)
 6. Estimated time needed for each application component
 
-Be specific and actionable.`,
+Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
