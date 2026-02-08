@@ -32,252 +32,188 @@ export default function InterviewPrepGenerator({ job, onClose }) {
     setIsLoading(true);
     setError(null);
 
-    // Split into two parallel LLM calls for better reliability
-    const [questionsResult, strategyResult] = await Promise.all([
-      // Call 1: Interview questions, STAR frameworks, and technical topics
-      base44.integrations.Core.InvokeLLM({
-        prompt: `You are a senior hiring manager and interview coach with 15+ years of experience. Create a comprehensive, role-specific interview preparation kit.
+    // Split into THREE sequential calls with simpler schemas for reliability
+    let questionsResult, technicalResult, strategyResult;
 
-COMPANY: ${companyName}
-POSITION: ${jobTitle}
-LOCATION: ${job?.meta?.location || 'Not specified'}
+    // Call 1: Interview questions only (simplest possible schema)
+    questionsResult = await base44.integrations.Core.InvokeLLM({
+      prompt: `Create 10 interview questions for ${jobTitle} at ${companyName} (${job?.meta?.location || ''}).
 
-CRITICAL INSTRUCTIONS — Based on Indeed's latest interview research (Dec 2025):
-
-QUESTION GENERATION RULES:
-Generate 12 interview questions using this EXACT distribution tailored to the SPECIFIC role type:
-- 4 behavioral questions (using STAR method — Situation, Task, Action, Result)
-- 3 technical/role-specific questions (deeply specific to ${jobTitle} skills and tools)
-- 2 situational/hypothetical questions ("What would you do if...")
-- 1 "Tell me about yourself" opener (role-specific framing)
-- 1 "Why do you want to work here?" question (company-specific)
-- 1 weakness/growth question ("What is your greatest weakness?")
-
-ROLE-SPECIFIC TAILORING:
-Adapt questions based on the role type:
-- For ENGINEERING roles: include system design, debugging scenarios, code review questions, tech stack depth
-- For DESIGN roles: include portfolio walkthrough, design process, stakeholder feedback, design systems
-- For SALES roles: include pipeline management, objection handling, quota achievement, territory strategy
-- For MARKETING roles: include campaign metrics, channel strategy, brand voice, ROI measurement
-- For FINANCE roles: include financial modeling, risk assessment, regulatory knowledge, forecasting
-- For MANAGEMENT roles: include team building, conflict resolution, performance management, strategic planning
-- For ENTRY-LEVEL roles: focus on transferable skills, academic projects, eagerness to learn, growth mindset
-- For CREATIVE roles: include creative process, collaboration, feedback handling, inspiration sources
-- For HEALTHCARE roles: include patient care scenarios, compliance, team coordination, stress management
-- For CUSTOMER-FACING roles: include de-escalation, empathy, communication style, problem resolution
-
-For EACH question provide:
-- The question text
-- Category (behavioral/technical/situational/opener/motivation/weakness)
-- difficulty (easy/medium/hard)
-- A detailed tip on how to answer (2-3 sentences, actionable)
-- Why the interviewer asks this (what they're really assessing)
-- A common mistake candidates make when answering
-- For behavioral questions: A complete STAR framework example tailored to ${jobTitle}
-
-STAR METHOD GUIDANCE (from Indeed):
-- Situation: Set the stage with 2-3 key details. Spend the LEAST time here.
-- Task: Describe YOUR specific responsibility. Keep brief.
-- Action: This is the MOST important part. Use "I" not "we". Be specific about YOUR contributions.
-- Result: Quantify outcomes when possible. Mention what you learned.
-
-TECHNICAL TOPICS:
-Generate 6-8 technical topics specific to ${jobTitle} at ${companyName}. For each:
-- Topic name
-- Importance level (critical/important/nice-to-have)
-- A specific study guide (what to review, resources to check)
-- How it might come up in the interview (sample question or scenario)
-
-WEAKNESS GUIDANCE (from Indeed):
-Use the formula: Weakness + Context + Improvement Measures
-- Choose a REAL weakness that is NOT an essential trait for this role
-- Show self-awareness and active improvement
-- Never say you have no weaknesses
-- Frame positively but authentically
-- Include 3 weakness examples appropriate for ${jobTitle} with sample answers`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            interviewQuestions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  question: { type: "string" },
-                  category: { type: "string" },
-                  difficulty: { type: "string", enum: ["easy", "medium", "hard"] },
-                  tips: { type: "string" },
-                  whatTheyAssess: { type: "string" },
-                  commonMistake: { type: "string" },
-                  starFramework: {
-                    type: "object",
-                    properties: {
-                      situation: { type: "string" },
-                      task: { type: "string" },
-                      action: { type: "string" },
-                      result: { type: "string" }
-                    }
-                  }
-                }
-              }
-            },
-            technicalTopics: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  topic: { type: "string" },
-                  importance: { type: "string", enum: ["critical", "important", "nice-to-have"] },
-                  reviewGuide: { type: "string" },
-                  howItComesUp: { type: "string" }
-                }
-              }
-            },
-            weaknessExamples: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  weakness: { type: "string" },
-                  sampleAnswer: { type: "string" },
-                  whyItWorks: { type: "string" }
-                }
+Mix: 4 behavioral (STAR), 3 technical, 2 situational, 1 weakness/growth.
+Tailor to the specific role. For each question include a tip, what interviewers assess, a common mistake, and for behavioral questions a STAR example.
+Keep each field concise (1-2 sentences max).`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          interviewQuestions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                question: { type: "string" },
+                category: { type: "string" },
+                difficulty: { type: "string" },
+                tips: { type: "string" },
+                whatTheyAssess: { type: "string" },
+                commonMistake: { type: "string" },
+                starSituation: { type: "string" },
+                starTask: { type: "string" },
+                starAction: { type: "string" },
+                starResult: { type: "string" }
               }
             }
           }
         }
-      }),
+      }
+    });
 
-      // Call 2: Company cheat sheet, candidate questions, interview format, do's/don'ts, follow-up
-      base44.integrations.Core.InvokeLLM({
-        prompt: `You are a career coach preparing a candidate for an interview at ${companyName} for the ${jobTitle} role.
+    // Normalize STAR fields into nested object
+    if (questionsResult?.interviewQuestions) {
+      questionsResult.interviewQuestions = questionsResult.interviewQuestions.map(q => ({
+        ...q,
+        starFramework: (q.starSituation || q.starTask) ? {
+          situation: q.starSituation || '',
+          task: q.starTask || '',
+          action: q.starAction || '',
+          result: q.starResult || ''
+        } : null
+      }));
+    }
 
-Based on Indeed's interview preparation guide (Dec 2025), generate:
-
-1. COMPANY CHEAT SHEET — Research ${companyName} thoroughly and provide:
-   - Mission statement and core values (from their website)
-   - Recent news and developments (last 3-6 months)
-   - Products/services overview (what they make/do)
-   - Company culture insights (from Glassdoor, Blind, reviews)
-   - Growth trajectory and market position
-   - Key competitors and how ${companyName} differentiates
-   - Leadership team (CEO, relevant VPs)
-   - Interview process overview (what to expect — phone screen, technical, panel, etc.)
-
-2. SMART QUESTIONS TO ASK (7-8 questions):
-   For each provide the question and WHY it's smart to ask.
-   Questions should demonstrate:
-   - Research about ${companyName} specifically
-   - Interest in team dynamics and culture
-   - Understanding of the role's challenges
-   - Forward-thinking about growth and impact
-   DO NOT include generic questions. Every question should reference something specific about ${companyName} or ${jobTitle}.
-
-3. INTERVIEW FORMAT GUIDE:
-   - Expected interview stages for ${jobTitle} at ${companyName}
-   - Typical duration of each stage
-   - Who you'll likely meet (recruiter, hiring manager, team, cross-functional)
-   - Format tips (phone vs video vs in-person best practices)
-
-4. DO'S AND DON'TS specific to this role:
-   - 5 do's (specific actions to take)
-   - 5 don'ts (specific things to avoid)
-   Based on Indeed's interview advice and ${companyName}'s culture.
-
-5. POST-INTERVIEW FOLLOW-UP PLAN:
-   - When to send a thank-you email (within 24 hours)
-   - Template for the thank-you email (personalized to ${companyName})
-   - How to follow up if you don't hear back (timeline + script)
-   - What to do while waiting
-
-6. TELL ME ABOUT YOURSELF — Framework:
-   Using Indeed's Past-Present-Future technique:
-   - Past: Brief relevant background
-   - Present: Current situation and why this opportunity
-   - Future: How this role fits career trajectory
-   Provide a sample 60-90 second answer tailored to ${jobTitle} at ${companyName}.
-
-7. WHY DO YOU WANT TO WORK HERE — Framework:
-   Using Indeed's research-based approach:
-   - Reference company mission/values you genuinely connect with
-   - Mention specific products, projects, or initiatives
-   - Connect your career goals to the company's direction
-   Provide a sample answer.
-
-Be specific to ${companyName}. No generic advice.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            cheatSheet: {
+    // Call 2: Technical topics + weakness examples
+    technicalResult = await base44.integrations.Core.InvokeLLM({
+      prompt: `For ${jobTitle} at ${companyName}, provide:
+1. 6 technical topics to study (topic, importance level, study guide, how it comes up in interview). Keep each field to 1-2 sentences.
+2. 3 weakness examples with sample answers using the formula: Weakness + Context + Improvement. Each sample answer should be 2-3 sentences.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          technicalTopics: {
+            type: "array",
+            items: {
               type: "object",
               properties: {
-                companyMission: { type: "string" },
-                recentNews: { type: "string" },
-                productsServices: { type: "string" },
-                companyCulture: { type: "string" },
-                growthTrajectory: { type: "string" },
-                competitors: { type: "string" },
-                leadership: { type: "string" },
-                interviewProcessOverview: { type: "string" }
+                topic: { type: "string" },
+                importance: { type: "string" },
+                reviewGuide: { type: "string" },
+                howItComesUp: { type: "string" }
               }
-            },
-            candidateQuestions: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  question: { type: "string" },
-                  rationale: { type: "string" }
-                }
-              }
-            },
-            interviewFormat: {
+            }
+          },
+          weaknessExamples: {
+            type: "array",
+            items: {
               type: "object",
               properties: {
-                stages: { type: "array", items: { type: "object", properties: { stage: { type: "string" }, duration: { type: "string" }, who: { type: "string" }, tips: { type: "string" } } } }
-              }
-            },
-            dosAndDonts: {
-              type: "object",
-              properties: {
-                dos: { type: "array", items: { type: "string" } },
-                donts: { type: "array", items: { type: "string" } }
-              }
-            },
-            followUpPlan: {
-              type: "object",
-              properties: {
-                thankYouTemplate: { type: "string" },
-                followUpTimeline: { type: "string" },
-                followUpScript: { type: "string" },
-                whileWaiting: { type: "string" }
-              }
-            },
-            tellMeAboutYourself: {
-              type: "object",
-              properties: {
-                framework: { type: "string" },
-                sampleAnswer: { type: "string" }
-              }
-            },
-            whyWorkHere: {
-              type: "object",
-              properties: {
-                framework: { type: "string" },
-                sampleAnswer: { type: "string" }
+                weakness: { type: "string" },
+                sampleAnswer: { type: "string" },
+                whyItWorks: { type: "string" }
               }
             }
           }
         }
-      })
-    ]);
+      }
+    });
 
-    // Merge both results
+    // Call 3: Company cheat sheet, candidate questions, format, tips, follow-up, openers
+    strategyResult = await base44.integrations.Core.InvokeLLM({
+      prompt: `Career coach prep for ${jobTitle} at ${companyName}. Provide:
+1. Company cheat sheet: mission, recent news, products, culture, growth, competitors, leadership, interview process overview. Keep each to 2-3 sentences.
+2. 6 smart questions to ask the interviewer (with rationale).
+3. Interview stages (3-5 stages with duration, who you meet, tips).
+4. 5 do's and 5 don'ts.
+5. Follow-up plan: thank-you email template, follow-up timeline, follow-up script, what to do while waiting.
+6. "Tell me about yourself" framework + sample answer (Past-Present-Future, 60-90 seconds).
+7. "Why do you want to work here?" framework + sample answer.
+Be specific to ${companyName}. Keep answers concise.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          cheatSheet: {
+            type: "object",
+            properties: {
+              companyMission: { type: "string" },
+              recentNews: { type: "string" },
+              productsServices: { type: "string" },
+              companyCulture: { type: "string" },
+              growthTrajectory: { type: "string" },
+              competitors: { type: "string" },
+              leadership: { type: "string" },
+              interviewProcessOverview: { type: "string" }
+            }
+          },
+          candidateQuestions: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                question: { type: "string" },
+                rationale: { type: "string" }
+              }
+            }
+          },
+          interviewStages: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                stage: { type: "string" },
+                duration: { type: "string" },
+                who: { type: "string" },
+                tips: { type: "string" }
+              }
+            }
+          },
+          dos: { type: "array", items: { type: "string" } },
+          donts: { type: "array", items: { type: "string" } },
+          thankYouTemplate: { type: "string" },
+          followUpTimeline: { type: "string" },
+          followUpScript: { type: "string" },
+          whileWaiting: { type: "string" },
+          tellMeFramework: { type: "string" },
+          tellMeSample: { type: "string" },
+          whyHereFramework: { type: "string" },
+          whyHereSample: { type: "string" }
+        }
+      }
+    });
+
+    // Normalize strategy result into expected shape
+    const normalizedStrategy = {
+      cheatSheet: strategyResult.cheatSheet || {},
+      candidateQuestions: strategyResult.candidateQuestions || [],
+      interviewFormat: {
+        stages: strategyResult.interviewStages || []
+      },
+      dosAndDonts: {
+        dos: strategyResult.dos || [],
+        donts: strategyResult.donts || []
+      },
+      followUpPlan: {
+        thankYouTemplate: strategyResult.thankYouTemplate || '',
+        followUpTimeline: strategyResult.followUpTimeline || '',
+        followUpScript: strategyResult.followUpScript || '',
+        whileWaiting: strategyResult.whileWaiting || ''
+      },
+      tellMeAboutYourself: {
+        framework: strategyResult.tellMeFramework || '',
+        sampleAnswer: strategyResult.tellMeSample || ''
+      },
+      whyWorkHere: {
+        framework: strategyResult.whyHereFramework || '',
+        sampleAnswer: strategyResult.whyHereSample || ''
+      }
+    };
+
+    // Merge all results
     setPrepData({
-      ...questionsResult,
-      ...strategyResult
+      interviewQuestions: questionsResult?.interviewQuestions || [],
+      technicalTopics: technicalResult?.technicalTopics || [],
+      weaknessExamples: technicalResult?.weaknessExamples || [],
+      ...normalizedStrategy
     });
     setIsLoading(false);
   };
