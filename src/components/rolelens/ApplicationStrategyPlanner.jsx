@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Copy, Zap, Linkedin } from 'lucide-react';
+import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Copy, Zap } from 'lucide-react';
+import LinkedInNetworkingHub from './LinkedInNetworkingHub';
 import { Button } from "@/components/ui/button";
 
 export default function ApplicationStrategyPlanner({ job, onClose }) {
@@ -390,61 +391,16 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                 </div>
               </motion.div>
 
-              {/* Networking Suggestions */}
+              {/* LinkedIn Networking Hub */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200"
               >
-                <div className="flex items-start gap-3 mb-4">
-                  <Linkedin className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-slate-800">LinkedIn Networking Strategy</p>
-                    <p className="text-sm text-slate-600 mt-1">{strategy.networkingSuggestions?.strategy}</p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-slate-700">Target roles to connect with:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(strategy.networkingSuggestions?.targetRoles || []).map((role, idx) => (
-                      <span key={idx} className="px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
-                        {role}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-blue-200">
-                    <p className="text-sm font-medium text-slate-700 mb-2">Search on LinkedIn:</p>
-                    {(strategy.networkingSuggestions?.searchQueries || []).map((query, idx) => {
-                      const urls = strategy.networkingSuggestions?.searchUrls || [];
-                      const linkedinUrl = urls[idx] || `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(query)}`;
-                      return (
-                        <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-lg mb-2 group">
-                          <a
-                            href={linkedinUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-900 font-medium flex-1 min-w-0"
-                          >
-                            <Linkedin className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">{query}</span>
-                            <span className="text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">↗ Open</span>
-                          </a>
-                          <button
-                            onClick={() => copyToClipboard(query, `search-${idx}`)}
-                            className="p-1 hover:bg-slate-100 rounded transition-colors ml-2 flex-shrink-0"
-                          >
-                            {copiedText === `search-${idx}` ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            ) : (
-                              <Copy className="w-4 h-4 text-slate-400" />
-                            )}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                <LinkedInNetworkingHub
+                  job={job}
+                  networkingSuggestions={strategy.networkingSuggestions}
+                />
               </motion.div>
             </div>
           ) : null}
