@@ -31,137 +31,149 @@ export default function LinkedInNetworkingHub({ job, networkingSuggestions }) {
     if (!profileUrl.trim()) return;
     setIsAnalyzing(true);
 
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are an expert LinkedIn career coach and networking strategist.
+    // Split into two smaller LLM calls to avoid JSON parsing errors with complex schemas
+    const [messagesResult, strategyResult] = await Promise.all([
+      // Call 1: Profile analysis + connection/follow-up messages
+      base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert LinkedIn career coach. Analyze this person's LinkedIn profile and generate personalized networking messages for targeting a specific company.
 
-A job seeker wants to network their way into a role at a specific company. Analyze their LinkedIn profile and generate hyper-personalized networking assets.
-
-JOB SEEKER'S LINKEDIN PROFILE URL: ${profileUrl}
+LINKEDIN PROFILE URL: ${profileUrl}
 TARGET COMPANY: ${companyName}
 TARGET ROLE: ${jobTitle}
 
-IMPORTANT: Visit the LinkedIn profile URL above and extract key information about the person: their current title, industry, skills, experience level, education, and any shared connections or interests with people at ${companyName}.
+Visit the profile URL and extract their current title, skills, and experience.
 
-Generate the following:
+Generate:
+1. A brief profile summary (name, current title, 3 key strengths relevant to the target role, 2-3 connection points with the target company).
+2. Three CONNECTION REQUEST messages (under 300 chars each, LinkedIn limit):
+   - One for a HIRING MANAGER at ${companyName}
+   - One for a PEER in a similar role at ${companyName}
+   - One for a RECRUITER at ${companyName}
+   Reference specific things from their background. No generic messages.
+3. Three FOLLOW-UP messages (one per persona, 100-200 words each, sent after connection accepted). Natural tone, include a question, reference the company.
+4. Three profile optimization tips (section name, current issue, specific suggestion to be more attractive for this role).
 
-1. CONNECTION REQUEST MESSAGES (3 variations for different target personas):
-   Each message must be under 300 characters (LinkedIn limit for connection requests).
-   - One for a HIRING MANAGER or team lead in the relevant department
-   - One for a PEER (someone in a similar role at the company)
-   - One for a RECRUITER at the company
-   Each should reference something specific from the user's background that creates a genuine connection point. DO NOT be generic. Reference specific skills, experiences, or mutual interests.
-
-2. FOLLOW-UP MESSAGES (3 variations, one for each persona above):
-   These are sent AFTER the connection is accepted. 200-400 words each.
-   - Should feel natural, not transactional
-   - Include a specific question that invites conversation
-   - Reference the target role without being pushy
-   - Mention something specific about the company that shows genuine research
-
-3. LINKEDIN GROUPS TO JOIN (5 specific groups):
-   Find REAL LinkedIn groups related to the company's industry, the role's function, and the user's expertise.
-   For each group provide: name, description of why it's relevant, and a strategy for engaging (what to post/comment on).
-
-4. CONTENT ENGAGEMENT STRATEGY:
-   - 5 specific types of posts to engage with on LinkedIn to get noticed by people at ${companyName}
-   - 3 original post ideas the user could publish to demonstrate expertise relevant to this role
-   - 2-3 hashtags commonly used by employees at ${companyName} or in the relevant industry
-
-5. PROFILE OPTIMIZATION TIPS (3-5 specific suggestions):
-   Based on what you can see from their profile, suggest specific changes to their headline, about section, or experience descriptions that would make them more attractive for this specific role.
-
-Be specific. Reference the user's actual background. No generic advice.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          profileSummary: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              currentTitle: { type: "string" },
-              keyStrengths: { type: "array", items: { type: "string" } },
-              connectionPoints: { type: "array", items: { type: "string" } }
-            }
-          },
-          connectionMessages: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                targetPersona: { type: "string" },
-                message: { type: "string" },
-                whyItWorks: { type: "string" }
-              }
-            }
-          },
-          followUpMessages: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                targetPersona: { type: "string" },
-                message: { type: "string" },
-                keyTechnique: { type: "string" }
-              }
-            }
-          },
-          groups: {
-            type: "array",
-            items: {
+Keep messages concise. No URLs in messages.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            profileSummary: {
               type: "object",
               properties: {
                 name: { type: "string" },
-                relevance: { type: "string" },
-                engagementStrategy: { type: "string" },
-                searchUrl: { type: "string" }
+                currentTitle: { type: "string" },
+                keyStrengths: { type: "array", items: { type: "string" } },
+                connectionPoints: { type: "array", items: { type: "string" } }
               }
-            }
-          },
-          contentStrategy: {
-            type: "object",
-            properties: {
-              postsToEngageWith: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    type: { type: "string" },
-                    why: { type: "string" },
-                    exampleAction: { type: "string" }
-                  }
+            },
+            connectionMessages: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  targetPersona: { type: "string" },
+                  message: { type: "string" },
+                  whyItWorks: { type: "string" }
                 }
-              },
-              originalPostIdeas: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    topic: { type: "string" },
-                    hook: { type: "string" },
-                    angle: { type: "string" }
-                  }
+              }
+            },
+            followUpMessages: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  targetPersona: { type: "string" },
+                  message: { type: "string" },
+                  keyTechnique: { type: "string" }
                 }
-              },
-              hashtags: { type: "array", items: { type: "string" } }
-            }
-          },
-          profileTips: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                section: { type: "string" },
-                currentIssue: { type: "string" },
-                suggestion: { type: "string" }
+              }
+            },
+            profileTips: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  section: { type: "string" },
+                  currentIssue: { type: "string" },
+                  suggestion: { type: "string" }
+                }
               }
             }
           }
         }
-      }
-    });
+      }),
 
-    setPersonalizedData(result);
+      // Call 2: Groups + content engagement strategy
+      base44.integrations.Core.InvokeLLM({
+        prompt: `You are a LinkedIn visibility strategist. A job seeker targeting ${companyName} for a "${jobTitle}" role needs a content and groups strategy.
+
+Generate:
+1. Five LinkedIn GROUPS to join (related to the company industry, role function, or professional community). For each: name, why it's relevant, and a specific engagement strategy.
+2. CONTENT ENGAGEMENT STRATEGY:
+   - 4 types of posts to engage with on LinkedIn to get noticed by ${companyName} employees
+   - 3 original post ideas the user could publish to demonstrate relevant expertise
+   - 3 hashtags used by employees at ${companyName} or in the industry
+
+Be specific to ${companyName} and the ${jobTitle} role. No generic advice.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            groups: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  relevance: { type: "string" },
+                  engagementStrategy: { type: "string" }
+                }
+              }
+            },
+            postsToEngageWith: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  type: { type: "string" },
+                  why: { type: "string" },
+                  exampleAction: { type: "string" }
+                }
+              }
+            },
+            originalPostIdeas: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  topic: { type: "string" },
+                  hook: { type: "string" },
+                  angle: { type: "string" }
+                }
+              }
+            },
+            hashtags: { type: "array", items: { type: "string" } }
+          }
+        }
+      })
+    ]);
+
+    // Merge results into the expected shape
+    const merged = {
+      profileSummary: messagesResult.profileSummary || {},
+      connectionMessages: messagesResult.connectionMessages || [],
+      followUpMessages: messagesResult.followUpMessages || [],
+      profileTips: messagesResult.profileTips || [],
+      groups: strategyResult.groups || [],
+      contentStrategy: {
+        postsToEngageWith: strategyResult.postsToEngageWith || [],
+        originalPostIdeas: strategyResult.originalPostIdeas || [],
+        hashtags: strategyResult.hashtags || []
+      }
+    };
+
+    setPersonalizedData(merged);
     setIsAnalyzing(false);
     setExpandedSections(['profile', 'messages', 'groups', 'content', 'tips']);
   };
