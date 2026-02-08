@@ -52,10 +52,20 @@ export function calculateJobSecurityScore(data) {
   };
 }
 
+// Baseline score based on market cap — larger companies are inherently more stable
+function getBaselineScore(marketCap) {
+  if (marketCap > 200e9) return 65;  // Mega-cap
+  if (marketCap > 10e9) return 60;   // Large-cap
+  if (marketCap > 2e9) return 55;    // Mid-cap
+  return 50;                          // Small-cap / unknown
+}
+
 // Financial Health Score (40% weight)
 // Uses 3-way checks: undefined = unknown (neutral), known bad (penalize), known good (reward)
 function calculateFinancialHealth(data) {
-  let score = 50; // True neutral — no assumptions
+  // Use market cap to set a smarter baseline instead of flat 50
+  const mcapValue = data.stock_data?.market_cap ? parseMarketCapValue(data.stock_data.market_cap) : 0;
+  let score = getBaselineScore(mcapValue);
   const missing = [];
 
   // Profitability: undefined vs unprofitable vs profitable
@@ -131,21 +141,8 @@ function calculateFinancialHealth(data) {
     }
   }
 
-  // Market cap as stability proxy
-  if (data.stock_data?.market_cap && typeof data.stock_data.market_cap === 'string') {
-    const mcapValue = parseMarketCapValue(data.stock_data.market_cap);
-    if (mcapValue >= 1e12) {
-      score += 10; // Mega cap
-    } else if (mcapValue >= 10e9) {
-      score += 7; // Large cap
-    } else if (mcapValue >= 1e9) {
-      score += 4; // Mid cap
-    } else if (mcapValue >= 100e6) {
-      score += 0; // Small cap — neutral
-    } else if (mcapValue > 0) {
-      score -= 5; // Micro cap
-    }
-  } else {
+  // Market cap already factored into baseline — just track if missing
+  if (!data.stock_data?.market_cap || typeof data.stock_data.market_cap !== 'string') {
     missing.push('market_cap');
   }
 
