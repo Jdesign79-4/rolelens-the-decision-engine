@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Copy, Zap, Pencil, Check } from 'lucide-react';
 import LinkedInNetworkingHub from './LinkedInNetworkingHub';
+import ResumeTailoringAnalysis from './ResumeTailoringAnalysis';
 import { Button } from "@/components/ui/button";
 
 export default function ApplicationStrategyPlanner({ job, onClose }) {
@@ -447,6 +448,15 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
                     </motion.div>
                   ))}
                 </div>
+              </motion.div>
+
+              {/* Resume Tailoring Analysis */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <ResumeTailoringAnalysis job={job} />
               </motion.div>
 
               {/* Cover Letter Talking Points */}
