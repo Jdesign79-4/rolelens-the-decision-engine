@@ -200,7 +200,17 @@ Be specific and actionable.`,
                   <div className="flex-1">
                     <p className="text-sm text-red-600 font-medium">Estimated Application Deadline</p>
                     <p className="text-2xl font-bold text-red-700 mt-1">{strategy.applicationDeadline.estimatedDate}</p>
-                    <p className="text-sm text-red-600 mt-2">{strategy.applicationDeadline.reasoning}</p>
+                    <p className="text-sm text-red-600 mt-2">
+                      {(strategy.applicationDeadline.reasoning || '').split(/(https?:\/\/[^\s)]+)/g).map((part, i) =>
+                        /^https?:\/\//.test(part) ? (
+                          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline font-medium hover:text-red-800 break-all">
+                            {(() => { try { return new URL(part).hostname.replace('www.', ''); } catch { return part; } })()}
+                          </a>
+                        ) : (
+                          <span key={i}>{part}</span>
+                        )
+                      )}
+                    </p>
                   </div>
                 </div>
               </motion.div>
