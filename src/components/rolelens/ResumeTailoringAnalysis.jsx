@@ -270,7 +270,7 @@ Provide:
 
       {/* Results */}
       {analysis && (
-        <AnimatePresence>
+        <>
           {/* Match Score Card */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <ExpandableSection
@@ -484,7 +484,7 @@ Provide:
           <div className="text-center text-xs text-slate-400 pt-2">
             Resume analysis is AI-generated • Always review suggestions before applying • Your resume is not stored
           </div>
-        </AnimatePresence>
+        </>
       )}
     </div>
   );
