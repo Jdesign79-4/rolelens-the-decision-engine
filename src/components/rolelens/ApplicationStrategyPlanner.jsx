@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Copy, Zap, Pencil, Check } from 'lucide-react';
+import { Loader2, X, Calendar, CheckCircle2, Circle, Trash2, Plus, Zap, Pencil, Check } from 'lucide-react';
 import LinkedInNetworkingHub from './LinkedInNetworkingHub';
 import ResumeTailoringAnalysis from './ResumeTailoringAnalysis';
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,6 @@ export default function ApplicationStrategyPlanner({ job, onClose }) {
   const [error, setError] = useState(null);
   const [checklist, setChecklist] = useState([]);
   const [timeline, setTimeline] = useState([]);
-  const [copiedText, setCopiedText] = useState(null);
-
   useEffect(() => {
     generateStrategy();
   }, [job]);
@@ -203,12 +201,6 @@ Be specific, actionable, and urgency-driven. Do NOT pad timelines.`,
       return newList;
     });
     setEditingIndex(null);
-  };
-
-  const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopiedText(id);
-    setTimeout(() => setCopiedText(null), 2000);
   };
 
   const completionPercentage = checklist.length > 0 ? Math.round((checklist.filter(c => c.completed).length / checklist.length) * 100) : 0;
