@@ -975,7 +975,7 @@ function RoleLensContent() {
         <ConnectionVines isActive={isConnecting} settings={tunerSettings} />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8 xl:p-12">
+        <main className="flex-1 p-4 lg:p-8 xl:p-12 bg-[#FBF2ED] dark:bg-transparent">
           <div className="max-w-5xl mx-auto">
             {/* Search Input */}
             <JobSearchInput 
