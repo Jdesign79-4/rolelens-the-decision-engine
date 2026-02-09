@@ -200,46 +200,46 @@ Return ALL text from the page. Include every tag, label, and metadata (like "Rem
       }
     }
 
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Extract structured job data from this job posting content.
+    // Use a simpler schema to avoid JSON parse failures
+    let result;
+    const truncatedText = (pageContent.page_text || '').substring(0, 8000);
+    
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Extract job data from this posting.
 
-SOURCE URL: ${sourceUrl}
-PLATFORM: ${detectedPlatform?.name || 'Unknown'}
+URL: ${sourceUrl}
+${pageContent.job_title ? `Title: ${pageContent.job_title}` : ''}
+${pageContent.company_name ? `Company: ${pageContent.company_name}` : ''}
 
-PAGE CONTENT:
-${pageContent.page_text || ''}
+TEXT:
+${truncatedText}
 
-${pageContent.job_title ? `Detected title: ${pageContent.job_title}` : ''}
-${pageContent.company_name ? `Detected company: ${pageContent.company_name}` : ''}
-${pageContent.location ? `Detected location: ${pageContent.location}` : ''}
-${pageContent.salary_text ? `Detected salary: ${pageContent.salary_text}` : ''}
-
-Extract ALL of the following. Use the page content as the PRIMARY and AUTHORITATIVE source.
-
-For salary: if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location.
-
-DO NOT set remote_type or employment_type — those will be handled separately. Just set them to "handled_externally".`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "Job title" },
-          company: { type: "string", description: "Company name" },
-          location: { type: "string", description: "Job location (city, state)" },
-          salary_min: { type: "number", description: "Min salary (annual, 0 if unknown)" },
-          salary_max: { type: "number", description: "Max salary (annual, 0 if unknown)" },
-          salary_estimated: { type: "boolean", description: "True if salary was estimated, not from posting" },
-          seniority_level: { type: "string", description: "Entry, Mid, Senior, Lead, Director, VP, etc." },
-          skills: { type: "array", items: { type: "string" }, description: "Key skills mentioned" },
-          requirements_years: { type: "number", description: "Years of experience required" },
-          benefits_mentioned: { type: "array", items: { type: "string" }, description: "Benefits listed" },
-          company_industry: { type: "string" },
-          company_size_estimate: { type: "string" },
-          fullDescription: { type: "string", description: "The complete job description text" },
-          posting_quality_notes: { type: "string", description: "Any red/green flags noticed in the posting language" }
-        }
+Extract: title, company, location, salary_min (number, 0 if unknown), salary_max (number, 0 if unknown), salary_estimated (boolean), seniority_level, skills (array of strings), requirements_years (number), company_industry, fullDescription (the full job description text).`,
+          add_context_from_internet: false,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              company: { type: "string" },
+              location: { type: "string" },
+              salary_min: { type: "number" },
+              salary_max: { type: "number" },
+              salary_estimated: { type: "boolean" },
+              seniority_level: { type: "string" },
+              skills: { type: "array", items: { type: "string" } },
+              requirements_years: { type: "number" },
+              company_industry: { type: "string" },
+              fullDescription: { type: "string" }
+            }
+          }
+        });
+        if (result?.company || result?.title) break;
+      } catch (err) {
+        if (attempt === 1) throw new Error('Could not extract data from the job posting.');
       }
-    });
+    }
 
     if (!result?.company || !result?.title) {
       throw new Error('Could not extract company name or job title from the posting.');
