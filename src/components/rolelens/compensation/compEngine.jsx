@@ -179,18 +179,21 @@ export function parseLocation(locationStr) {
 
 // ── Water Basin Data Generator ─────────────────────────────
 export function generateWaterBasinData(grossIncome, netIncome, livingWageAnnual, realFeelSalary, expenses) {
-  const basinDepth = livingWageAnnual;
+  // Sanity: living wage should never exceed 3x gross income — cap it
+  const cappedLivingWage = Math.min(livingWageAnnual, grossIncome * 3);
+  const basinDepth = cappedLivingWage > 0 ? cappedLivingWage : grossIncome * 0.6;
   const waterLevel = netIncome;
-  const maxScale = basinDepth * 1.6;
+  const maxScale = Math.max(basinDepth, waterLevel) * 1.4;
 
-  const waterPct = Math.min(100, Math.max(0, (waterLevel / maxScale) * 100));
-  const basinPct = Math.min(100, (basinDepth / maxScale) * 100);
-  const realFeelPct = Math.min(100, Math.max(0, (realFeelSalary / maxScale) * 100));
+  const waterPct = maxScale > 0 ? Math.min(100, Math.max(0, (waterLevel / maxScale) * 100)) : 50;
+  const basinPct = maxScale > 0 ? Math.min(100, (basinDepth / maxScale) * 100) : 50;
+  const realFeelPct = maxScale > 0 ? Math.min(100, Math.max(0, (realFeelSalary / maxScale) * 100)) : 50;
 
   const isUnderwater = waterLevel < basinDepth;
   const deficit = isUnderwater ? basinDepth - waterLevel : 0;
   const surplus = !isUnderwater ? waterLevel - basinDepth : 0;
-  const disposableIncome = netIncome - (expenses?.totalAnnual || basinDepth);
+  const annualExpenses = expenses?.totalAnnual || basinDepth;
+  const disposableIncome = netIncome - Math.min(annualExpenses, grossIncome * 3);
 
   const zones = [
     { name: 'Drowning', pct: Math.max(0, basinPct - waterPct), color: '#FF4444', active: isUnderwater },
