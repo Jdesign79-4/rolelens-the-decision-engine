@@ -130,12 +130,15 @@ Return the FULL job posting text including:
 - Job title
 - Company name
 - Location
+- Workplace type (Remote, Hybrid, or On-site) — on LinkedIn this appears as a tag near the job title
+- Employment type (Full-time, Part-time, Contract, etc.) — on LinkedIn this appears in the job details
 - Salary/compensation if shown
 - Full job description
 - Requirements
 - Benefits
 - Any other details visible on the page
 
+IMPORTANT: Preserve ALL metadata tags and labels from the posting header (like "Remote", "Full-time", etc.). Do NOT omit them.
 Return it as plain text, preserving all information. Do NOT summarize — return everything.`,
       add_context_from_internet: true,
       response_json_schema: {
