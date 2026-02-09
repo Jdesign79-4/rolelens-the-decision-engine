@@ -982,7 +982,7 @@ function RoleLensContent() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight truncate">
+                        <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight">
                           {currentJob.isCompanyOnly ? currentJob.meta.company : currentJob.meta.title}
                         </h1>
                         <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm flex-wrap">
