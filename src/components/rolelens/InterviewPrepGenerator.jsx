@@ -118,11 +118,22 @@ Keep each field concise (1-2 sentences max).`,
     });
 
     // Call 3: Company cheat sheet, candidate questions, format, tips, follow-up, openers
+    const seniorityLevel = job?._extracted?.seniority || '';
+    const isExecutiveLevel = /\b(c-suite|ceo|cfo|cto|coo|cmo|cio|vp|vice president|svp|evp|president|chief)\b/i.test(jobTitle);
+
     strategyResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `Career coach prep for ${jobTitle} at ${companyName}. Provide:
+      prompt: `Career coach prep for ${jobTitle} at ${companyName}. ${seniorityLevel ? `Seniority: ${seniorityLevel}.` : ''} Provide:
 1. Company cheat sheet: mission, recent news, products, culture, growth, competitors, leadership, interview process overview. Keep each to 2-3 sentences.
 2. 6 smart questions to ask the interviewer (with rationale).
 3. Interview stages (3-5 stages with duration, who you meet, tips).
+
+CRITICAL RULES FOR INTERVIEW STAGES — you MUST follow these:
+- The "who you meet" field must be REALISTIC for the seniority of "${jobTitle}".
+${isExecutiveLevel ? `- This IS an executive/VP-level role, so meeting the CEO or board members in later rounds IS realistic.` : `- This is NOT an executive-level role. A typical candidate would NEVER interview directly with the CEO or co-founder.
+- For non-executive roles, realistic interviewers are: Recruiter/HR, Hiring Manager, Team Lead, Senior team members, Cross-functional peers, Department Head/Director (at most).
+- The final round for a non-executive role is typically with the Hiring Manager + a Director or VP at most — NOT the CEO/founder.
+- Do NOT include CEO, Co-Founder, Founder, President, or CxO as interviewers unless the role title itself is executive-level.`}
+
 4. 5 do's and 5 don'ts.
 5. Follow-up plan: thank-you email template, follow-up timeline, follow-up script, what to do while waiting.
 6. "Tell me about yourself" framework + sample answer (Past-Present-Future, 60-90 seconds).
