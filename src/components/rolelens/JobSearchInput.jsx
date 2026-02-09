@@ -250,7 +250,7 @@ Be specific with numbers. Show your work - reference which source each number co
         jobTitle: isCompanyOnly ? null : (jobTitle || result.meta.title),
         location: city || result.meta.location,
         isCompanyOnly,
-        tunerSettings: undefined // will use defaults
+        tunerSettings: tunerSettings || undefined
       }).then(smartAlts => {
         if (smartAlts && smartAlts.length > 0) {
           processedJob.alternatives = smartAlts;
