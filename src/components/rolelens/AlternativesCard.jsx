@@ -137,11 +137,16 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                       )}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-semibold text-slate-800">{alt.meta.company}</h4>
                         {isTopMatch && (
                           <span className="text-[9px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">
                             TOP MATCH
+                          </span>
+                        )}
+                        {alt._smart?.categoryLabel && (
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${alt._smart.categoryColors?.bg || 'bg-slate-100'} ${alt._smart.categoryColors?.text || 'text-slate-600'}`}>
+                            {alt._smart.categoryIcon} {alt._smart.categoryLabel}
                           </span>
                         )}
                       </div>
