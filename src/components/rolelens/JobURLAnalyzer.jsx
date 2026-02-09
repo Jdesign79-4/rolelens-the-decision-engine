@@ -359,6 +359,7 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
         skills: extracted.skills,
         seniority: extracted.seniority_level,
         remoteType: extracted.remote_type,
+        employmentType: extracted.employment_type,
         benefits: extracted.benefits_mentioned,
         salaryEstimated: extracted.salary_estimated,
         postingNotes: extracted.posting_quality_notes
