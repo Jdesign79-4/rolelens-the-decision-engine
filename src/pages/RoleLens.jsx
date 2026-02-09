@@ -1367,6 +1367,13 @@ function RoleLensContent() {
               </div>
             )}
 
+            {/* Culture Decoder — comprehensive culture intelligence */}
+            <CultureDecoderWidget
+              job={currentJob}
+              jobPostingText={jobPostingText}
+              tunerSettings={tunerSettings}
+            />
+
             {/* Job Posting Analysis - Red/Green Flags (only for specific roles) */}
             {!currentJob.isCompanyOnly && (
               <JobPostingAnalysis 
