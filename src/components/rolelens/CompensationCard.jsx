@@ -134,11 +134,20 @@ Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to me
     }
   }, [location, city, familyType, grossIncome]);
 
+  // Refetch when location changes
   useEffect(() => {
     if (location || city) {
       fetchCOLData();
     }
   }, [fetchCOLData]);
+
+  // Refetch when family type changes
+  useEffect(() => {
+    fetchedRef.current = ''; // Clear cache to force refetch
+    if (location || city) {
+      fetchCOLData(familyType);
+    }
+  }, [familyType]);
 
   // Compute derived data
   const livingWage = colData?.living_wage_annual || 0;
