@@ -27,69 +27,39 @@ export default function CultureDecoderWidget({ job, jobPostingText, tunerSetting
   const runAnalysis = async () => {
     setLoading(true);
 
-    // Call 1: Posting flags + cultural dimensions + contradictions
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a cultural anthropologist and career advisor. Perform a COMPREHENSIVE culture analysis for a job opportunity.
+    const postingContext = jobPostingText ? `Job Posting Text:\n${jobPostingText.substring(0, 2000)}` : 'No job posting text available.';
+    const baseContext = `Company: ${companyName}\nPosition: ${jobTitle || 'General'}\n${postingContext}`;
 
-Company: ${companyName}
-Position: ${jobTitle || 'General'}
-${jobPostingText ? `Job Posting Text:\n${jobPostingText.substring(0, 3000)}` : 'No job posting text available.'}
+    // Call 1: Red/green flags + verdict
+    const flagsPromise = base44.integrations.Core.InvokeLLM({
+      prompt: `Analyze this job opportunity for cultural red flags and green flags.
 
-Analyze across these areas:
+${baseContext}
 
-1. JOB POSTING RED FLAGS — Scan for these specific phrases/patterns and explain the real meaning:
-- "fast-paced environment" → often means chaos and poor planning
-- "work hard, play hard" → long hours expected
-- "we're like a family" → poor boundaries, guilt-based motivation
-- "wear many hats" → understaffed, scope creep
-- "rockstar/ninja/guru" → unrealistic expectations, bro culture
-- "self-starter" → minimal onboarding/support
-- "unlimited PTO" → social pressure to never take PTO
-- "hustle culture" → glorified overwork
-- "thick skin" → toxic communication
-- "competitive salary" without range → likely below market
-- "entrepreneurial opportunity" → startup risk without equity
-- "flat organization" → unclear decision-making
-- "meritocracy" → possible lack of diversity initiatives
-- Any other concerning patterns you detect
+RED FLAGS to scan for: "fast-paced environment", "work hard play hard", "like a family", "wear many hats", "rockstar/ninja", "self-starter", "unlimited PTO", "hustle culture", "thick skin", "competitive salary" (no range), "entrepreneurial opportunity", "flat organization", "meritocracy". Also detect any other concerning patterns.
 
-For each red flag: provide the phrase, severity (critical/high/medium/low), what it REALLY means, when it's acceptable vs concerning, and a specific interview question to ask with good/bad answer examples.
+For each red flag found: phrase, severity, what it really means, when acceptable, when concerning, an interview question to ask, and good/bad answer examples.
 
-2. GREEN FLAGS — Identify genuinely positive signals:
-- Clear salary range, structured onboarding, career ladder, 1-on-1s, dev budget, core hours, specific KPIs, inclusive language, etc.
+GREEN FLAGS: salary range, structured onboarding, career ladder, 1-on-1s, dev budget, core hours, KPIs, inclusive language, etc.
 
-3. CULTURAL DIMENSIONS (score 0-100 each):
-- Work-Life Integration: actual work hours, boundaries
-- Psychological Safety: can people speak up, how mistakes are handled
-- Management Quality: support, feedback, competence
-- Decision Transparency: how decisions are made and communicated
-- Meritocracy vs Politics: promotion fairness, favoritism
-- Diversity & Inclusion: demographics, real inclusion
-- Innovation vs Process: agility vs bureaucracy
-- Compensation Fairness: market positioning, equity
-- Learning & Development: growth investment
-- Collaboration: cross-team effectiveness
-
-4. CONTRADICTIONS — Find gaps between what the company SAYS vs what employees likely EXPERIENCE. Compare job posting claims to typical reality signals.
-
-5. INTERVIEW QUESTIONS — Generate 8 specific tactical questions based on detected issues. For each: the question, why to ask it, what a good answer looks like, and what a red flag answer looks like.
-
-6. OVERALL VERDICT with culture health score (0-100) and fit recommendation.`,
+Also provide: overall culture health score 0-100, culture type label, verdict, 3 strengths, 3 concerns.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
         properties: {
           cultureHealthScore: { type: "number" },
           cultureType: { type: "string" },
-          verdict: { type: "string", enum: ["Strong Match", "Good Match", "Mixed Signals", "Proceed with Caution", "Not Recommended"] },
+          verdict: { type: "string" },
           verdictSummary: { type: "string" },
+          topStrengths: { type: "array", items: { type: "string" } },
+          topConcerns: { type: "array", items: { type: "string" } },
           redFlags: {
             type: "array",
             items: {
               type: "object",
               properties: {
                 phrase: { type: "string" },
-                severity: { type: "string", enum: ["critical", "high", "medium", "low"] },
+                severity: { type: "string" },
                 realMeaning: { type: "string" },
                 acceptable: { type: "string" },
                 concerning: { type: "string" },
@@ -105,12 +75,39 @@ For each red flag: provide the phrase, severity (critical/high/medium/low), what
               type: "object",
               properties: {
                 signal: { type: "string" },
-                importance: { type: "string", enum: ["high", "medium", "low"] },
+                importance: { type: "string" },
                 explanation: { type: "string" },
                 evidenceToVerify: { type: "string" }
               }
             }
-          },
+          }
+        }
+      }
+    });
+
+    // Call 2: Cultural dimensions
+    const dimensionsPromise = base44.integrations.Core.InvokeLLM({
+      prompt: `Score this company across 10 cultural dimensions (0-100 each) based on available information.
+
+${baseContext}
+
+Dimensions to score:
+1. Work-Life Integration (hours, boundaries)
+2. Psychological Safety (speak up, mistakes)
+3. Management Quality (support, feedback)
+4. Decision Transparency (communication)
+5. Meritocracy vs Politics (promotion fairness)
+6. Diversity & Inclusion
+7. Innovation vs Process (agility)
+8. Compensation Fairness (market position)
+9. Learning & Development
+10. Collaboration (cross-team)
+
+For each: name, score 0-100, level (Excellent/Good/Moderate/Poor/Severe), brief analysis, and 2-3 evidence signals.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
           dimensions: {
             type: "array",
             items: {
@@ -123,14 +120,33 @@ For each red flag: provide the phrase, severity (critical/high/medium/low), what
                 evidenceSignals: { type: "array", items: { type: "string" } }
               }
             }
-          },
+          }
+        }
+      }
+    });
+
+    // Call 3: Contradictions + interview questions
+    const questionsPromise = base44.integrations.Core.InvokeLLM({
+      prompt: `Analyze contradictions and generate interview questions for this opportunity.
+
+${baseContext}
+
+1. CONTRADICTIONS: Find gaps between what the company SAYS vs likely reality. For each: the claim, severity, what they say, likely reality, and a question to ask.
+
+2. INTERVIEW QUESTIONS: Generate 6 specific tactical questions based on cultural concerns. For each: the question, category, priority (critical/high/medium), why to ask, what a good answer looks like, what a bad answer looks like.
+
+Also provide confidence level (High/Medium/Low) and reason.`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
           contradictions: {
             type: "array",
             items: {
               type: "object",
               properties: {
                 claim: { type: "string" },
-                severity: { type: "string", enum: ["high", "medium", "low"] },
+                severity: { type: "string" },
                 whatTheySay: { type: "string" },
                 likelyReality: { type: "string" },
                 questionToAsk: { type: "string" }
@@ -144,22 +160,33 @@ For each red flag: provide the phrase, severity (critical/high/medium/low), what
               properties: {
                 question: { type: "string" },
                 category: { type: "string" },
-                priority: { type: "string", enum: ["critical", "high", "medium"] },
+                priority: { type: "string" },
                 whyAsk: { type: "string" },
                 goodAnswer: { type: "string" },
                 badAnswer: { type: "string" }
               }
             }
           },
-          topStrengths: { type: "array", items: { type: "string" } },
-          topConcerns: { type: "array", items: { type: "string" } },
-          confidenceLevel: { type: "string", enum: ["High", "Medium", "Low"] },
+          confidenceLevel: { type: "string" },
           confidenceReason: { type: "string" }
         }
       }
     });
 
-    setAnalysis(result);
+    const [flagsResult, dimensionsResult, questionsResult] = await Promise.all([
+      flagsPromise,
+      dimensionsPromise,
+      questionsPromise
+    ]);
+
+    setAnalysis({
+      ...flagsResult,
+      dimensions: dimensionsResult?.dimensions || [],
+      contradictions: questionsResult?.contradictions || [],
+      interviewQuestions: questionsResult?.interviewQuestions || [],
+      confidenceLevel: questionsResult?.confidenceLevel || 'Medium',
+      confidenceReason: questionsResult?.confidenceReason || 'Based on available public data'
+    });
     setLoading(false);
   };
 
