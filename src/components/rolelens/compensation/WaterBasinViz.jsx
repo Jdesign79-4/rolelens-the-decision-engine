@@ -126,11 +126,11 @@ export default function WaterBasinViz({ basin }) {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1, y: [0, -3, 0] }}
           transition={{ opacity: { delay: 1.4 }, scale: { delay: 1.4 }, y: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
-          className="absolute left-3 right-3 flex items-center justify-between px-2.5 py-1 bg-white/30 backdrop-blur-sm rounded-full z-20"
+          className="absolute left-3 right-3 flex items-center justify-between px-2.5 py-1 bg-slate-800/70 backdrop-blur-sm rounded-full z-20 border border-white/20"
           style={{ bottom: `${Math.min(waterPct, 90)}%`, transform: 'translateY(50%)' }}
         >
-          <Droplets className="w-3 h-3 text-white drop-shadow-md" />
-          <span className="text-[10px] font-bold text-white drop-shadow-md">Real Feel: {fmt(labels.realFeel)}</span>
+          <Droplets className="w-3 h-3 text-teal-300" />
+          <span className="text-[10px] font-bold text-white">Real Feel: {fmt(labels.realFeel)}</span>
         </motion.div>
 
         {/* Underwater Warning Overlay */}
