@@ -173,9 +173,12 @@ ${pageContent.company_name ? `Detected company: ${pageContent.company_name}` : '
 ${pageContent.location ? `Detected location: ${pageContent.location}` : ''}
 ${pageContent.salary_text ? `Detected salary: ${pageContent.salary_text}` : ''}
 
-Extract ALL of the following. Use the page content as the primary source. If any field is not found in the posting, use your knowledge to fill in reasonable estimates and mark estimated fields.
+Extract ALL of the following. Use the page content as the PRIMARY and AUTHORITATIVE source. Do NOT override what the posting explicitly states with your own assumptions.
 
-CRITICAL: For salary, if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location using Levels.fyi and Glassdoor data.`,
+CRITICAL RULES:
+1. For salary, if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location using Levels.fyi and Glassdoor data.
+2. For remote_type: Look CAREFULLY at the posting for words like "Remote", "Hybrid", "On-site", "In-office", "Work from home", "Telecommute". LinkedIn postings show this in the header area (e.g. "Remote" or "On-site" or "Hybrid"). Use EXACTLY what the posting says. Do NOT guess or default to "On-site" — only use "On-site" if the posting explicitly states it.
+3. For employment_type: Look for "Full-time", "Part-time", "Contract", "Temporary", "Seasonal", "Internship", "Freelance". LinkedIn shows this in the job details section. Use EXACTLY what the posting says.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
