@@ -230,24 +230,7 @@ Be specific with numbers. Show your work - reference which source each number co
 
       // Generate a unique ID
       const jobId = result.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
-      
-      // Generate simplified alternatives (max 3 instead of 5)
-      const simplifiedAlternatives = [];
-      for (let i = 0; i < Math.min(3, 5); i++) {
-        simplifiedAlternatives.push({
-          id: `alt_${i}`,
-          meta: {
-            title: isCompanyOnly ? "Company Research" : "Similar Role",
-            company: `Alternative ${i + 1}`,
-            location: city || "Various",
-            logo: `https://ui-avatars.com/api/?name=Alt${i+1}&background=random&size=100`
-          },
-          stability: { health: "Unknown", risk_score: 0.5, division: "N/A", runway: "N/A", headcount_trend: "N/A" },
-          comp: { headline: 100000, real_feel: 80000, leak_label: "Standard" },
-          culture: { type: "Standard", stress_level: 0.5, wlb_score: 5, growth_score: 5, politics_level: "Medium" }
-        });
-      }
-      
+
       // Add logo URL (using company initial as fallback concept)
       const processedJob = {
         ...result,
@@ -258,8 +241,25 @@ Be specific with numbers. Show your work - reference which source each number co
           logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(result.meta.company)}&background=random&size=100`
         },
         sources: result.sources || [],
-        alternatives: simplifiedAlternatives
+        alternatives: [] // will be populated below
       };
+
+      // Generate smart alternatives in parallel (non-blocking for main card display)
+      generateAlternatives({
+        companyName: result.meta.company,
+        jobTitle: isCompanyOnly ? null : (jobTitle || result.meta.title),
+        location: city || result.meta.location,
+        isCompanyOnly,
+        tunerSettings: undefined // will use defaults
+      }).then(smartAlts => {
+        if (smartAlts && smartAlts.length > 0) {
+          processedJob.alternatives = smartAlts;
+          // Re-trigger the callback so the page picks up the alternatives
+          onJobDataLoaded(processedJob, jobPostingText);
+        }
+      }).catch(err => {
+        console.warn('Smart alternatives failed, using fallbacks:', err);
+      });
 
       onJobDataLoaded(processedJob, jobPostingText);
       setQuery('');
