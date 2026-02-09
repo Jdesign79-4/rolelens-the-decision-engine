@@ -111,12 +111,30 @@ export function calculateTaxes(grossIncome, stateCode, city, familyType) {
   }
 
   const fica = calcFICA(grossIncome);
-  const total = federal + state + local + fica;
+
+  // Child Tax Credit: $2,000 per child (phases out at $200k single / $400k married)
+  const ctcPhaseout = isMarried ? 400000 : 200000;
+  let childTaxCredit = 0;
+  if (numChildren > 0 && grossIncome < ctcPhaseout + 40000) {
+    const baseCTC = numChildren * 2000;
+    if (grossIncome <= ctcPhaseout) {
+      childTaxCredit = baseCTC;
+    } else {
+      childTaxCredit = Math.max(0, baseCTC - Math.floor((grossIncome - ctcPhaseout) / 1000) * 50);
+    }
+  }
+
+  const totalBeforeCredits = federal + state + local + fica;
+  // CTC reduces federal tax only (non-refundable portion)
+  const effectiveCredits = Math.min(childTaxCredit, federal);
+  const total = totalBeforeCredits - effectiveCredits;
 
   return {
-    federal, state, local, fica, total,
+    federal: federal - effectiveCredits, state, local, fica, total,
+    childTaxCredit: effectiveCredits,
+    numChildren,
     netIncome: grossIncome - total,
-    effectiveRate: ((total / grossIncome) * 100).toFixed(1),
+    effectiveRate: grossIncome > 0 ? ((total / grossIncome) * 100).toFixed(1) : '0.0',
     stateCode,
     city
   };
