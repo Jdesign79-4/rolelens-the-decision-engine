@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronUp, Zap, Clock, DollarSign, Heart } from 'lucide-react';
 import { calculateJobMatch, getMatchLabel, getMatchInsights } from './MatchingAlgorithm';
+import SmartAlternativeExpanded from './SmartAlternativeExpanded';
 
 export default function AlternativesCard({ alternatives, currentJob, onSwap, tunerSettings, favorites = [], onToggleFavorite }) {
   const [expandedId, setExpandedId] = useState(null);
