@@ -85,7 +85,10 @@ function calcFICA(income) {
 
 // ── Main tax calculator ────────────────────────────────────
 export function calculateTaxes(grossIncome, stateCode, city, familyType) {
-  const isMarried = familyType && (familyType.includes('2 adults') || familyType.includes('married'));
+  const isMarried = familyType && (familyType.startsWith('2adults') || familyType.includes('married'));
+  // Count children for child tax credit
+  const childMatch = familyType ? familyType.match(/_(\d+)$/) : null;
+  const numChildren = childMatch ? parseInt(childMatch[1]) : 0;
   const standardDeduction = isMarried ? 29200 : 14600;
   const taxableIncome = Math.max(0, grossIncome - standardDeduction);
   const brackets = isMarried ? FEDERAL_BRACKETS_MARRIED : FEDERAL_BRACKETS_SINGLE;
