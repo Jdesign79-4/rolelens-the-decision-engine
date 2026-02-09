@@ -175,10 +175,21 @@ ${pageContent.salary_text ? `Detected salary: ${pageContent.salary_text}` : ''}
 
 Extract ALL of the following. Use the page content as the PRIMARY and AUTHORITATIVE source. Do NOT override what the posting explicitly states with your own assumptions.
 
-CRITICAL RULES:
-1. For salary, if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location using Levels.fyi and Glassdoor data.
-2. For remote_type: Look CAREFULLY at the posting for words like "Remote", "Hybrid", "On-site", "In-office", "Work from home", "Telecommute". LinkedIn postings show this in the header area (e.g. "Remote" or "On-site" or "Hybrid"). Use EXACTLY what the posting says. Do NOT guess or default to "On-site" — only use "On-site" if the posting explicitly states it.
-3. For employment_type: Look for "Full-time", "Part-time", "Contract", "Temporary", "Seasonal", "Internship", "Freelance". LinkedIn shows this in the job details section. Use EXACTLY what the posting says.`,
+CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
+1. For salary: if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location using Levels.fyi and Glassdoor data.
+2. For remote_type — THIS IS CRITICAL:
+   - Search the ENTIRE page text for ANY of these keywords: "Remote", "Hybrid", "On-site", "In-office", "Work from home", "Telecommute", "WFH", "Fully remote", "100% remote"
+   - On LinkedIn, the workplace type appears near the top, often as a tag like "Remote", "Hybrid", or "On-site"
+   - If the text contains "Remote" or "Fully remote" or "Work from home" or "Telecommute" ANYWHERE, return "Remote"
+   - If the text contains "Hybrid", return "Hybrid"
+   - ONLY return "On-site" if the posting EXPLICITLY says "On-site" or "In-office" or "In person"
+   - If unclear, return "Not specified" — NEVER default to "On-site" or "Hybrid" without evidence
+   - DO NOT use the location field to infer remote status — a posting can list a city AND still be Remote
+3. For employment_type — THIS IS CRITICAL:
+   - Search the ENTIRE page text for: "Full-time", "Part-time", "Contract", "Temporary", "Seasonal", "Internship", "Freelance"
+   - On LinkedIn this appears in the job details section
+   - Use EXACTLY what the posting says. If unclear, return "Not specified"
+   - DO NOT guess — only return a value if the posting explicitly states it`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
