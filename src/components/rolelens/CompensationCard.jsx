@@ -82,16 +82,33 @@ Use MIT Living Wage Calculator and Numbeo data. Return living_wage_annual (requi
       });
 
       if (result && result.living_wage_annual > 0) {
+        // Sanity checks: LLM sometimes returns absurd numbers
+        // Living wage should be between $15k and $300k for any US location
+        const lw = result.living_wage_annual;
+        if (lw > 300000) {
+          console.warn('LLM returned unrealistic living wage:', lw, '— capping at 3x gross');
+          result.living_wage_annual = Math.min(lw, grossIncome * 1.5);
+        }
+        if (lw < 15000) {
+          result.living_wage_annual = 15000;
+        }
+        // Monthly expenses should not exceed ~$25k/mo each
+        const capMonthly = (v) => (typeof v === 'number' && v > 0 && v < 25000) ? v : 0;
+        // COL index should be between 50 and 250
+        if (result.col_index && (result.col_index < 30 || result.col_index > 300)) {
+          result.col_index = 100;
+        }
+
         // Normalize flat schema into nested monthly_expenses for downstream components
         setColData({
           ...result,
           monthly_expenses: {
-            housing: result.housing || 0,
-            food: result.food || 0,
-            transportation: result.transportation || 0,
-            healthcare: result.healthcare || 0,
-            childcare: result.childcare || 0,
-            other: result.other || 0,
+            housing: capMonthly(result.housing),
+            food: capMonthly(result.food),
+            transportation: capMonthly(result.transportation),
+            healthcare: capMonthly(result.healthcare),
+            childcare: capMonthly(result.childcare),
+            other: capMonthly(result.other),
           }
         });
       }
