@@ -967,6 +967,7 @@ function RoleLensContent() {
               onJobDataLoaded={handleJobDataLoaded}
               isLoading={isSearching}
               setIsLoading={setIsSearching}
+              tunerSettings={tunerSettings}
             />
 
             {/* Job Header */}
