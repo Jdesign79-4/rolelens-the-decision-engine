@@ -1120,6 +1120,15 @@ function RoleLensContent() {
               />
             )}
 
+            {/* Data Source Disclaimer — always visible */}
+            <div className="mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-xs text-amber-800">
+                <span className="font-semibold">⚠️ Data Disclaimer:</span> Company data is synthesized by AI from publicly available sources. 
+                Always verify financial metrics, salary ranges, and company information independently before making career decisions. 
+                Stock prices may be delayed 15+ minutes. This is not financial advice.
+              </p>
+            </div>
+
             {/* Widget Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-white rounded-2xl border border-slate-200">
               <div className="flex gap-2">
