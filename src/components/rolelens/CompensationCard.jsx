@@ -55,42 +55,27 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
 
     setIsLoadingCOL(true);
     try {
+      const locStr = location || city || 'United States average';
+      const famStr = getFamilyLabel(familyType);
+
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Research cost of living data for a job seeker in this location:
-
-LOCATION: ${location || city || 'United States average'}
-FAMILY STATUS: ${getFamilyLabel(familyType)}
-ANNUAL GROSS INCOME: $${grossIncome.toLocaleString()}
-
-Using data from MIT Living Wage Calculator (livingwage.mit.edu), BLS, and Numbeo, provide:
-
-1. LIVING WAGE: The required annual income BEFORE taxes for this family composition in this location.
-2. MONTHLY EXPENSES broken down: housing, food, transportation, healthcare, childcare (if applicable), other necessities.
-3. COST OF LIVING INDEX relative to national average (100 = average).
-4. MEDIAN RENT for a 1-bedroom and 2-bedroom apartment.
-
-Be specific with dollar amounts. Use real data from these authoritative sources.
-If the location is "Remote" with no state specified, use the US national average.`,
+        prompt: `Cost of living data for "${locStr}", family: ${famStr}, income $${grossIncome.toLocaleString()}.
+Use MIT Living Wage Calculator and Numbeo data. Return living_wage_annual (required annual pre-tax income), col_index (100=US avg), monthly housing/food/transportation/healthcare/childcare/other costs, median 1BR and 2BR rent, data_sources string, data_year string. All numbers only, no text in number fields.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
-            living_wage_annual: { type: "number", description: "Required annual income before taxes" },
-            col_index: { type: "number", description: "Cost of living index, 100 = national average" },
-            monthly_expenses: {
-              type: "object",
-              properties: {
-                housing: { type: "number" },
-                food: { type: "number" },
-                transportation: { type: "number" },
-                healthcare: { type: "number" },
-                childcare: { type: "number" },
-                other: { type: "number" }
-              }
-            },
+            living_wage_annual: { type: "number" },
+            col_index: { type: "number" },
+            housing: { type: "number" },
+            food: { type: "number" },
+            transportation: { type: "number" },
+            healthcare: { type: "number" },
+            childcare: { type: "number" },
+            other: { type: "number" },
             median_rent_1br: { type: "number" },
             median_rent_2br: { type: "number" },
-            data_sources: { type: "string", description: "Which sources the data came from" },
+            data_sources: { type: "string" },
             data_year: { type: "string" }
           }
         }
