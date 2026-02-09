@@ -121,25 +121,18 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
   };
 
   const fetchJobPage = async (jobUrl) => {
-    // Use the fetch_website-like approach via LLM with internet context
-    // The LLM can access the URL content when add_context_from_internet is true
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Fetch and return the COMPLETE text content of this job posting URL: ${jobUrl}
 
-Return the FULL job posting text including:
-- Job title
-- Company name
-- Location
-- Workplace type (Remote, Hybrid, or On-site) — on LinkedIn this appears as a tag near the job title
-- Employment type (Full-time, Part-time, Contract, etc.) — on LinkedIn this appears in the job details
-- Salary/compensation if shown
-- Full job description
-- Requirements
-- Benefits
-- Any other details visible on the page
+Return the FULL job posting text including ALL header metadata tags/labels.
 
-IMPORTANT: Preserve ALL metadata tags and labels from the posting header (like "Remote", "Full-time", etc.). Do NOT omit them.
-Return it as plain text, preserving all information. Do NOT summarize — return everything.`,
+CRITICAL EXTRACTION RULES:
+- workplace_type: Look for tags/labels like "Remote", "Hybrid", "On-site" near the job title header. On LinkedIn these appear as distinct tags. If the word "Remote" appears ANYWHERE in the posting (header, description, requirements), set workplace_type to "Remote". Only set "Hybrid" if it explicitly says "Hybrid". Only set "On-site" if it explicitly says "On-site" or "In-office". If none found, set to "Not specified".
+- employment_type: Look for "Full-time", "Part-time", "Contract", "Temporary", "Internship" etc. On LinkedIn this appears in the job details section. Use exactly what the posting says. If not found, set to "Not specified".
+
+These two fields are EXTREMELY important. Extract them DIRECTLY from the page tags/labels. Do NOT infer or guess.
+
+Return ALL page text preserving every detail. Do NOT summarize.`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
@@ -148,6 +141,8 @@ Return it as plain text, preserving all information. Do NOT summarize — return
           job_title: { type: "string" },
           company_name: { type: "string" },
           location: { type: "string" },
+          workplace_type: { type: "string", description: "EXACTLY as shown on the page: Remote, Hybrid, On-site, or Not specified" },
+          employment_type: { type: "string", description: "EXACTLY as shown on the page: Full-time, Part-time, Contract, or Not specified" },
           salary_text: { type: "string" },
           url_accessible: { type: "boolean" }
         }
