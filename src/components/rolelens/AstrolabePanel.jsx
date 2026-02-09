@@ -435,6 +435,9 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
         </div>
       </div>
 
+      {/* Profile Analysis */}
+      <ProfileAnalysis settings={settings} />
+
       {/* Status Indicator */}
       <div className="mt-8 pt-6 border-t border-slate-200/50">
         <div className="flex items-center gap-3">
