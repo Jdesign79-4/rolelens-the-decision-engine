@@ -157,23 +157,35 @@ Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to me
     : 0;
   const totalAnnualExpenses = totalMonthlyExpenses * 12;
 
-  // COL adjustment factor
+  // Cost of living index (100 = US average)
   const colIndex = colData?.col_index || 100;
-  const colFactor = colIndex > 0 ? 100 / colIndex : 1;
 
-  // Real feel: net income adjusted by COL factor
+  // Net income = gross minus all taxes
   const netIncome = taxes.netIncome;
-  const disposable = netIncome - (totalAnnualExpenses > 0 ? totalAnnualExpenses : livingWage);
+
+  // Annual cost of basic living in this city for this family type
+  // Prefer itemized expenses from LLM, fall back to living wage
+  const annualCostOfLiving = totalAnnualExpenses > 5000 ? totalAnnualExpenses : (livingWage > 5000 ? livingWage : grossIncome * 0.6);
+
+  // Disposable = what's left after taxes and basic living costs
+  const disposable = netIncome - annualCostOfLiving;
+
+  // Real Feel Salary: "What would this salary feel like in an average-cost US city?"
+  // If COL index is 150, your dollar buys 33% less, so your salary "feels" lower.
+  // Formula: take net income, adjust by COL factor to normalize to US-average purchasing power,
+  // then gross it back up by effective tax rate so it's comparable to headline salary.
+  const effectiveTaxRate = grossIncome > 0 ? taxes.total / grossIncome : 0.25;
+  const colFactor = colIndex > 0 ? 100 / colIndex : 1;
   const realFeelSalary = colData
-    ? Math.round(disposable * colFactor + (totalAnnualExpenses > 0 ? totalAnnualExpenses : livingWage))
+    ? Math.round(netIncome * colFactor / (1 - effectiveTaxRate))
     : safeRealFeel;
 
-  // Water basin data
+  // Water basin: water = net income, basin depth = annual cost of living
   const basin = colData
-    ? generateWaterBasinData(grossIncome, netIncome, livingWage, realFeelSalary, { totalAnnual: totalAnnualExpenses || livingWage })
+    ? generateWaterBasinData(grossIncome, netIncome, livingWage, realFeelSalary, { totalAnnual: annualCostOfLiving })
     : generateWaterBasinData(grossIncome, grossIncome - (grossIncome * (data.tax_rate || 0.25)), grossIncome * 0.6, safeRealFeel, null);
 
-  // COL benefit
+  // COL benefit: is this salary worth more or less than face value?
   const colBenefit = calculateCOLBenefit(grossIncome, realFeelSalary);
 
   // Insights
