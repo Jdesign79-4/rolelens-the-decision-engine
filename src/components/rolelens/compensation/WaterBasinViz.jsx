@@ -114,12 +114,12 @@ export default function WaterBasinViz({ basin }) {
           )}
         </motion.div>
 
-        {/* Percentage Markers */}
-        {[25, 50, 75].map((level) => (
-          <div key={level} className="absolute left-2 right-8 border-t border-dashed border-slate-300/30" style={{ bottom: `${level}%` }}>
-            <span className="absolute -top-2.5 left-1 text-[8px] text-slate-400">{level}%</span>
-          </div>
-        ))}
+        {/* Net Income Label */}
+        <div className="absolute right-2 z-20" style={{ bottom: `${Math.max(waterPct - 6, 2)}%` }}>
+          <span className="text-[8px] font-medium text-slate-500 bg-white/60 px-1 rounded">
+            Net: {fmt(labels.water)}/yr
+          </span>
+        </div>
 
         {/* Real Feel Indicator */}
         <motion.div
