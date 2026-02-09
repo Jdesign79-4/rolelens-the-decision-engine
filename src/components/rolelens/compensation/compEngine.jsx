@@ -85,8 +85,9 @@ function calcFICA(income) {
 
 // ── Main tax calculator ────────────────────────────────────
 export function calculateTaxes(grossIncome, stateCode, city, familyType) {
-  const isMarried = familyType && (familyType.startsWith('2adults') || familyType.includes('married'));
-  // Count children for child tax credit
+  // familyType format: "single_0", "single_1", "single_2", "2adults_0", "2adults_1", "2adults_2"
+  const isMarried = familyType && familyType.startsWith('2adults');
+  // Count children for child tax credit ($2,000 per qualifying child)
   const childMatch = familyType ? familyType.match(/_(\d+)$/) : null;
   const numChildren = childMatch ? parseInt(childMatch[1]) : 0;
   const standardDeduction = isMarried ? 29200 : 14600;
