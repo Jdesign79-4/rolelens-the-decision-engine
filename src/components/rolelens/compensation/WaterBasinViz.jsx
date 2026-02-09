@@ -88,7 +88,7 @@ export default function WaterBasinViz({ basin }) {
           }}
         >
           <span className="absolute right-2 -top-4 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-white/80 text-slate-600 whitespace-nowrap">
-            Living Wage: {fmt(labels.basin)}
+            Cost of Living: {fmt(labels.basin)}/yr
           </span>
         </div>
 
