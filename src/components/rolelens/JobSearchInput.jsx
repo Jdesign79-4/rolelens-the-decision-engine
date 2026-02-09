@@ -4,6 +4,7 @@ import { Search, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
+import { generateAlternatives } from './alternativesEngine';
 
 export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoading }) {
   const [query, setQuery] = useState('');
