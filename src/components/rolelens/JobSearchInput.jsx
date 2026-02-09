@@ -68,8 +68,6 @@ For compensation data, provide GENERAL company compensation trends (not role-spe
 - Indicate if the company pays above/below/at market rate generally
 - Note any compensation-related complaints or praise from reviews
 
-Include 5 similar companies that job seekers might also consider researching.
-
 IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers.`
           :
           // Original role-specific prompt
