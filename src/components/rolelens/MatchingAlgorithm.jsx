@@ -1,31 +1,26 @@
 /**
- * Advanced Job Matching Algorithm with NLP and Machine Learning
- * Calculates personalized fit scores based on weighted factors, semantic analysis, and user feedback
+ * Advanced Job Matching Algorithm
+ * Calculates personalized fit scores based on weighted factors, semantic analysis,
+ * culture decoder intelligence, and user feedback
  */
 
-// User feedback system - stores job preference history for future personalization
-// NOTE: This system requires 5+ feedback entries to be useful
-// Cold start: First few jobs won't benefit from feedback weighting
+// ── Feedback persistence ──────────────────────────────────────
 function getUserFeedbackWeights() {
   try {
     const saved = localStorage.getItem('rolelens-feedback-weights');
     if (!saved) return null;
     return JSON.parse(saved);
   } catch {
-    return null; // Return null if localStorage corrupted
+    return null;
   }
 }
 
-// Save feedback with error handling
 function updateFeedbackWeights(jobId, feedback, job, tunerSettings) {
   if (!job?.stability || !job?.culture || !job?.comp) return;
-  
   try {
     const history = JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
     history.push({
-      jobId,
-      feedback,
-      timestamp: Date.now(),
+      jobId, feedback, timestamp: Date.now(),
       job: {
         stability: job.stability.risk_score,
         wlb: job.culture.wlb_score,
@@ -35,86 +30,176 @@ function updateFeedbackWeights(jobId, feedback, job, tunerSettings) {
       },
       settings: { ...tunerSettings }
     });
-    
-    // Keep last 50 feedbacks
     if (history.length > 50) history.shift();
     localStorage.setItem('rolelens-feedback-history', JSON.stringify(history));
-    
-    if (history.length >= 5) {
-      recalculateWeights(history);
-    }
+    if (history.length >= 5) recalculateWeights(history);
   } catch (err) {
     console.warn('Could not save feedback:', err);
-    // Silently fail - app continues without feedback learning
   }
 }
 
-// Adjust weights based on feedback patterns
 function recalculateWeights(history) {
   if (history.length < 5) return;
-  
-  const adjustments = {
-    stability: 0,
-    workLifeBalance: 0,
-    growth: 0,
-    compensation: 0,
-    stressAlignment: 0
-  };
-  
+  const adjustments = { stability: 0, workLifeBalance: 0, growth: 0, compensation: 0, stressAlignment: 0 };
   history.forEach(entry => {
-    const multiplier = entry.feedback === 'love' ? 1 : entry.feedback === 'like' ? 0.5 : 
-                       entry.feedback === 'dislike' ? -0.5 : -1;
-    
-    if (entry.job.stability < 0.3) adjustments.stability += multiplier * 0.08;
-    if (entry.job.wlb > 7) adjustments.workLifeBalance += multiplier * 0.08;
-    if (entry.job.growth > 7.5) adjustments.growth += multiplier * 0.08;
-    if (entry.job.comp > 150000) adjustments.compensation += multiplier * 0.08;
-    if (entry.job.stress < 0.4) adjustments.stressAlignment += multiplier * 0.08;
+    const m = entry.feedback === 'love' ? 1 : entry.feedback === 'like' ? 0.5 : entry.feedback === 'dislike' ? -0.5 : -1;
+    if (entry.job.stability < 0.3) adjustments.stability += m * 0.08;
+    if (entry.job.wlb > 7) adjustments.workLifeBalance += m * 0.08;
+    if (entry.job.growth > 7.5) adjustments.growth += m * 0.08;
+    if (entry.job.comp > 150000) adjustments.compensation += m * 0.08;
+    if (entry.job.stress < 0.4) adjustments.stressAlignment += m * 0.08;
   });
-  
-  try {
-    localStorage.setItem('rolelens-feedback-weights', JSON.stringify(adjustments));
-  } catch (err) {
-    console.warn('Could not save feedback weights:', err);
-  }
+  try { localStorage.setItem('rolelens-feedback-weights', JSON.stringify(adjustments)); } catch {}
 }
 
-// Simple keyword-based job attribute analysis (NOT true NLP)
-// This is a basic pattern matcher - not actual semantic understanding
+// ── Semantic keyword scoring ──────────────────────────────────
 function analyzeJobSemantics(job) {
-  const keywords = {
+  const kw = {
     innovation: ['innovation', 'cutting-edge', 'research', 'ai', 'creative', 'groundbreaking', 'pioneering', 'experimental'],
     stability: ['established', 'stable', 'fortune', 'legacy', 'enterprise', 'backed', 'reliable', 'mature'],
     growth: ['growth', 'learning', 'development', 'mentorship', 'promotion', 'career', 'advancement', 'opportunities'],
     balance: ['balance', 'flexible', 'remote', 'pto', 'wellness', 'sustainable', 'hybrid', 'unlimited'],
     intensity: ['fast-paced', 'intense', 'startup', 'scaling', 'aggressive', 'demanding', 'pressure', 'hustle']
   };
-  
   const text = `${job.meta?.title || ''} ${job.meta?.company || ''} ${job.culture?.type || ''} ${job.stability?.health || ''}`.toLowerCase();
-  
-  // Basic keyword frequency analysis (not semantic understanding)
-  const semanticScores = {
-    innovation: keywords.innovation.filter(k => text.includes(k)).length / keywords.innovation.length,
-    stability: keywords.stability.filter(k => text.includes(k)).length / keywords.stability.length,
-    growth: keywords.growth.filter(k => text.includes(k)).length / keywords.growth.length,
-    balance: keywords.balance.filter(k => text.includes(k)).length / keywords.balance.length,
-    intensity: keywords.intensity.filter(k => text.includes(k)).length / keywords.intensity.length
-  };
-  
-  return semanticScores;
+  const scores = {};
+  Object.entries(kw).forEach(([key, words]) => {
+    scores[key] = words.filter(w => text.includes(w)).length / words.length;
+  });
+  return scores;
 }
 
-export function calculateJobMatch(job, tunerSettings) {
+// ── Sub-score helpers ─────────────────────────────────────────
+function calcStabilityScore(stability, riskAppetite) {
+  if (!stability || typeof stability.risk_score === 'undefined') return 50;
+  const r = stability.risk_score;
+  if (riskAppetite > 0.6) return r * 100;
+  if (riskAppetite < 0.4) return (1 - r) * 100;
+  const ideal = 0.3;
+  return (1 - Math.abs(r - ideal) * 2) * 100;
+}
+
+function calcCompScore(comp, honestSelfReflection) {
+  if (!comp?.real_feel || !comp?.headline) return 50;
+  if (typeof comp.real_feel !== 'number' || typeof comp.headline !== 'number' || comp.real_feel <= 0 || comp.headline <= 0) return 50;
+  const expected = comp.headline * (0.7 + honestSelfReflection * 0.6);
+  if (expected === 0) return 50;
+  const ratio = comp.real_feel / expected;
+  if (ratio >= 1.0) return 100;
+  if (ratio >= 0.9) return 90;
+  if (ratio >= 0.8) return 75;
+  if (ratio >= 0.7) return 60;
+  if (ratio >= 0.6) return 45;
+  return 30;
+}
+
+function calcStressScore(stressLevel, ts) {
+  const tolerance =
+    ts.lifeAnchors > 0.6 ? 0.3 :
+    ts.careerStage > 0.6 ? 0.4 :
+    ts.riskAppetite > 0.6 ? 0.7 : 0.5;
+  return (1 - Math.abs(stressLevel - tolerance)) * 100;
+}
+
+function calcBasicCultureFit(culture, ts) {
+  let s = 50;
+  if (ts.careerStage < 0.4 && culture.growth_score > 7) s += 20;
+  if (ts.careerStage > 0.6 && culture.growth_score < 6) s += 10;
+  if ((ts.lifeAnchors > 0.6 || ts.riskAppetite < 0.4) && culture.politics_level === 'Low') s += 15;
+  if ((ts.lifeAnchors > 0.6 || ts.riskAppetite < 0.4) && culture.politics_level === 'High') s -= 20;
+  if (ts.lifeAnchors > 0.6 && culture.wlb_score > 7.5) s += 15;
+  if (ts.lifeAnchors > 0.6 && culture.wlb_score < 6) s -= 25;
+  return Math.min(100, Math.max(0, s));
+}
+
+// ── Culture Decoder integration ───────────────────────────────
+// Maps tuner sliders to the cultural dimensions the user cares about most,
+// and computes a composite score from the decoder analysis.
+function calcDecoderCultureScore(decoderData, ts) {
+  if (!decoderData?.dimensions || decoderData.dimensions.length === 0) return null;
+
+  // Build a lookup of dimension scores
+  const dimMap = {};
+  decoderData.dimensions.forEach(d => {
+    dimMap[d.name?.toLowerCase()] = d.score;
+  });
+
+  const get = (key) => {
+    // Fuzzy match — find the dimension whose name contains the key
+    for (const [name, score] of Object.entries(dimMap)) {
+      if (name.includes(key)) return score;
+    }
+    return null;
+  };
+
+  // Determine per-dimension weights based on tuner positions
+  const dimensionWeights = [];
+
+  // Risk Appetite ↔ Stability, Innovation
+  const riskW = ts.riskAppetite;
+  // Stability seekers care about org stability & compensation fairness
+  dimensionWeights.push({ score: get('stability') ?? get('organizational'), weight: 0.08 + (1 - riskW) * 0.12 });
+  // Risk seekers care about innovation
+  dimensionWeights.push({ score: get('innovation'), weight: 0.06 + riskW * 0.10 });
+
+  // Life Anchors ↔ Work-Life, Psychological Safety
+  const anchors = ts.lifeAnchors;
+  dimensionWeights.push({ score: get('work-life') ?? get('work_life'), weight: 0.08 + anchors * 0.14 });
+  dimensionWeights.push({ score: get('psychological'), weight: 0.06 + anchors * 0.06 });
+
+  // Career Stage ↔ Learning, Management Quality, Collaboration
+  const career = ts.careerStage;
+  // Seedlings need learning & good managers; Oaks need collaboration & transparency
+  dimensionWeights.push({ score: get('learning'), weight: 0.06 + (1 - career) * 0.10 });
+  dimensionWeights.push({ score: get('management'), weight: 0.06 + (1 - career) * 0.06 });
+  dimensionWeights.push({ score: get('collaboration'), weight: 0.04 + career * 0.06 });
+  dimensionWeights.push({ score: get('decision') ?? get('transparency'), weight: 0.04 + career * 0.06 });
+
+  // Honest Self-Reflection ↔ Meritocracy, Compensation Fairness
+  const selfRef = ts.honestSelfReflection;
+  // Underqualified: meritocracy matters more (you need fair environment to grow)
+  dimensionWeights.push({ score: get('meritocracy') ?? get('politics'), weight: 0.06 + (1 - selfRef) * 0.06 });
+  dimensionWeights.push({ score: get('compensation'), weight: 0.06 + selfRef * 0.04 });
+
+  // D&I is universally important
+  dimensionWeights.push({ score: get('diversity'), weight: 0.06 });
+
+  // Filter out null scores and compute weighted average
+  const valid = dimensionWeights.filter(d => d.score !== null && d.score !== undefined);
+  if (valid.length === 0) return null;
+
+  const totalW = valid.reduce((a, d) => a + d.weight, 0);
+  const weightedSum = valid.reduce((a, d) => a + d.score * (d.weight / totalW), 0);
+
+  // Apply verdict penalty/bonus
+  let verdictMod = 0;
+  const verdict = (decoderData.verdict || '').toLowerCase();
+  if (verdict.includes('strong match')) verdictMod = 8;
+  else if (verdict.includes('good match')) verdictMod = 4;
+  else if (verdict.includes('mixed')) verdictMod = -2;
+  else if (verdict.includes('caution')) verdictMod = -8;
+  else if (verdict.includes('not recommended')) verdictMod = -15;
+
+  // Apply contradiction penalty (each contradiction reduces score)
+  const contradictionPenalty = Math.min(15, (decoderData.contradictions?.length || 0) * 3);
+
+  // Apply red flag penalty
+  const criticalFlags = (decoderData.redFlags || []).filter(f => f.severity === 'critical').length;
+  const highFlags = (decoderData.redFlags || []).filter(f => f.severity === 'high').length;
+  const flagPenalty = Math.min(15, criticalFlags * 5 + highFlags * 3);
+
+  // Apply green flag bonus
+  const greenBonus = Math.min(8, (decoderData.greenFlags || []).filter(f => f.importance === 'high').length * 2);
+
+  return Math.min(100, Math.max(0, weightedSum + verdictMod - contradictionPenalty - flagPenalty + greenBonus));
+}
+
+// ── Main scoring function ─────────────────────────────────────
+export function calculateJobMatch(job, tunerSettings, cultureDecoderData) {
   if (!job?.stability || !job?.culture || !job?.comp) return 0;
 
-  const {
-    riskAppetite,
-    lifeAnchors,
-    careerStage,
-    honestSelfReflection
-  } = tunerSettings;
+  const { riskAppetite, lifeAnchors, careerStage, honestSelfReflection } = tunerSettings;
 
-  // Profile archetypes
   const isRiskSeeker = riskAppetite > 0.6;
   const isStabilitySeeker = riskAppetite < 0.4;
   const isNomad = lifeAnchors < 0.4;
@@ -122,15 +207,13 @@ export function calculateJobMatch(job, tunerSettings) {
   const isSeedling = careerStage < 0.4;
   const isOak = careerStage > 0.6;
 
-  // Get learned weights from user feedback
   const feedbackWeights = getUserFeedbackWeights() || {
     stability: 0, workLifeBalance: 0, growth: 0, compensation: 0, stressAlignment: 0
   };
-  
-  // Analyze job semantics with NLP
+
   const semantics = analyzeJobSemantics(job);
 
-  // Dynamic weight calculation with feedback adjustments
+  // Dynamic weights based on deep tuner analysis
   const weights = {
     stability: Math.max(0.05, (isStabilitySeeker ? 0.30 : isRiskSeeker ? 0.10 : 0.20) + feedbackWeights.stability),
     workLifeBalance: Math.max(0.05, (isProvider ? 0.30 : isNomad ? 0.10 : 0.20) + feedbackWeights.workLifeBalance),
@@ -140,121 +223,58 @@ export function calculateJobMatch(job, tunerSettings) {
     cultureFit: 0.15
   };
 
-  // Apply semantic boosts to weights
+  // Semantic boosts
   if (isRiskSeeker && semantics.innovation > 0.3) weights.growth *= 1.2;
   if (isStabilitySeeker && semantics.stability > 0.3) weights.stability *= 1.15;
   if (isProvider && semantics.balance > 0.3) weights.workLifeBalance *= 1.2;
   if (isNomad && semantics.growth > 0.3) weights.growth *= 1.15;
   if (semantics.intensity > 0.5 && isOak) weights.stressAlignment *= 1.25;
 
-  // Normalize weights to sum to 1.0
-  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
-  Object.keys(weights).forEach(key => weights[key] /= totalWeight);
+  // Deep tuner cross-interactions (new)
+  // Seedling + Provider: extra weight on WLB & growth (needs nurturing + stability)
+  if (isSeedling && isProvider) { weights.workLifeBalance *= 1.15; weights.growth *= 1.1; }
+  // Oak + Risk Seeker: more weight on compensation (experienced risk-taker values the upside)
+  if (isOak && isRiskSeeker) weights.compensation *= 1.15;
+  // Low self-reflection + Provider: extra stress sensitivity (less qualified + dependents)
+  if (honestSelfReflection < 0.4 && isProvider) weights.stressAlignment *= 1.3;
+  // High self-reflection + Nomad: growth matters most (confident & mobile)
+  if (honestSelfReflection > 0.7 && isNomad) weights.growth *= 1.2;
 
-  // Score calculations (0-100 scale)
+  // If culture decoder data exists, replace the basic cultureFit weight with a larger one
+  const decoderScore = calcDecoderCultureScore(cultureDecoderData, tunerSettings);
+  if (decoderScore !== null) {
+    weights.cultureFit = 0.25; // Increase culture importance when we have real data
+  }
+
+  // Normalize
+  const totalW = Object.values(weights).reduce((a, b) => a + b, 0);
+  Object.keys(weights).forEach(k => weights[k] /= totalW);
+
+  // Component scores
   const scores = {
-    stability: calculateStabilityScore(job.stability, riskAppetite),
+    stability: calcStabilityScore(job.stability, riskAppetite),
     workLifeBalance: job.culture.wlb_score * 10,
     growth: job.culture.growth_score * 10,
-    compensation: calculateCompensationScore(job.comp, honestSelfReflection),
-    stressAlignment: calculateStressScore(job.culture.stress_level, tunerSettings),
-    cultureFit: calculateCultureFitScore(job.culture, tunerSettings)
+    compensation: calcCompScore(job.comp, honestSelfReflection),
+    stressAlignment: calcStressScore(job.culture.stress_level, tunerSettings),
+    cultureFit: decoderScore !== null ? decoderScore : calcBasicCultureFit(job.culture, tunerSettings)
   };
 
-  // Apply weights and calculate final score
   let finalScore = 0;
-  Object.keys(weights).forEach(factor => {
-    finalScore += scores[factor] * weights[factor];
-  });
+  Object.keys(weights).forEach(f => { finalScore += scores[f] * weights[f]; });
 
-  // Apply semantic alignment bonus
-  let semanticBonus = 0;
-  if (isRiskSeeker && semantics.innovation > 0.4) semanticBonus += 3;
-  if (isStabilitySeeker && semantics.stability > 0.4) semanticBonus += 3;
-  if (isProvider && semantics.balance > 0.4) semanticBonus += 3;
-  if (isNomad && semantics.growth > 0.4) semanticBonus += 3;
-  
-  finalScore += semanticBonus;
+  // Semantic alignment bonus
+  let bonus = 0;
+  if (isRiskSeeker && semantics.innovation > 0.4) bonus += 3;
+  if (isStabilitySeeker && semantics.stability > 0.4) bonus += 3;
+  if (isProvider && semantics.balance > 0.4) bonus += 3;
+  if (isNomad && semantics.growth > 0.4) bonus += 3;
+  finalScore += bonus;
 
   return Math.round(Math.min(100, Math.max(0, finalScore)));
 }
 
-function calculateStabilityScore(stability, riskAppetite) {
-  if (!stability || typeof stability.risk_score === 'undefined') return 50;
-  const riskScore = stability.risk_score;
-  
-  // Risk seekers prefer higher risk, stability seekers prefer lower risk
-  if (riskAppetite > 0.6) {
-    // High risk appetite: higher risk = better score
-    return (riskScore * 100);
-  } else if (riskAppetite < 0.4) {
-    // Low risk appetite: lower risk = better score
-    return ((1 - riskScore) * 100);
-  } else {
-    // Moderate: prefer moderate risk
-    const idealRisk = 0.3;
-    const deviation = Math.abs(riskScore - idealRisk);
-    return ((1 - deviation * 2) * 100);
-  }
-}
-
-function calculateCompensationScore(comp, honestSelfReflection) {
-  if (!comp || !comp.real_feel || !comp.headline) return 50;
-  const realFeel = comp.real_feel;
-  const headline = comp.headline;
-  
-  // Guard against invalid values
-  if (typeof realFeel !== 'number' || typeof headline !== 'number' || realFeel <= 0 || headline <= 0) return 50;
-  
-  // Adjust expectations based on self-assessment
-  const expectedComp = headline * (0.7 + honestSelfReflection * 0.6);
-  if (expectedComp === 0) return 50;
-  
-  const ratio = realFeel / expectedComp;
-  
-  // Score based on how well real_feel meets adjusted expectations
-  if (ratio >= 1.0) return 100;
-  if (ratio >= 0.9) return 90;
-  if (ratio >= 0.8) return 75;
-  if (ratio >= 0.7) return 60;
-  if (ratio >= 0.6) return 45;
-  return 30;
-}
-
-function calculateStressScore(stressLevel, tunerSettings) {
-  const { lifeAnchors, careerStage, riskAppetite } = tunerSettings;
-  
-  // Providers and older professionals prefer lower stress
-  const stressTolerance = 
-    (lifeAnchors > 0.6) ? 0.3 :  // Providers: low stress
-    (careerStage > 0.6) ? 0.4 :  // Oak: moderate-low stress
-    (riskAppetite > 0.6) ? 0.7 : // Risk seekers: can handle high stress
-    0.5;                          // Default: moderate stress
-  
-  const deviation = Math.abs(stressLevel - stressTolerance);
-  return ((1 - deviation) * 100);
-}
-
-function calculateCultureFitScore(culture, tunerSettings) {
-  const { careerStage, lifeAnchors, riskAppetite } = tunerSettings;
-  
-  let score = 50; // Base score
-  
-  // Growth opportunities matter more for early career
-  if (careerStage < 0.4 && culture.growth_score > 7) score += 20;
-  if (careerStage > 0.6 && culture.growth_score < 6) score += 10;
-  
-  // Politics level matters more for providers and risk-averse
-  if ((lifeAnchors > 0.6 || riskAppetite < 0.4) && culture.politics_level === "Low") score += 15;
-  if ((lifeAnchors > 0.6 || riskAppetite < 0.4) && culture.politics_level === "High") score -= 20;
-  
-  // Work-life balance critical for providers
-  if (lifeAnchors > 0.6 && culture.wlb_score > 7.5) score += 15;
-  if (lifeAnchors > 0.6 && culture.wlb_score < 6) score -= 25;
-  
-  return Math.min(100, Math.max(0, score));
-}
-
+// ── Labels & Insights ─────────────────────────────────────────
 export function getMatchLabel(score) {
   if (score >= 85) return { label: "Exceptional Match", color: "text-emerald-600", bg: "bg-emerald-50" };
   if (score >= 70) return { label: "Strong Alignment", color: "text-teal-600", bg: "bg-teal-50" };
@@ -263,56 +283,91 @@ export function getMatchLabel(score) {
   return { label: "Consider Trade-offs", color: "text-orange-600", bg: "bg-orange-50" };
 }
 
-export function getMatchInsights(job, tunerSettings, score) {
+export function getMatchInsights(job, tunerSettings, score, cultureDecoderData) {
   if (!job?.culture || !job?.stability || !job?.comp) return [];
-  
   const insights = [];
-  
+
+  // Tuner-based insights
   if (tunerSettings.lifeAnchors > 0.6 && job.culture.wlb_score > 7.5) {
     insights.push("✅ Excellent work-life balance for your provider role");
   }
-  
   if (tunerSettings.careerStage < 0.4 && job.culture.growth_score > 8) {
     insights.push("🚀 Strong growth trajectory for early career");
   }
-  
   if (tunerSettings.riskAppetite < 0.4 && job.stability.risk_score < 0.25) {
     insights.push("🛡️ High stability matches your risk profile");
   }
-  
   if (tunerSettings.riskAppetite > 0.6 && job.stability.risk_score > 0.4) {
     insights.push("⚡ High-risk opportunity aligns with your appetite");
   }
-  
   if (job.culture.stress_level > 0.6 && tunerSettings.lifeAnchors > 0.6) {
     insights.push("⚠️ High stress may conflict with life priorities");
   }
-  
   if (job.comp.real_feel / job.comp.headline < 0.7) {
     insights.push("💰 Significant compensation leak to consider");
   }
-  
-  return insights;
+
+  // Cross-tuner interaction insights
+  if (tunerSettings.honestSelfReflection < 0.4 && tunerSettings.riskAppetite > 0.6) {
+    insights.push("⚠️ High-risk role with skill gap — steep learning curve ahead");
+  }
+  if (tunerSettings.honestSelfReflection > 0.7 && tunerSettings.careerStage < 0.4) {
+    insights.push("🚀 Strong skills + early career = rapid advancement potential");
+  }
+  if (tunerSettings.lifeAnchors > 0.6 && tunerSettings.careerStage > 0.6 && job.culture.politics_level === 'Low') {
+    insights.push("✅ Low-politics culture suits your senior provider profile");
+  }
+
+  // Culture decoder insights
+  if (cultureDecoderData) {
+    const verdict = (cultureDecoderData.verdict || '').toLowerCase();
+    if (verdict.includes('strong match') || verdict.includes('good match')) {
+      insights.push("🔍 Culture Decoder: company culture aligns with your profile");
+    } else if (verdict.includes('caution') || verdict.includes('not recommended')) {
+      insights.push("🔍 Culture Decoder: significant cultural concerns detected");
+    } else if (verdict.includes('mixed')) {
+      insights.push("🔍 Culture Decoder: mixed cultural signals — investigate further");
+    }
+
+    const contradictions = cultureDecoderData.contradictions?.length || 0;
+    if (contradictions >= 3) {
+      insights.push(`⚡ ${contradictions} contradictions between company claims & reality`);
+    }
+
+    // Dimension-specific warnings based on tuner
+    if (cultureDecoderData.dimensions?.length) {
+      const dimMap = {};
+      cultureDecoderData.dimensions.forEach(d => { dimMap[d.name?.toLowerCase()] = d.score; });
+      const findDim = (key) => { for (const [n, s] of Object.entries(dimMap)) { if (n.includes(key)) return s; } return null; };
+
+      const wli = findDim('work-life') ?? findDim('work_life');
+      if (wli !== null && wli < 40 && tunerSettings.lifeAnchors > 0.6) {
+        insights.push("🔴 Culture Decoder: poor work-life integration conflicts with your priorities");
+      }
+      const psych = findDim('psychological');
+      if (psych !== null && psych < 40) {
+        insights.push("🔴 Culture Decoder: low psychological safety — risky environment");
+      }
+      const learn = findDim('learning');
+      if (learn !== null && learn < 40 && tunerSettings.careerStage < 0.4) {
+        insights.push("🔴 Culture Decoder: weak learning culture limits early-career growth");
+      }
+    }
+  }
+
+  return insights.slice(0, 5);
 }
 
-// Export feedback functions for use in components
+// ── Feedback exports ──────────────────────────────────────────
 export function submitJobFeedback(jobId, feedback, job, tunerSettings) {
   updateFeedbackWeights(jobId, feedback, job, tunerSettings);
 }
-
 export function getFeedbackHistory() {
-  try {
-    return JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]');
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem('rolelens-feedback-history') || '[]'); } catch { return []; }
 }
-
 export function clearFeedbackHistory() {
   try {
     localStorage.removeItem('rolelens-feedback-history');
     localStorage.removeItem('rolelens-feedback-weights');
-  } catch (err) {
-    console.warn('Could not clear feedback history:', err);
-  }
+  } catch {}
 }
