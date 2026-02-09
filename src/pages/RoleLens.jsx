@@ -1458,6 +1458,9 @@ function RoleLensContent() {
               </div>
             </motion.div>
 
+            {/* Compensation Data Sources */}
+            <CompensationSources />
+
             {/* Disclaimer */}
             <Disclaimer />
           </div>
