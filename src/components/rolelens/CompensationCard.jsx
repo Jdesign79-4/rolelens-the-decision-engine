@@ -1,64 +1,28 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { DollarSign, TrendingDown, Droplets } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { DollarSign, Loader2, RefreshCw, TrendingDown, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import WaterBasinViz from './compensation/WaterBasinViz';
+import TaxBreakdown from './compensation/TaxBreakdown';
+import ExpenseBreakdown from './compensation/ExpenseBreakdown';
+import InsightsPanel from './compensation/InsightsPanel';
+import FamilySelector, { getFamilyLabel } from './compensation/FamilySelector';
+import {
+  calculateTaxes, parseLocation, generateWaterBasinData,
+  calculateCOLBenefit, generateInsights
+} from './compensation/compEngine';
 
-// Animated water droplet for leak
-function LeakDroplet({ delay, x }) {
-  return (
-    <motion.div
-      initial={{ y: 0, opacity: 0, scale: 0 }}
-      animate={{ 
-        y: [0, 40, 80],
-        opacity: [0, 1, 0],
-        scale: [0.5, 1, 0.8]
-      }}
-      transition={{ 
-        duration: 1.2,
-        repeat: Infinity,
-        delay,
-        ease: "easeIn"
-      }}
-      className="absolute w-1.5 h-2 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"
-      style={{ 
-        right: -4 + x,
-        top: '40%',
-        filter: 'blur(0.5px)'
-      }}
-    />
-  );
-}
-
-// Water ripple effect
-function WaterRipple({ fillPercentage }) {
-  return (
-    <motion.div
-      className="absolute inset-x-0 pointer-events-none"
-      style={{ bottom: `${fillPercentage - 5}%` }}
-    >
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ scale: 0.8, opacity: 0.6 }}
-          animate={{ 
-            scale: [0.8, 1.2, 0.8],
-            opacity: [0.6, 0.2, 0.6]
-          }}
-          transition={{ 
-            duration: 3,
-            repeat: Infinity,
-            delay: i * 1,
-            ease: "easeInOut"
-          }}
-          className="absolute left-1/2 -translate-x-1/2 w-16 h-2 rounded-full border border-white/30"
-          style={{ top: i * 4 }}
-        />
-      ))}
-    </motion.div>
-  );
-}
+const fmt = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
 
 export default function CompensationCard({ data, tunerSettings, isCompanyOnly = false }) {
-  if (!data || !data.headline) {
+  const [familyType, setFamilyType] = useState('single_0');
+  const [colData, setColData] = useState(null);
+  const [isLoadingCOL, setIsLoadingCOL] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const fetchedRef = useRef('');
+
+  // Validate data
+  if (!data || !data.headline || (typeof data.headline === 'number' && data.headline < 1000)) {
     return (
       <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
         <p className="text-sm text-slate-500">Compensation data not available</p>
@@ -66,285 +30,154 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
     );
   }
 
-  // Ensure numeric values with safe defaults
-  // Salary values under $1,000 are clearly invalid (LLM returned garbage)
-  const safeHeadline = typeof data.headline === 'number' && data.headline >= 1000 ? data.headline : 0;
+  const safeHeadline = typeof data.headline === 'number' ? data.headline : 0;
   const safeRealFeel = typeof data.real_feel === 'number' && data.real_feel >= 1000 ? data.real_feel : safeHeadline;
-  
-  if (safeHeadline === 0) {
-    return (
-      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
-        <p className="text-sm text-slate-500">Compensation data not available</p>
-      </div>
-    );
-  }
-  // If exact range provided from job posting, don't adjust it
   const hasExactRange = data.range_min && data.range_max;
-  
-  // Adjust headline based on self-reflection (0.5 = average, below = reduced offer, above = premium offer)
-  const reflectionAdjustment = 0.7 + (tunerSettings.honestSelfReflection * 0.6); // Range: 0.7 to 1.3
-  const adjustedHeadline = hasExactRange ? safeHeadline : Math.round(safeHeadline * reflectionAdjustment);
-  
-  // Prevent division by zero
-  const safeAdjustedHeadline = adjustedHeadline > 0 ? adjustedHeadline : 1;
-  
-  // Water fills to real_feel level, but headline is the target capacity
-  const targetFillPercentage = 100;
-  const actualFillPercentage = Math.min(100, Math.max(0, (safeRealFeel / safeAdjustedHeadline) * 100));
-  const overflowPercentage = Math.max(0, 100 - actualFillPercentage);
-  const isOverflowing = overflowPercentage > 5;
-  
+
+  // Self-reflection adjustment
+  const reflectionAdj = 0.7 + (tunerSettings.honestSelfReflection * 0.6);
+  const adjustedHeadline = hasExactRange ? safeHeadline : Math.round(safeHeadline * reflectionAdj);
+  const grossIncome = adjustedHeadline > 0 ? adjustedHeadline : safeHeadline;
+
+  // Parse location for taxes
+  const location = data.location || '';
+  const { city, stateCode } = parseLocation(location);
+
+  // Calculate taxes locally (always available)
+  const taxes = calculateTaxes(grossIncome, stateCode, city, familyType);
+
+  // Fetch COL / living wage data from LLM
+  const fetchCOLData = useCallback(async () => {
+    if (!location && !city) return;
+    const key = `${location}-${familyType}-${grossIncome}`;
+    if (fetchedRef.current === key) return;
+    fetchedRef.current = key;
+
+    setIsLoadingCOL(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Research cost of living data for a job seeker in this location:
+
+LOCATION: ${location || city || 'United States average'}
+FAMILY STATUS: ${getFamilyLabel(familyType)}
+ANNUAL GROSS INCOME: $${grossIncome.toLocaleString()}
+
+Using data from MIT Living Wage Calculator (livingwage.mit.edu), BLS, and Numbeo, provide:
+
+1. LIVING WAGE: The required annual income BEFORE taxes for this family composition in this location.
+2. MONTHLY EXPENSES broken down: housing, food, transportation, healthcare, childcare (if applicable), other necessities.
+3. COST OF LIVING INDEX relative to national average (100 = average).
+4. MEDIAN RENT for a 1-bedroom and 2-bedroom apartment.
+
+Be specific with dollar amounts. Use real data from these authoritative sources.
+If the location is "Remote" with no state specified, use the US national average.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            living_wage_annual: { type: "number", description: "Required annual income before taxes" },
+            col_index: { type: "number", description: "Cost of living index, 100 = national average" },
+            monthly_expenses: {
+              type: "object",
+              properties: {
+                housing: { type: "number" },
+                food: { type: "number" },
+                transportation: { type: "number" },
+                healthcare: { type: "number" },
+                childcare: { type: "number" },
+                other: { type: "number" }
+              }
+            },
+            median_rent_1br: { type: "number" },
+            median_rent_2br: { type: "number" },
+            data_sources: { type: "string", description: "Which sources the data came from" },
+            data_year: { type: "string" }
+          }
+        }
+      });
+
+      if (result && result.living_wage_annual > 0) {
+        setColData(result);
+      }
+    } catch (err) {
+      console.warn('COL data fetch failed:', err);
+    } finally {
+      setIsLoadingCOL(false);
+    }
+  }, [location, city, familyType, grossIncome]);
+
+  useEffect(() => {
+    if (location || city) {
+      fetchCOLData();
+    }
+  }, [fetchCOLData]);
+
+  // Compute derived data
+  const livingWage = colData?.living_wage_annual || 0;
+  const expenses = colData?.monthly_expenses || null;
+  const totalMonthlyExpenses = expenses
+    ? Object.values(expenses).reduce((s, v) => s + (v || 0), 0)
+    : 0;
+  const totalAnnualExpenses = totalMonthlyExpenses * 12;
+
+  // COL adjustment factor
+  const colIndex = colData?.col_index || 100;
+  const colFactor = colIndex > 0 ? 100 / colIndex : 1;
+
+  // Real feel: net income adjusted by COL factor
+  const netIncome = taxes.netIncome;
+  const disposable = netIncome - (totalAnnualExpenses > 0 ? totalAnnualExpenses : livingWage);
+  const realFeelSalary = colData
+    ? Math.round(disposable * colFactor + (totalAnnualExpenses > 0 ? totalAnnualExpenses : livingWage))
+    : safeRealFeel;
+
+  // Water basin data
+  const basin = colData
+    ? generateWaterBasinData(grossIncome, netIncome, livingWage, realFeelSalary, { totalAnnual: totalAnnualExpenses || livingWage })
+    : generateWaterBasinData(grossIncome, grossIncome - (grossIncome * (data.tax_rate || 0.25)), grossIncome * 0.6, safeRealFeel, null);
+
+  // COL benefit
+  const colBenefit = calculateCOLBenefit(grossIncome, realFeelSalary);
+
+  // Insights
+  const insights = colData
+    ? generateInsights(grossIncome, taxes, livingWage, disposable, expenses, location || city)
+    : [];
+
   const isProviderMode = tunerSettings.lifeAnchors > 0.5;
   const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
-  
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0
-    }).format(value);
-  };
-
-  const getWaterColor = () => {
-    if (actualFillPercentage > 70) return { main: 'from-teal-400 to-cyan-500', surface: 'rgba(45, 212, 191, 0.8)', isStormy: false };
-    if (actualFillPercentage > 50) return { main: 'from-cyan-400 to-blue-500', surface: 'rgba(34, 211, 238, 0.8)', isStormy: false };
-    if (actualFillPercentage > 35) return { main: 'from-amber-400 to-orange-500', surface: 'rgba(251, 191, 36, 0.8)', isStormy: false };
-    return { main: 'from-slate-600 to-slate-800', surface: 'rgba(71, 85, 105, 0.9)', isStormy: true };
-  };
-  
-  const waterColors = getWaterColor();
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-6">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-4">
         <div>
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
             {isCompanyOnly ? 'Company Compensation' : 'Compensation Reality'}
           </p>
-          <h3 className="text-lg font-semibold text-slate-800">
-            {isCompanyOnly ? 'Average Pay Levels' : 'The Water Basin'}
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-800">The Water Basin</h3>
+          {location && <p className="text-xs text-slate-500 mt-0.5">{location}</p>}
         </div>
-        <div className="p-2 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500">
-          <DollarSign className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2">
+          {isLoadingCOL && <Loader2 className="w-4 h-4 text-teal-500 animate-spin" />}
+          <div className="p-2 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500">
+            <DollarSign className="w-5 h-5 text-white" />
+          </div>
         </div>
       </div>
 
+      {/* Family Selector */}
+      <div className="mb-4">
+        <p className="text-[10px] font-medium text-slate-400 uppercase mb-1.5">Family Situation</p>
+        <FamilySelector value={familyType} onChange={(v) => {
+          setFamilyType(v);
+          fetchedRef.current = ''; // Force refetch
+        }} />
+      </div>
+
       {/* Water Basin Visualization */}
-      <div className="relative mb-6">
-        <div className="relative h-40 bg-gradient-to-b from-slate-100 to-slate-200 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-inner">
-          {/* Basin Glass Effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/10 pointer-events-none" />
-          
-          {/* Water Fill with fluid animation - fills to real_feel level */}
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: `${actualFillPercentage}%` }}
-            transition={{ duration: 1.5, ease: [0.34, 1.56, 0.64, 1] }}
-            className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t ${waterColors.main}`}
-            style={{ opacity: 0.85 }}
-          >
-            {/* Animated Wave Surface - Choppy when stormy */}
-            <svg className="absolute -top-3 left-0 w-full h-8" viewBox="0 0 100 20" preserveAspectRatio="none">
-              <motion.path
-                d="M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z"
-                fill={waterColors.surface}
-                animate={waterColors.isStormy ? {
-                  d: [
-                    "M0,10 Q10,2 20,12 T40,8 T60,14 T80,6 T100,10 L100,20 L0,20 Z",
-                    "M0,12 Q10,16 20,8 T40,14 T60,6 T80,12 T100,8 L100,20 L0,20 Z",
-                    "M0,8 Q10,14 20,6 T40,12 T60,8 T80,14 T100,10 L100,20 L0,20 Z",
-                    "M0,10 Q10,2 20,12 T40,8 T60,14 T80,6 T100,10 L100,20 L0,20 Z"
-                  ]
-                } : {
-                  d: [
-                    "M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z",
-                    "M0,10 Q10,15 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z",
-                    "M0,10 Q10,5 20,10 T40,10 T60,10 T80,10 T100,10 L100,20 L0,20 Z"
-                  ]
-                }}
-                transition={{ duration: waterColors.isStormy ? 0.8 : 2, repeat: Infinity, ease: "easeInOut" }}
-              />
-            </svg>
-            
-            {/* Underwater shimmer or murky particles */}
-            {waterColors.isStormy ? (
-              <>
-                {/* Murky particles floating */}
-                {[...Array(8)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{ 
-                      y: [0, -20, 0],
-                      x: [(i % 2 === 0 ? -5 : 5), (i % 2 === 0 ? 5 : -5), (i % 2 === 0 ? -5 : 5)],
-                      opacity: [0.3, 0.6, 0.3]
-                    }}
-                    transition={{ 
-                      duration: 2 + i * 0.3,
-                      repeat: Infinity,
-                      delay: i * 0.2
-                    }}
-                    className="absolute w-2 h-2 rounded-full bg-slate-900/40"
-                    style={{ left: `${10 + i * 12}%`, bottom: `${20 + (i % 3) * 15}%` }}
-                  />
-                ))}
-              </>
-            ) : (
-              <motion.div
-                animate={{ 
-                  backgroundPosition: ['0% 0%', '100% 100%']
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)',
-                  backgroundSize: '200% 200%'
-                }}
-              />
-            )}
-            
-            {/* Rising bubbles - fewer in stormy water */}
-            {!waterColors.isStormy && [...Array(5)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ 
-                  y: [-10, -60],
-                  opacity: [0, 0.6, 0],
-                  x: [0, (i % 2 === 0 ? 5 : -5)]
-                }}
-                transition={{ 
-                  duration: 2 + i * 0.3,
-                  repeat: Infinity,
-                  delay: i * 0.5,
-                  ease: "easeOut"
-                }}
-                className="absolute w-1.5 h-1.5 rounded-full bg-white/40"
-                style={{ left: `${15 + i * 15}%`, bottom: '20%' }}
-              />
-            ))}
-            
-            {/* Water Ripples */}
-            <WaterRipple fillPercentage={actualFillPercentage} />
-          </motion.div>
-
-          {/* Overflow Animation - Water spilling over the top */}
-          {isOverflowing && (
-            <>
-              {/* Left overflow */}
-              <motion.div
-                animate={{ 
-                  x: [-8, -12, -8],
-                  opacity: [0.4, 0.8, 0.4]
-                }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -left-3 -top-1 w-12 h-4"
-              >
-                <div className="relative w-full h-full">
-                  {[...Array(3)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ y: [0, 12], opacity: [1, 0] }}
-                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.3 }}
-                      className="absolute w-1 h-2 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"
-                      style={{ left: `${4 + i * 3}px`, top: 0 }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-              
-              {/* Right overflow */}
-              <motion.div
-                animate={{ 
-                  x: [8, 12, 8],
-                  opacity: [0.4, 0.8, 0.4]
-                }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -right-3 -top-1 w-12 h-4"
-              >
-                <div className="relative w-full h-full">
-                  {[...Array(3)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ y: [0, 12], opacity: [1, 0] }}
-                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.3 }}
-                      className="absolute w-1 h-2 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"
-                      style={{ right: `${4 + i * 3}px`, top: 0 }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Overflow label */}
-              <motion.div
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] text-red-500 font-semibold whitespace-nowrap"
-              >
-                {Math.round(overflowPercentage)}% Lost to COL
-              </motion.div>
-            </>
-          )}
-
-          {/* Old Leak Hole - Hidden */}
-          {false && isOverflowing && (
-            <div className="absolute right-0 top-1/3">
-              {/* Leak hole */}
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
-                className="w-5 h-5 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 border-2 border-slate-400 shadow-inner flex items-center justify-center"
-              >
-                <div className="w-2 h-2 rounded-full bg-slate-500" />
-              </motion.div>
-              
-              {/* Dripping droplets */}
-              <LeakDroplet delay={0} x={0} />
-              <LeakDroplet delay={0.4} x={3} />
-              <LeakDroplet delay={0.8} x={-2} />
-              
-              {/* Leak label */}
-              <motion.div
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="absolute -right-1 top-8 text-[9px] text-red-500 font-semibold whitespace-nowrap"
-              >
-                -{Math.round(leakPercentage)}%
-              </motion.div>
-            </div>
-          )}
-
-          {/* Water Level Markers */}
-          {[25, 50, 75].map((level) => (
-            <div
-              key={level}
-              className="absolute left-2 right-8 border-t border-dashed border-slate-300/40"
-              style={{ bottom: `${level}%` }}
-            >
-              <span className="absolute -top-2.5 left-1 text-[9px] text-slate-400 font-medium">{level}%</span>
-            </div>
-          ))}
-
-          {/* Real Feel Indicator floating on water */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1,
-              y: [0, -3, 0]
-            }}
-            transition={{ 
-              opacity: { delay: 1.2 },
-              scale: { delay: 1.2 },
-              y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-            }}
-            className="absolute left-3 right-10 flex items-center justify-between px-2 py-1 bg-white/30 backdrop-blur-sm rounded-full"
-            style={{ bottom: `${actualFillPercentage}%`, transform: 'translateY(50%)' }}
-          >
-            <Droplets className="w-3 h-3 text-white drop-shadow-md" />
-            <span className="text-[10px] font-bold text-white drop-shadow-md">Real Feel</span>
-          </motion.div>
-        </div>
+      <div className="mb-5">
+        <WaterBasinViz basin={basin} />
       </div>
 
       {/* Company Research Notice */}
@@ -354,74 +187,209 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
         </div>
       )}
 
-      {/* Compensation Breakdown */}
-      <div className="space-y-3">
+      {/* Core Numbers */}
+      <div className="space-y-2.5 mb-4">
+        {/* Offer / Headline */}
         <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
           <span className="text-sm text-slate-600">{isCompanyOnly ? 'Avg Compensation' : 'Offer'}</span>
           <span className="text-lg font-bold text-slate-800">
-            {data.range_min && data.range_max ? (
-              `${formatCurrency(data.range_min)} - ${formatCurrency(data.range_max)}`
-            ) : (
-              formatCurrency(adjustedHeadline || 0)
-            )}
+            {hasExactRange ? `${fmt(data.range_min)} – ${fmt(data.range_max)}` : fmt(grossIncome)}
           </span>
         </div>
-        
+
+        {/* Skill Match Adjustment */}
         {!hasExactRange && tunerSettings.honestSelfReflection !== 0.7 && (
           <div className={`flex justify-between items-center p-3 rounded-xl border ${
-            tunerSettings.honestSelfReflection > 0.7 
-              ? 'bg-emerald-50 border-emerald-200' 
-              : 'bg-amber-50 border-amber-200'
+            tunerSettings.honestSelfReflection > 0.7 ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
           }`}>
             <span className="text-xs text-slate-600">Skill Match Adjustment</span>
-            <span className={`text-sm font-medium ${
-              tunerSettings.honestSelfReflection > 0.7 ? 'text-emerald-700' : 'text-amber-700'
-            }`}>
-              {tunerSettings.honestSelfReflection > 0.7 ? '+' : ''}{Math.round((reflectionAdjustment - 1) * 100)}%
+            <span className={`text-sm font-medium ${tunerSettings.honestSelfReflection > 0.7 ? 'text-emerald-700' : 'text-amber-700'}`}>
+              {tunerSettings.honestSelfReflection > 0.7 ? '+' : ''}{Math.round((reflectionAdj - 1) * 100)}%
             </span>
           </div>
         )}
-        
-        {overflowPercentage > 0 && data.leak_label && data.leak_label.length < 60 && (
+
+        {/* COL Benefit/Penalty Badge */}
+        {colData && Math.abs(colBenefit.pctDiff) > 3 && (
+          <div className={`flex justify-between items-center p-3 rounded-xl border ${
+            colBenefit.color === 'red' ? 'bg-red-50 border-red-200' :
+            colBenefit.color === 'orange' ? 'bg-orange-50 border-orange-200' :
+            colBenefit.color === 'emerald' ? 'bg-emerald-50 border-emerald-200' :
+            'bg-slate-50 border-slate-200'
+          }`}>
+            <div className="flex items-center gap-2">
+              {colBenefit.pctDiff < 0
+                ? <TrendingDown className="w-4 h-4 text-red-500" />
+                : <TrendingUp className="w-4 h-4 text-emerald-500" />
+              }
+              <span className="text-xs font-medium text-slate-700">{colBenefit.status}</span>
+            </div>
+            <span className={`text-sm font-bold ${colBenefit.pctDiff < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+              {colBenefit.pctDiff > 0 ? '+' : ''}{colBenefit.pctDiff}%
+            </span>
+          </div>
+        )}
+
+        {/* Leak label fallback (when no COL data) */}
+        {!colData && data.leak_label && data.leak_label.length < 60 && (
           <div className="flex justify-between items-center p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-100">
             <div className="flex items-center gap-2">
               <TrendingDown className="w-4 h-4 text-red-400" />
               <span className="text-sm text-red-600 line-clamp-1">{data.leak_label}</span>
             </div>
-            <span className="text-sm font-medium text-red-500 flex-shrink-0 ml-2">-{Math.round(overflowPercentage)}%</span>
           </div>
         )}
 
+        {/* Real Feel */}
         <div className="flex justify-between items-center p-3 bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl border border-teal-200">
           <span className="text-sm font-medium text-teal-700">Real Feel Salary</span>
-          <span className="text-xl font-bold text-teal-700">{formatCurrency(safeRealFeel)}</span>
+          <span className="text-xl font-bold text-teal-700">{fmt(realFeelSalary)}</span>
         </div>
+
+        {/* Disposable Income */}
+        {colData && (
+          <div className={`flex justify-between items-center p-3 rounded-xl border ${
+            disposable < 0 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'
+          }`}>
+            <span className="text-xs font-medium text-slate-600">Disposable Income</span>
+            <div className="text-right">
+              <span className={`text-sm font-bold ${disposable < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                {fmt(Math.round(disposable / 12))}/mo
+              </span>
+              <span className="text-[10px] text-slate-400 ml-1">({fmt(disposable)}/yr)</span>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Expandable Details */}
+      <button
+        onClick={() => setShowDetails(!showDetails)}
+        className="w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors"
+      >
+        {showDetails ? 'Hide' : 'View'} Detailed Breakdown
+        {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+      </button>
+
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden space-y-3"
+          >
+            {/* Tax Breakdown */}
+            <TaxBreakdown taxes={taxes} grossIncome={grossIncome} />
+
+            {/* Expense Breakdown */}
+            <ExpenseBreakdown expenses={expenses} livingWage={livingWage} />
+
+            {/* COL Index */}
+            {colData && (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-slate-600">Cost of Living Index</span>
+                  <span className={`text-sm font-bold ${colIndex > 120 ? 'text-red-600' : colIndex < 90 ? 'text-emerald-600' : 'text-slate-700'}`}>
+                    {colIndex} <span className="text-[10px] text-slate-400">(100 = avg)</span>
+                  </span>
+                </div>
+                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (colIndex / 180) * 100)}%` }}
+                    transition={{ duration: 0.8 }}
+                    className={`h-full rounded-full ${colIndex > 120 ? 'bg-red-500' : colIndex > 100 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                  />
+                </div>
+                <div className="flex justify-between text-[9px] text-slate-400 mt-1">
+                  <span>Low Cost</span>
+                  <span>National Avg (100)</span>
+                  <span>Very High</span>
+                </div>
+              </div>
+            )}
+
+            {/* Median Rent */}
+            {colData?.median_rent_1br > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-100 text-center">
+                  <p className="text-[10px] text-blue-600 font-medium">1-BR Rent</p>
+                  <p className="text-sm font-bold text-blue-800">{fmt(colData.median_rent_1br)}/mo</p>
+                </div>
+                {colData.median_rent_2br > 0 && (
+                  <div className="p-2.5 rounded-lg bg-blue-50 border border-blue-100 text-center">
+                    <p className="text-[10px] text-blue-600 font-medium">2-BR Rent</p>
+                    <p className="text-sm font-bold text-blue-800">{fmt(colData.median_rent_2br)}/mo</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Insights */}
+            {insights.length > 0 && <InsightsPanel insights={insights} />}
+
+            {/* Data Sources */}
+            {colData?.data_sources && (
+              <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <p className="text-[9px] text-slate-400">
+                  Data from: {colData.data_sources} • {colData.data_year || '2024'}
+                  <br />
+                  Tax calculations use 2024 federal & state brackets
+                </p>
+              </div>
+            )}
+
+            {/* Refresh Button */}
+            <button
+              onClick={() => { fetchedRef.current = ''; fetchCOLData(); }}
+              disabled={isLoadingCOL}
+              className="w-full flex items-center justify-center gap-2 py-2 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <RefreshCw className={`w-3 h-3 ${isLoadingCOL ? 'animate-spin' : ''}`} />
+              Refresh COL Data
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Provider Mode Insight */}
       {isProviderMode && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="mt-4 p-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/50"
+          className="mt-3 p-3 rounded-xl border border-dashed border-amber-300 bg-amber-50/50"
         >
           <p className="text-xs text-amber-700">
-            <span className="font-semibold">Provider Alert:</span> This real feel may be {data.real_feel < 100000 ? 'tight' : 'comfortable'} for family obligations
+            <span className="font-semibold">Provider Alert:</span> {disposable < 0
+              ? 'This salary does not cover family needs in this location.'
+              : disposable < 20000
+                ? 'Tight budget for family obligations — limited savings potential.'
+                : 'Comfortable for family needs with room for savings.'
+            }
           </p>
         </motion.div>
       )}
-      
+
       {/* Underqualified Warning */}
       {isUnderqualified && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="mt-4 p-3 rounded-xl border border-dashed border-red-300 bg-red-50/50"
+          className="mt-3 p-3 rounded-xl border border-dashed border-red-300 bg-red-50/50"
         >
           <p className="text-xs text-red-700">
-            <span className="font-semibold">Reality Check:</span> Lower offers typical when lacking key qualifications. Focus on skill development to command higher compensation.
+            <span className="font-semibold">Reality Check:</span> Lower offers typical when lacking key qualifications. Focus on skill development.
           </p>
         </motion.div>
+      )}
+
+      {/* Loading overlay for initial COL fetch */}
+      {isLoadingCOL && !colData && (
+        <div className="mt-3 p-3 rounded-xl bg-teal-50 border border-teal-100 flex items-center gap-2">
+          <Loader2 className="w-4 h-4 text-teal-600 animate-spin" />
+          <p className="text-xs text-teal-700">Researching cost of living data from MIT, BLS, and Numbeo...</p>
+        </div>
       )}
     </div>
   );
