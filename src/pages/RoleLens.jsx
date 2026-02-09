@@ -756,6 +756,7 @@ function RoleLensContent() {
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
   const [showApplicationStrategy, setShowApplicationStrategy] = useState(false);
   const [showSalaryNegotiation, setShowSalaryNegotiation] = useState(false);
+  const [cultureDecoderData, setCultureDecoderData] = useState(null);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -882,25 +883,7 @@ function RoleLensContent() {
   };
 
   const getProfileMatch = (alt) => {
-    if (!alt?.stability || !alt?.culture) return 0;
-    
-    const isRiskSeeker = tunerSettings.riskAppetite > 0.6;
-    const isStabilitySeeker = tunerSettings.riskAppetite < 0.4;
-    const isNomad = tunerSettings.lifeAnchors < 0.4;
-    const isProvider = tunerSettings.lifeAnchors > 0.6;
-    const isSeedling = tunerSettings.careerStage < 0.4;
-    
-    let score = 50;
-    const riskDiff = Math.abs(alt.stability.risk_score - tunerSettings.riskAppetite);
-    if (isRiskSeeker && alt.stability.risk_score > 0.4) score += 25;
-    if (isStabilitySeeker && alt.stability.risk_score < 0.3) score += 25;
-    if (riskDiff < 0.2) score += 15;
-    if (isProvider && alt.culture.wlb_score > 7) score += 15;
-    if (isNomad && alt.culture.growth_score > 8) score += 15;
-    if (isProvider && alt.culture.stress_level > 0.6) score -= 20;
-    if (isSeedling && alt.culture.growth_score > 8) score += 10;
-    
-    return Math.min(100, Math.max(0, score));
+    return calculateJobMatch(alt, tunerSettings, cultureDecoderData);
   };
 
   return (
@@ -1372,6 +1355,7 @@ function RoleLensContent() {
               job={currentJob}
               jobPostingText={jobPostingText}
               tunerSettings={tunerSettings}
+              onAnalysisComplete={setCultureDecoderData}
             />
 
             {/* Job Posting Analysis - Red/Green Flags (only for specific roles) */}
@@ -1449,15 +1433,15 @@ function RoleLensContent() {
                   <p className="text-slate-400 text-sm font-medium mb-1">Your True Fit Score</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold">
-                      {calculateJobMatch(currentJob, tunerSettings)}
+                      {calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)}
                     </span>
                     <span className="text-slate-400 text-lg">/100</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-slate-400 text-sm">Based on your profile</p>
+                  <p className="text-slate-400 text-sm">Based on your profile{cultureDecoderData ? ' + Culture Decoder' : ''}</p>
                   <p className="text-lg font-medium mt-1">
-                    {getMatchLabel(calculateJobMatch(currentJob, tunerSettings)).label}
+                    {getMatchLabel(calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)).label}
                   </p>
                 </div>
               </div>
@@ -1466,11 +1450,11 @@ function RoleLensContent() {
               <div className="mt-4 h-2 bg-slate-700 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${calculateJobMatch(currentJob, tunerSettings)}%` }}
+                  animate={{ width: `${calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)}%` }}
                   transition={{ duration: 0.8, delay: 0.5 }}
                   className="h-full rounded-full"
                   style={{
-                    background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateJobMatch(currentJob, tunerSettings) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
+                    background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateJobMatch(currentJob, tunerSettings, cultureDecoderData) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
                   }}
                 />
               </div>
