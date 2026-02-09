@@ -182,10 +182,7 @@ Use MIT Living Wage Calculator and Numbeo data. Return living_wage_annual (requi
       {/* Family Selector */}
       <div className="mb-4">
         <p className="text-[10px] font-medium text-slate-400 uppercase mb-1.5">Family Situation</p>
-        <FamilySelector value={familyType} onChange={(v) => {
-          setFamilyType(v);
-          fetchedRef.current = ''; // Force refetch
-        }} />
+        <FamilySelector value={familyType} onChange={setFamilyType} />
       </div>
 
       {/* Water Basin Visualization */}
