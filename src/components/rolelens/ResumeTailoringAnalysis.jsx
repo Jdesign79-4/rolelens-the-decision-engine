@@ -235,7 +235,7 @@ Provide:
                 ) : (
                   <>
                     <Upload className="w-5 h-5 text-slate-400" />
-                    <span className="text-sm text-slate-500">Choose PDF, DOCX, or TXT file</span>
+                    <span className="text-sm text-slate-500">Choose a PDF file</span>
                   </>
                 )}
               </div>
