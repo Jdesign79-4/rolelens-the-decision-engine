@@ -25,6 +25,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'target', name: 'Target Roles', icon: 'Target', color: 'from-violet-500 to-purple-500' },
   { id: 'research', name: 'Researching', icon: 'Search', color: 'from-teal-500 to-cyan-500' },
 ];
+import JobURLAnalyzer from '@/components/rolelens/JobURLAnalyzer';
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
