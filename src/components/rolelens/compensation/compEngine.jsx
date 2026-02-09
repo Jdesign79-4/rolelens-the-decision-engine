@@ -199,47 +199,64 @@ export function parseLocation(locationStr) {
 }
 
 // ── Water Basin Data Generator ─────────────────────────────
+// The basin visualizes: how much water (take-home pay) vs how deep the basin
+// needs to be filled (cost of basic living). Water above the basin line = comfort.
 export function generateWaterBasinData(grossIncome, netIncome, livingWageAnnual, realFeelSalary, expenses) {
-  // Sanity: living wage should never exceed 3x gross income — cap it
-  const cappedLivingWage = Math.min(livingWageAnnual, grossIncome * 3);
-  const basinDepth = cappedLivingWage > 0 ? cappedLivingWage : grossIncome * 0.6;
+  // The "basin depth" = annual cost of basic needs (what you MUST spend to survive)
+  // Use actual expenses if available, otherwise fall back to living wage
+  const annualExpenses = (expenses?.totalAnnual && expenses.totalAnnual > 5000)
+    ? expenses.totalAnnual
+    : (livingWageAnnual > 5000 ? livingWageAnnual : grossIncome * 0.6);
+
+  // Cap sanity: expenses shouldn't exceed 3x gross (LLM sometimes hallucinates)
+  const basinDepth = Math.min(annualExpenses, grossIncome * 3);
+
+  // Water level = net income (what you actually take home after taxes)
   const waterLevel = netIncome;
-  const maxScale = Math.max(basinDepth, waterLevel) * 1.4;
 
-  const waterPct = maxScale > 0 ? Math.min(100, Math.max(0, (waterLevel / maxScale) * 100)) : 50;
-  const basinPct = maxScale > 0 ? Math.min(100, (basinDepth / maxScale) * 100) : 50;
-  const realFeelPct = maxScale > 0 ? Math.min(100, Math.max(0, (realFeelSalary / maxScale) * 100)) : 50;
+  // Scale: the visual range should show both the basin and water clearly
+  // Use the larger of the two as reference, add 20% headroom
+  const maxScale = Math.max(basinDepth, waterLevel) * 1.2;
 
+  // Calculate percentages for visual display
+  const waterPct = maxScale > 0 ? Math.min(95, Math.max(5, (waterLevel / maxScale) * 100)) : 50;
+  const basinPct = maxScale > 0 ? Math.min(95, Math.max(5, (basinDepth / maxScale) * 100)) : 50;
+  const realFeelPct = maxScale > 0 ? Math.min(95, Math.max(5, (realFeelSalary / maxScale) * 100)) : 50;
+
+  // Core calculation: are you underwater?
   const isUnderwater = waterLevel < basinDepth;
-  const deficit = isUnderwater ? basinDepth - waterLevel : 0;
-  const surplus = !isUnderwater ? waterLevel - basinDepth : 0;
-  const annualExpenses = expenses?.totalAnnual || basinDepth;
-  const disposableIncome = netIncome - Math.min(annualExpenses, grossIncome * 3);
+  const deficit = isUnderwater ? Math.round(basinDepth - waterLevel) : 0;
+  const surplus = !isUnderwater ? Math.round(waterLevel - basinDepth) : 0;
 
+  // Disposable income = net income minus cost of basic living
+  const disposableIncome = Math.round(waterLevel - basinDepth);
+
+  // Zone percentages for the visual legend
   const zones = [
     { name: 'Drowning', pct: Math.max(0, basinPct - waterPct), color: '#FF4444', active: isUnderwater },
     { name: 'Survival', pct: Math.min(waterPct, basinPct), color: '#FFA500', active: true },
     { name: 'Comfort', pct: Math.max(0, waterPct - basinPct), color: '#00C9A7', active: !isUnderwater },
   ];
 
+  // Status determination based on disposable income relative to gross
   let status, severity;
-  const pctOfGross = disposableIncome / grossIncome;
+  const disposableMonthly = Math.round(disposableIncome / 12);
   if (disposableIncome < 0) { status = 'UNDERWATER'; severity = 'critical'; }
-  else if (pctOfGross < 0.05) { status = 'BARELY AFLOAT'; severity = 'high'; }
-  else if (pctOfGross < 0.15) { status = 'TIGHT'; severity = 'medium'; }
-  else if (pctOfGross < 0.30) { status = 'COMFORTABLE'; severity = 'low'; }
+  else if (disposableMonthly < 300) { status = 'BARELY AFLOAT'; severity = 'high'; }
+  else if (disposableMonthly < 1000) { status = 'TIGHT'; severity = 'medium'; }
+  else if (disposableMonthly < 2500) { status = 'COMFORTABLE'; severity = 'low'; }
   else { status = 'EXCELLENT'; severity = 'none'; }
 
   return {
     waterPct, basinPct, realFeelPct,
     isUnderwater, deficit, surplus,
     disposableIncome,
-    disposableMonthly: Math.round(disposableIncome / 12),
+    disposableMonthly,
     zones, status, severity,
     labels: {
-      water: waterLevel,
-      basin: basinDepth,
-      realFeel: realFeelSalary,
+      water: Math.round(waterLevel),
+      basin: Math.round(basinDepth),
+      realFeel: Math.round(realFeelSalary),
     }
   };
 }
