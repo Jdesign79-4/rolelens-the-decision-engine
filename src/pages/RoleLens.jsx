@@ -1384,9 +1384,6 @@ function RoleLensContent() {
               <BenefitsHub benefits={currentJob.benefits} tunerSettings={tunerSettings} />
             </div>
 
-            {/* Compensation Data Sources */}
-            <CompensationSources />
-
             {/* Meditation Panel - Vetted Sources */}
             <MeditationPanel sources={currentJob.sources} />
 
