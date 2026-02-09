@@ -241,7 +241,7 @@ Provide:
               </div>
               <input
                 type="file"
-                accept=".pdf,.docx,.doc,.txt"
+                accept=".pdf"
                 onChange={handleFileUpload}
                 className="hidden"
                 disabled={isAnalyzing}
