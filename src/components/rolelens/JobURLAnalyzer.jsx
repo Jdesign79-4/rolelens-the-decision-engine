@@ -121,39 +121,42 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
   };
 
   const fetchJobPage = async (jobUrl) => {
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Fetch and return the COMPLETE text content of this job posting URL: ${jobUrl}
+    // Use a minimal schema to avoid JSON parsing failures with search models
+    let result;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Fetch the COMPLETE text of this job posting: ${jobUrl}
 
-Return the FULL job posting text including ALL header metadata tags/labels.
-
-CRITICAL EXTRACTION RULES:
-- workplace_type: Look for tags/labels like "Remote", "Hybrid", "On-site" near the job title header. On LinkedIn these appear as distinct tags. If the word "Remote" appears ANYWHERE in the posting (header, description, requirements), set workplace_type to "Remote". Only set "Hybrid" if it explicitly says "Hybrid". Only set "On-site" if it explicitly says "On-site" or "In-office". If none found, set to "Not specified".
-- employment_type: Look for "Full-time", "Part-time", "Contract", "Temporary", "Internship" etc. On LinkedIn this appears in the job details section. Use exactly what the posting says. If not found, set to "Not specified".
-
-These two fields are EXTREMELY important. Extract them DIRECTLY from the page tags/labels. Do NOT infer or guess.
-
-Return ALL page text preserving every detail. Do NOT summarize.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          page_text: { type: "string", description: "Complete text content of the job posting" },
-          job_title: { type: "string" },
-          company_name: { type: "string" },
-          location: { type: "string" },
-          workplace_type: { type: "string", description: "EXACTLY as shown on the page: Remote, Hybrid, On-site, or Not specified" },
-          employment_type: { type: "string", description: "EXACTLY as shown on the page: Full-time, Part-time, Contract, or Not specified" },
-          salary_text: { type: "string" },
-          url_accessible: { type: "boolean" }
-        }
+Return ALL text from the page. Include every tag, label, and metadata (like "Remote", "Full-time", "Hybrid", etc). Do NOT summarize. Return the full raw text.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              text: { type: "string" },
+              title: { type: "string" },
+              company: { type: "string" },
+              ok: { type: "boolean" }
+            }
+          }
+        });
+        if (result?.text || result?.title) break;
+      } catch (err) {
+        if (attempt === 1) throw new Error('Could not fetch job posting. The page may require login or be restricted.');
       }
-    });
+    }
 
-    if (!result?.url_accessible && !result?.page_text) {
+    if (!result?.text && !result?.title) {
       throw new Error('Could not access this job posting. The page may require login or be restricted.');
     }
 
-    return result;
+    // Normalize to expected shape
+    return {
+      page_text: result.text || '',
+      job_title: result.title || '',
+      company_name: result.company || '',
+      url_accessible: result.ok !== false
+    };
   };
 
   const extractJobData = async (pageContent, sourceUrl) => {
