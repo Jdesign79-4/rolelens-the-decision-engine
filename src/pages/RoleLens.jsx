@@ -758,6 +758,7 @@ function RoleLensContent() {
   const [showApplicationStrategy, setShowApplicationStrategy] = useState(false);
   const [showSalaryNegotiation, setShowSalaryNegotiation] = useState(false);
   const [cultureDecoderData, setCultureDecoderData] = useState(null);
+  const [searchMode, setSearchMode] = useState('url'); // 'url' or 'manual'
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
