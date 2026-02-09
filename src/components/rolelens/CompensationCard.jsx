@@ -47,20 +47,35 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
   const taxes = calculateTaxes(grossIncome, stateCode, city, familyType);
 
   // Fetch COL / living wage data from LLM
-  const fetchCOLData = useCallback(async () => {
+  const fetchCOLData = useCallback(async (overrideFamilyType) => {
+    const famType = overrideFamilyType || familyType;
     if (!location && !city) return;
-    const key = `${location}-${familyType}-${grossIncome}`;
+    const key = `${location}-${famType}-${grossIncome}`;
     if (fetchedRef.current === key) return;
     fetchedRef.current = key;
 
     setIsLoadingCOL(true);
     try {
       const locStr = location || city || 'United States average';
-      const famStr = getFamilyLabel(familyType);
+      const famStr = getFamilyLabel(famType);
 
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Cost of living data for "${locStr}", family: ${famStr}, income $${grossIncome.toLocaleString()}.
-Use MIT Living Wage Calculator and Numbeo data. Return living_wage_annual (required annual pre-tax income), col_index (100=US avg), monthly housing/food/transportation/healthcare/childcare/other costs, median 1BR and 2BR rent, data_sources string, data_year string. All numbers only, no text in number fields.`,
+        prompt: `I need accurate cost of living and living wage data for "${locStr}" for a household of: ${famStr}.
+
+IMPORTANT: The family situation SIGNIFICANTLY impacts the living wage. Use MIT Living Wage Calculator (livingwage.mit.edu) data specifically for this family composition:
+- "${famStr}" in "${locStr}"
+
+Key differences by family type:
+- Single person: lowest living wage (1 adult, 0 children)
+- Single parent with children: higher due to childcare, food, healthcare costs
+- Two adults: shared housing but double food/healthcare
+- Two adults with children: highest living wage category
+
+Return the CORRECT living wage for "${famStr}" — NOT a generic single-person figure.
+
+Annual income being evaluated: $${grossIncome.toLocaleString()}.
+
+Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to meet basic needs), col_index (100=US avg), monthly housing/food/transportation/healthcare/childcare/other costs appropriate for this family size, median 1BR and 2BR rent, data_sources string, data_year string. All numbers only, no text in number fields.`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
