@@ -199,46 +199,45 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="pt-4 mt-4 border-t border-slate-200 space-y-3">
-                        {/* Metrics Comparison */}
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="p-2 rounded-xl bg-white text-center">
-                            <DollarSign className="w-4 h-4 mx-auto text-teal-500 mb-1" />
-                            <p className="text-sm font-bold text-slate-800">{alt.comp?.real_feel ? formatCurrency(alt.comp.real_feel) : 'N/A'}</p>
-                            <p className="text-[10px] text-slate-500">Real Feel</p>
+                      {alt._smart ? (
+                        <SmartAlternativeExpanded alt={alt} currentJob={currentJob} onSwap={onSwap} />
+                      ) : (
+                        <div className="pt-4 mt-4 border-t border-slate-200 space-y-3">
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="p-2 rounded-xl bg-white text-center">
+                              <DollarSign className="w-4 h-4 mx-auto text-teal-500 mb-1" />
+                              <p className="text-sm font-bold text-slate-800">{alt.comp?.real_feel ? formatCurrency(alt.comp.real_feel) : 'N/A'}</p>
+                              <p className="text-[10px] text-slate-500">Real Feel</p>
+                            </div>
+                            <div className="p-2 rounded-xl bg-white text-center">
+                              <Heart className="w-4 h-4 mx-auto text-rose-500 mb-1" />
+                              <p className="text-sm font-bold text-slate-800">{alt.culture?.wlb_score || 'N/A'}</p>
+                              <p className="text-[10px] text-slate-500">WLB</p>
+                            </div>
+                            <div className="p-2 rounded-xl bg-white text-center">
+                              <Clock className="w-4 h-4 mx-auto text-violet-500 mb-1" />
+                              <p className="text-sm font-bold text-slate-800">{alt.stability?.runway || 'N/A'}</p>
+                              <p className="text-[10px] text-slate-500">Runway</p>
+                            </div>
                           </div>
-                          <div className="p-2 rounded-xl bg-white text-center">
-                            <Heart className="w-4 h-4 mx-auto text-rose-500 mb-1" />
-                            <p className="text-sm font-bold text-slate-800">{alt.culture?.wlb_score || 'N/A'}</p>
-                            <p className="text-[10px] text-slate-500">WLB</p>
+                          <div className="p-3 rounded-xl bg-white">
+                            <p className="text-xs text-slate-500">Culture Profile</p>
+                            <p className="text-sm font-medium text-slate-700 mt-0.5">{alt.culture?.type || 'N/A'}</p>
                           </div>
-                          <div className="p-2 rounded-xl bg-white text-center">
-                            <Clock className="w-4 h-4 mx-auto text-violet-500 mb-1" />
-                            <p className="text-sm font-bold text-slate-800">{alt.stability?.runway || 'N/A'}</p>
-                            <p className="text-[10px] text-slate-500">Runway</p>
-                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSwap(alt.id);
+                            }}
+                            className="w-full py-3 px-4 rounded-xl bg-slate-800 text-white font-medium text-sm flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
+                          >
+                            Analyze This Role
+                            <ArrowRight className="w-4 h-4" />
+                          </motion.button>
                         </div>
-
-                        {/* Culture Type */}
-                        <div className="p-3 rounded-xl bg-white">
-                          <p className="text-xs text-slate-500">Culture Profile</p>
-                          <p className="text-sm font-medium text-slate-700 mt-0.5">{alt.culture?.type || 'N/A'}</p>
-                        </div>
-
-                        {/* Swap Button */}
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSwap(alt.id);
-                          }}
-                          className="w-full py-3 px-4 rounded-xl bg-slate-800 text-white font-medium text-sm flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
-                        >
-                          Analyze This Role
-                          <ArrowRight className="w-4 h-4" />
-                        </motion.button>
-                      </div>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
