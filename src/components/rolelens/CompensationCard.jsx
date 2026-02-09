@@ -82,7 +82,18 @@ Use MIT Living Wage Calculator and Numbeo data. Return living_wage_annual (requi
       });
 
       if (result && result.living_wage_annual > 0) {
-        setColData(result);
+        // Normalize flat schema into nested monthly_expenses for downstream components
+        setColData({
+          ...result,
+          monthly_expenses: {
+            housing: result.housing || 0,
+            food: result.food || 0,
+            transportation: result.transportation || 0,
+            healthcare: result.healthcare || 0,
+            childcare: result.childcare || 0,
+            other: result.other || 0,
+          }
+        });
       }
     } catch (err) {
       console.warn('COL data fetch failed:', err);
