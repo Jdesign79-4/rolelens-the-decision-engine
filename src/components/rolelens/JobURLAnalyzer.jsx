@@ -157,6 +157,46 @@ Return ALL page text preserving every detail. Do NOT summarize.`,
   };
 
   const extractJobData = async (pageContent, sourceUrl) => {
+    // First: detect remote_type and employment_type directly from the raw page text
+    // This is MORE reliable than asking the LLM to interpret it
+    const pageText = (pageContent.page_text || '').toLowerCase();
+    
+    let detectedRemoteType = pageContent.workplace_type || 'Not specified';
+    let detectedEmploymentType = pageContent.employment_type || 'Not specified';
+    
+    // Override with our own keyword scan of the raw text — LLM sometimes gets this wrong
+    const remoteKeywords = ['fully remote', '100% remote', 'work from home', 'telecommute', 'wfh'];
+    const hasRemoteKeyword = remoteKeywords.some(kw => pageText.includes(kw));
+    const hasRemoteWord = /\bremote\b/i.test(pageContent.page_text || '');
+    const hasHybridWord = /\bhybrid\b/i.test(pageContent.page_text || '');
+    const hasOnsiteWord = /\bon[- ]?site\b|\bin[- ]?office\b|\bin[- ]?person\b/i.test(pageContent.page_text || '');
+    
+    // Priority: explicit "fully remote" > "remote" > "hybrid" > "on-site"
+    if (hasRemoteKeyword || (hasRemoteWord && !hasHybridWord)) {
+      detectedRemoteType = 'Remote';
+    } else if (hasHybridWord) {
+      detectedRemoteType = 'Hybrid';
+    } else if (hasOnsiteWord) {
+      detectedRemoteType = 'On-site';
+    }
+    
+    // Detect employment type from raw text
+    const empKeywords = [
+      { pattern: /\bfull[- ]?time\b/i, label: 'Full-time' },
+      { pattern: /\bpart[- ]?time\b/i, label: 'Part-time' },
+      { pattern: /\bcontract\b/i, label: 'Contract' },
+      { pattern: /\btemporary\b/i, label: 'Temporary' },
+      { pattern: /\bseasonal\b/i, label: 'Seasonal' },
+      { pattern: /\binternship\b/i, label: 'Internship' },
+      { pattern: /\bfreelance\b/i, label: 'Freelance' },
+    ];
+    for (const ek of empKeywords) {
+      if (ek.pattern.test(pageContent.page_text || '')) {
+        detectedEmploymentType = ek.label;
+        break;
+      }
+    }
+
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Extract structured job data from this job posting content.
 
@@ -171,23 +211,11 @@ ${pageContent.company_name ? `Detected company: ${pageContent.company_name}` : '
 ${pageContent.location ? `Detected location: ${pageContent.location}` : ''}
 ${pageContent.salary_text ? `Detected salary: ${pageContent.salary_text}` : ''}
 
-Extract ALL of the following. Use the page content as the PRIMARY and AUTHORITATIVE source. Do NOT override what the posting explicitly states with your own assumptions.
+Extract ALL of the following. Use the page content as the PRIMARY and AUTHORITATIVE source.
 
-CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
-1. For salary: if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location using Levels.fyi and Glassdoor data.
-2. For remote_type — THIS IS CRITICAL:
-   - Search the ENTIRE page text for ANY of these keywords: "Remote", "Hybrid", "On-site", "In-office", "Work from home", "Telecommute", "WFH", "Fully remote", "100% remote"
-   - On LinkedIn, the workplace type appears near the top, often as a tag like "Remote", "Hybrid", or "On-site"
-   - If the text contains "Remote" or "Fully remote" or "Work from home" or "Telecommute" ANYWHERE, return "Remote"
-   - If the text contains "Hybrid", return "Hybrid"
-   - ONLY return "On-site" if the posting EXPLICITLY says "On-site" or "In-office" or "In person"
-   - If unclear, return "Not specified" — NEVER default to "On-site" or "Hybrid" without evidence
-   - DO NOT use the location field to infer remote status — a posting can list a city AND still be Remote
-3. For employment_type — THIS IS CRITICAL:
-   - Search the ENTIRE page text for: "Full-time", "Part-time", "Contract", "Temporary", "Seasonal", "Internship", "Freelance"
-   - On LinkedIn this appears in the job details section
-   - Use EXACTLY what the posting says. If unclear, return "Not specified"
-   - DO NOT guess — only return a value if the posting explicitly states it`,
+For salary: if the posting shows a range, use those exact numbers. If no salary is shown, estimate based on the role, company, and location.
+
+DO NOT set remote_type or employment_type — those will be handled separately. Just set them to "handled_externally".`,
       add_context_from_internet: true,
       response_json_schema: {
         type: "object",
@@ -198,9 +226,7 @@ CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
           salary_min: { type: "number", description: "Min salary (annual, 0 if unknown)" },
           salary_max: { type: "number", description: "Max salary (annual, 0 if unknown)" },
           salary_estimated: { type: "boolean", description: "True if salary was estimated, not from posting" },
-          employment_type: { type: "string", description: "Full-time, Part-time, Contract, etc." },
           seniority_level: { type: "string", description: "Entry, Mid, Senior, Lead, Director, VP, etc." },
-          remote_type: { type: "string", description: "On-site, Remote, Hybrid" },
           skills: { type: "array", items: { type: "string" }, description: "Key skills mentioned" },
           requirements_years: { type: "number", description: "Years of experience required" },
           benefits_mentioned: { type: "array", items: { type: "string" }, description: "Benefits listed" },
@@ -215,6 +241,10 @@ CRITICAL RULES — YOU MUST FOLLOW THESE EXACTLY:
     if (!result?.company || !result?.title) {
       throw new Error('Could not extract company name or job title from the posting.');
     }
+
+    // Apply our OWN keyword-scanned values — never trust LLM for these
+    result.remote_type = detectedRemoteType;
+    result.employment_type = detectedEmploymentType;
 
     return result;
   };
