@@ -1013,6 +1013,15 @@ function RoleLensContent() {
                               <span className="w-1 h-1 rounded-full bg-slate-300" />
                             </>
                           )}
+                          {/* Employment type badge */}
+                          {currentJob._extracted?.employmentType && (
+                            <>
+                              <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                                {currentJob._extracted.employmentType}
+                              </span>
+                              <span className="w-1 h-1 rounded-full bg-slate-300" />
+                            </>
+                          )}
                           <span>{currentJob.meta.location}</span>
                           <span className="w-1 h-1 rounded-full bg-slate-300" />
                           <span>{currentJob.meta.date}</span>
