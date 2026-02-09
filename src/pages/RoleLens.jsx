@@ -964,13 +964,50 @@ function RoleLensContent() {
         {/* Main Content */}
         <main className="flex-1 p-4 lg:p-8 xl:p-12 bg-[#FBF2ED] dark:bg-transparent">
           <div className="max-w-5xl mx-auto">
-            {/* Search Input */}
-            <JobSearchInput 
-              onJobDataLoaded={handleJobDataLoaded}
-              isLoading={isSearching}
-              setIsLoading={setIsSearching}
-              tunerSettings={tunerSettings}
-            />
+            {/* Search Mode Toggle */}
+            <div className="flex items-center gap-2 mb-3">
+              <button
+                onClick={() => setSearchMode('url')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  searchMode === 'url'
+                    ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'
+                }`}
+              >
+                🔗 Paste Job URL
+              </button>
+              <button
+                onClick={() => setSearchMode('manual')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  searchMode === 'manual'
+                    ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-300'
+                }`}
+              >
+                ✏️ Search Manually
+              </button>
+            </div>
+
+            {/* URL Analyzer */}
+            {searchMode === 'url' && (
+              <JobURLAnalyzer
+                onJobDataLoaded={handleJobDataLoaded}
+                isLoading={isSearching}
+                setIsLoading={setIsSearching}
+                tunerSettings={tunerSettings}
+                onFallbackToManual={() => setSearchMode('manual')}
+              />
+            )}
+
+            {/* Manual Search Input */}
+            {searchMode === 'manual' && (
+              <JobSearchInput 
+                onJobDataLoaded={handleJobDataLoaded}
+                isLoading={isSearching}
+                setIsLoading={setIsSearching}
+                tunerSettings={tunerSettings}
+              />
+            )}
 
             {/* Job Header */}
             <AnimatePresence mode="wait">
