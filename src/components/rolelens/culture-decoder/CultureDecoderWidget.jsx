@@ -10,7 +10,7 @@ import CulturalDimensions from './CulturalDimensions';
 import InterviewQuestionsSection from './InterviewQuestionsSection';
 import CultureVerdict from './CultureVerdict';
 
-export default function CultureDecoderWidget({ job, jobPostingText, tunerSettings }) {
+export default function CultureDecoderWidget({ job, jobPostingText, tunerSettings, onAnalysisComplete }) {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -179,14 +179,16 @@ Also provide confidence level (High/Medium/Low) and reason.`,
       questionsPromise
     ]);
 
-    setAnalysis({
+    const merged = {
       ...flagsResult,
       dimensions: dimensionsResult?.dimensions || [],
       contradictions: questionsResult?.contradictions || [],
       interviewQuestions: questionsResult?.interviewQuestions || [],
       confidenceLevel: questionsResult?.confidenceLevel || 'Medium',
       confidenceReason: questionsResult?.confidenceReason || 'Based on available public data'
-    });
+    };
+    setAnalysis(merged);
+    onAnalysisComplete?.(merged);
     setLoading(false);
   };
 
