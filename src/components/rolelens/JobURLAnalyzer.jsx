@@ -164,8 +164,8 @@ Return ALL text from the page. Include every tag, label, and metadata (like "Rem
     // This is MORE reliable than asking the LLM to interpret it
     const pageText = (pageContent.page_text || '').toLowerCase();
     
-    let detectedRemoteType = pageContent.workplace_type || 'Not specified';
-    let detectedEmploymentType = pageContent.employment_type || 'Not specified';
+    let detectedRemoteType = 'Not specified';
+    let detectedEmploymentType = 'Not specified';
     
     // Override with our own keyword scan of the raw text — LLM sometimes gets this wrong
     const remoteKeywords = ['fully remote', '100% remote', 'work from home', 'telecommute', 'wfh'];
