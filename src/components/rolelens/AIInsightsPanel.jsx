@@ -17,6 +17,7 @@ export default function AIInsightsPanel({ currentJob, tunerSettings }) {
 
   const generateInsights = async () => {
     setLoading(true);
+    setError(null);
     try {
       const prompt = `You are an executive career advisor AI analyzing job opportunities. Generate insights for:
 
