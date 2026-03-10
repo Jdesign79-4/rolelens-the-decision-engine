@@ -241,7 +241,7 @@ Extract: title, company, location, salary_min (number, 0 if unknown), salary_max
       }
     }
 
-    if (!result?.company || !result?.title) {
+    if (!result?.company && !result?.title) {
       throw new Error('Could not extract company name or job title from the posting.');
     }
 
