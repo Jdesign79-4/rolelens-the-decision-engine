@@ -1170,6 +1170,12 @@ function RoleLensContent() {
                   Negotiate Salary
                 </button>
                 <button
+                  onClick={() => setShowMockInterview(true)}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white font-medium text-sm hover:from-fuchsia-600 hover:to-pink-700 transition-all"
+                >
+                  🎤 Mock Interview
+                </button>
+                <button
                   onClick={() => {
                     setComparisonJobIds([activeJob]);
                     setShowComparison(true);
