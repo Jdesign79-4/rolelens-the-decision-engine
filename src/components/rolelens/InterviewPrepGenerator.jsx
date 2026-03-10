@@ -227,7 +227,12 @@ Be specific to ${companyName}. Keep answers concise.`,
       weaknessExamples: technicalResult?.weaknessExamples || [],
       ...normalizedStrategy
     });
-    setIsLoading(false);
+    } catch (err) {
+      console.error('Interview prep generation failed:', err);
+      setError('Failed to generate interview prep kit. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const exportAsMarkdown = () => {
