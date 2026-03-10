@@ -1130,11 +1130,13 @@ function RoleLensContent() {
             )}
 
             {/* Data Source Disclaimer — always visible */}
-            <div className="mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200">
-              <p className="text-xs text-amber-800">
-                <span className="font-semibold">⚠️ Data Disclaimer:</span> Company data is synthesized by AI from publicly available sources. 
-                Always verify financial metrics, salary ranges, and company information independently before making career decisions. 
-                Stock prices may be delayed 15+ minutes. This is not financial advice.
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 border-2 border-amber-300">
+              <p className="text-xs text-amber-900">
+                <span className="font-bold">⚠️ Important — AI-Generated Estimates:</span> All data shown (salary ranges, company metrics, culture scores, health scores, alternatives) 
+                is <strong>estimated by AI</strong> from web searches and public information. These are not verified facts. 
+                Salary figures, Glassdoor ratings, funding amounts, and growth metrics may be inaccurate or outdated. 
+                <strong>Always verify critical data directly on source websites (Glassdoor, Levels.fyi, Crunchbase, company career pages) before making career or financial decisions.</strong> 
+                Tax calculations use 2024 US federal & state brackets and are more reliable than other estimates. This tool is for research assistance only — not financial or career advice.
               </p>
             </div>
 
