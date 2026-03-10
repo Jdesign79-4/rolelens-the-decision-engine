@@ -434,7 +434,17 @@ Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to me
       {isLoadingCOL && !colData && (
         <div className="mt-3 p-3 rounded-xl bg-teal-50 border border-teal-100 flex items-center gap-2">
           <Loader2 className="w-4 h-4 text-teal-600 animate-spin" />
-          <p className="text-xs text-teal-700">Researching cost of living data from MIT, BLS, and Numbeo...</p>
+          <p className="text-xs text-teal-700">Researching cost of living data...</p>
+        </div>
+      )}
+
+      {/* COL data source disclaimer */}
+      {colData && (
+        <div className="mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+          <p className="text-[10px] text-amber-700">
+            <strong>Note:</strong> Cost of living, living wage, and expense estimates are AI-generated approximations informed by public data (MIT Living Wage Calculator, BLS, Numbeo). 
+            They may not reflect your actual situation. Tax calculations use 2024 federal & state brackets and are more reliable.
+          </p>
         </div>
       )}
     </div>
