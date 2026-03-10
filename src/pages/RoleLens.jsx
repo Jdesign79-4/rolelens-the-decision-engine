@@ -1601,6 +1601,16 @@ function RoleLensContent() {
         )}
       </AnimatePresence>
 
+      {/* Mock Interview Modal */}
+      <AnimatePresence>
+        {showMockInterview && (
+          <MockInterviewModal
+            job={currentJob}
+            onClose={() => setShowMockInterview(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Company Comparison Modal */}
       <AnimatePresence>
         {showComparison && (
