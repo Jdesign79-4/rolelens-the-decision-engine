@@ -632,10 +632,12 @@ CRITICAL: Include direct URLs to each source used.`,
             )}
 
             {/* AI Disclaimer */}
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+            <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-300">
+              <p className="text-sm font-semibold text-amber-900 mb-1">⚠️ Important: AI-Estimated Data</p>
               <p className="text-xs text-amber-800">
-                <span className="font-semibold">⚠️ Note:</span> This data is synthesized by AI from web searches, not from direct API connections to Glassdoor, Crunchbase, or LinkedIn. 
-                Values are estimates and should be verified independently. Source URLs may not always be accurate.
+                All figures below are <strong>AI estimates</strong> synthesized from web searches — not from direct API connections to Glassdoor, Crunchbase, or LinkedIn. 
+                Salary numbers, ratings, funding amounts, and growth metrics may be inaccurate or outdated. 
+                <strong>Always verify critical data points directly on the source websites before making decisions.</strong> URLs provided may not always be accurate.
               </p>
             </div>
 
