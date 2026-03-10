@@ -15,6 +15,7 @@ export default function CompanyHealthScore({ company }) {
 
   const fetchHealthScore = async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const prompt = `Analyze the current company health for: ${company}
 
