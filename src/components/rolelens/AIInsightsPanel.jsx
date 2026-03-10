@@ -41,6 +41,7 @@ Provide 3 insights (each 2-3 sentences max):
 
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
+        add_context_from_internet: true,
         response_json_schema: {
           type: "object",
           properties: {
