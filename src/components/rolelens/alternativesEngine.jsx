@@ -236,8 +236,8 @@ Make ALL numbers realistic. Use your knowledge of actual market data.`,
         why_recommended: alt.why_recommended || '',
         strengths: (alt.strengths || []).slice(0, 3),
         trade_offs: (alt.trade_offs || []).slice(0, 2),
-        glassdoor_rating: clamp(alt.glassdoor_rating, 1, 5, null),
-        open_roles_estimate: alt.open_roles_estimate || null,
+        glassdoor_rating: clamp(alt.glassdoor_rating, 1, 5, null), // AI estimate, not from Glassdoor API
+        open_roles_estimate: alt.open_roles_estimate || null, // AI estimate
         employee_count: alt.employee_count || null,
         stage: alt.stage || null,
         careers_url: alt.careers_url || null,
