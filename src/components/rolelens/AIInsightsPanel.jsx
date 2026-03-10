@@ -125,7 +125,17 @@ Provide 3 insights (each 2-3 sentences max):
           >
             <Loader2 className="w-6 h-6 text-violet-500 animate-spin" />
           </motion.div>
-        ) : (
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="bg-red-50 rounded-2xl p-4 min-h-[80px] border border-red-200"
+          >
+            <p className="text-sm text-red-700">{error}</p>
+          </motion.div>
+        ) : insights ? (
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, x: 20 }}
@@ -135,9 +145,14 @@ Provide 3 insights (each 2-3 sentences max):
             className="bg-white rounded-2xl p-4 min-h-[120px]"
           >
             <p className="text-sm text-slate-700 leading-relaxed">
-              {tabs.find(t => t.id === activeTab)?.content || 'Analyzing...'}
+              {tabs.find(t => t.id === activeTab)?.content || 'No data available.'}
             </p>
+            <p className="text-[10px] text-slate-400 mt-3 italic">AI-generated analysis — verify important details independently.</p>
           </motion.div>
+        ) : (
+          <div className="bg-white rounded-2xl p-4 min-h-[80px] flex items-center justify-center">
+            <p className="text-sm text-slate-400">Click "Refresh Insights" to generate analysis.</p>
+          </div>
         )}
       </AnimatePresence>
 
