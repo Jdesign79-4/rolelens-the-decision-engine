@@ -7,6 +7,7 @@ export default function CompanyHealthScore({ company }) {
   const [healthData, setHealthData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
 
   useEffect(() => {
     fetchHealthScore();
