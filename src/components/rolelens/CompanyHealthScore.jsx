@@ -74,7 +74,7 @@ Be specific and cite recent events or data points when possible. Focus on inform
     return { icon: TrendingUp, color: 'text-slate-600' };
   };
 
-  if (!healthData && !loading) return null;
+  if (!healthData && !loading && !fetchError) return null;
 
   const healthColor = healthData ? getHealthColor(healthData.health_score) : { bg: 'bg-slate-500', text: 'text-slate-600', glow: 'shadow-slate-200' };
   const sentimentIcon = healthData ? getSentimentIcon(healthData.news_sentiment) : { icon: TrendingUp, color: 'text-slate-600' };
