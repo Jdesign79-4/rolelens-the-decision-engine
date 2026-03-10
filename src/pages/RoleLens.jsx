@@ -30,6 +30,7 @@ import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 import SalaryNegotiationPlanner from '@/components/rolelens/SalaryNegotiationPlanner';
+import MockInterviewModal from '@/components/rolelens/mock-interview/MockInterviewModal';
 import JobFeedback from '@/components/rolelens/JobFeedback';
 import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator';
 import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
