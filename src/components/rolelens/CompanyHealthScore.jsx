@@ -53,15 +53,8 @@ Be specific and cite recent events or data points when possible. Focus on inform
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Failed to fetch company health:', error);
-      setHealthData({
-        health_score: 0,
-        risks: ["Unable to fetch current data — please retry"],
-        opportunities: [],
-        news_sentiment: "Unknown",
-        financial_stability: "Data unavailable",
-        summary: "Could not retrieve company health data. Try refreshing."
-      });
-      setLastUpdated(new Date());
+      setHealthData(null);
+      setFetchError('Could not retrieve company health data. Please try refreshing.');
     }
     setLoading(false);
   };
