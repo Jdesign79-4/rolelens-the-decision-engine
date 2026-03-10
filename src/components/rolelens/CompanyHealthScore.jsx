@@ -118,6 +118,23 @@ Be specific and cite recent events or data points when possible. Focus on inform
             <Loader2 className="w-8 h-8 text-slate-400 animate-spin mb-3" />
             <p className="text-sm text-slate-500">Analyzing real-time data...</p>
           </motion.div>
+        ) : fetchError ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-8 text-center"
+          >
+            <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+            <p className="text-sm text-slate-600">{fetchError}</p>
+            <button
+              onClick={fetchHealthScore}
+              className="mt-3 px-4 py-2 text-sm rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </motion.div>
         ) : healthData ? (
           <motion.div
             key="content"
