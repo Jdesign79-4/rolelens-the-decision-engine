@@ -52,11 +52,8 @@ Provide 3 insights (each 2-3 sentences max):
       setInsights(result);
     } catch (error) {
       console.error('Failed to generate insights:', error);
-      setInsights({
-        culture_why: "High work-life balance driven by remote-first policies and flexible scheduling. Growth opportunities reflect strong company expansion and investment in employee development.",
-        comp_forecast: "1-year: +8-12% based on market demand for this role. 3-year: +25-35% trajectory with potential for senior advancement and equity appreciation in current market conditions.",
-        career_path: "Consider positioning for senior leadership roles within 2-3 years. Alternative paths include specializing in emerging tech or transitioning to strategic advisory positions."
-      });
+      setInsights(null);
+      setError('Could not generate insights. Please try refreshing.');
     }
     setLoading(false);
   };
