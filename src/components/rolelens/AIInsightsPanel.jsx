@@ -9,6 +9,7 @@ export default function AIInsightsPanel({ currentJob, tunerSettings }) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('culture');
   const [showExporter, setShowExporter] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     generateInsights();
