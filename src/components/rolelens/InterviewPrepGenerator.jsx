@@ -220,13 +220,13 @@ Be specific to ${companyName}. Keep answers concise.`,
       }
     };
 
-    // Merge all results
-    setPrepData({
-      interviewQuestions: questionsResult?.interviewQuestions || [],
-      technicalTopics: technicalResult?.technicalTopics || [],
-      weaknessExamples: technicalResult?.weaknessExamples || [],
-      ...normalizedStrategy
-    });
+      // Merge all results
+      setPrepData({
+        interviewQuestions: questionsResult?.interviewQuestions || [],
+        technicalTopics: technicalResult?.technicalTopics || [],
+        weaknessExamples: technicalResult?.weaknessExamples || [],
+        ...normalizedStrategy
+      });
     } catch (err) {
       console.error('Interview prep generation failed:', err);
       setError('Failed to generate interview prep kit. Please try again.');
