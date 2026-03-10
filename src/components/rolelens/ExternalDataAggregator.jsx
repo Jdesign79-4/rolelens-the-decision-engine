@@ -195,11 +195,11 @@ CRITICAL: Include direct URLs to each source used.`,
     <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-6 shadow-sm border border-blue-200">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Database className="w-5 h-5 text-blue-600" />
-            <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">AI-Aggregated Data</p>
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800">External Data Aggregation</h3>
+        <div className="flex items-center gap-2 mb-1">
+          <Database className="w-5 h-5 text-blue-600" />
+          <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">AI-Estimated Data</p>
+        </div>
+        <h3 className="text-lg font-semibold text-slate-800">External Data Aggregation</h3>
           {lastUpdated && (
             <p className="text-xs text-slate-500 mt-1">
               Last updated: {new Date(lastUpdated).toLocaleTimeString()}
