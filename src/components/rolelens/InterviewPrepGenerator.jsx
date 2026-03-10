@@ -32,6 +32,7 @@ export default function InterviewPrepGenerator({ job, onClose }) {
     setIsLoading(true);
     setError(null);
 
+    try {
     // Split into THREE sequential calls with simpler schemas for reliability
     let questionsResult, technicalResult, strategyResult;
 
