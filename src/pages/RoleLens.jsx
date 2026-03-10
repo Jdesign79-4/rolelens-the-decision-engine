@@ -758,6 +758,7 @@ function RoleLensContent() {
   const [showInterviewPrep, setShowInterviewPrep] = useState(false);
   const [showApplicationStrategy, setShowApplicationStrategy] = useState(false);
   const [showSalaryNegotiation, setShowSalaryNegotiation] = useState(false);
+  const [showMockInterview, setShowMockInterview] = useState(false);
   const [cultureDecoderData, setCultureDecoderData] = useState(null);
   const [searchMode, setSearchMode] = useState('url'); // 'url' or 'manual'
 
