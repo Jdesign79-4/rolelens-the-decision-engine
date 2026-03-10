@@ -232,6 +232,13 @@ Be specific and cite recent events or data points when possible. Focus on inform
                 </motion.div>
               ))}
             </div>
+
+            {/* Disclaimer */}
+            <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+              <p className="text-[10px] text-amber-700">
+                <strong>AI-generated analysis.</strong> Health score and insights are estimated from web data and may not reflect the company's actual current state. Verify with official sources.
+              </p>
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>
