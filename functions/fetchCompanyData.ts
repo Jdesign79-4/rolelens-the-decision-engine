@@ -403,22 +403,30 @@ Deno.serve(async (req) => {
       console.warn(`[WARN] LLM failed: ${e.message}`);
     }
 
-    // === BUILD stock_data ===
+    // === BUILD stock_data (merge Google Finance fallback if Yahoo failed) ===
+    const gfPrice = googleData?.current_price;
+    const resolvedPrice = (currentPrice && currentPrice > 0) ? Math.round(currentPrice * 100) / 100 : (gfPrice ? Math.round(gfPrice * 100) / 100 : null);
+
+    // Add Google price to history if we had to fall back and history is empty
+    if (gfPrice && price_history.length === 0) {
+      price_history.push({ month: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }), price: Math.round(gfPrice * 100) / 100 });
+    }
+
     const stock_data = {
-      current_price: currentPrice ? Math.round(currentPrice * 100) / 100 : null,
-      price_change_dollar: priceDelta,
-      price_change_percent: priceDeltaPct,
+      current_price: resolvedPrice,
+      price_change_dollar: priceDelta ?? (googleData?.price_change_dollar ? Math.round(googleData.price_change_dollar * 100) / 100 : null),
+      price_change_percent: priceDeltaPct ?? (googleData?.price_change_percent ? Math.round(googleData.price_change_percent * 100) / 100 : null),
       week_change_percent: weekChangePct,
       month_change_percent: monthChangePct,
       three_month_change_percent: threeMonthChangePct,
       year_change_percent: yearChangePct,
       ytd_change_percent: ytdChangePct,
-      week_52_high: chartMeta.fiftyTwoWeekHigh ? Math.round(chartMeta.fiftyTwoWeekHigh * 100) / 100 : null,
-      week_52_low: chartMeta.fiftyTwoWeekLow ? Math.round(chartMeta.fiftyTwoWeekLow * 100) / 100 : null,
-      market_cap: f.market_cap_raw ? formatLargeNumber(f.market_cap_raw) : 'N/A',
-      pe_ratio: f.pe_ratio ? Math.round(f.pe_ratio * 100) / 100 : null,
-      dividend_yield: f.dividend_yield_pct ? Math.round(f.dividend_yield_pct * 100) / 100 : 0,
-      volume: f.volume_raw ? formatVolume(f.volume_raw) : 'N/A',
+      week_52_high: chartMeta.fiftyTwoWeekHigh ? Math.round(chartMeta.fiftyTwoWeekHigh * 100) / 100 : (googleData?.week_52_high ?? null),
+      week_52_low: chartMeta.fiftyTwoWeekLow ? Math.round(chartMeta.fiftyTwoWeekLow * 100) / 100 : (googleData?.week_52_low ?? null),
+      market_cap: f.market_cap_raw ? formatLargeNumber(f.market_cap_raw) : (googleData?.market_cap || 'N/A'),
+      pe_ratio: f.pe_ratio ? Math.round(f.pe_ratio * 100) / 100 : (googleData?.pe_ratio ?? null),
+      dividend_yield: f.dividend_yield_pct ? Math.round(f.dividend_yield_pct * 100) / 100 : (googleData?.dividend_yield ?? 0),
+      volume: f.volume_raw ? formatVolume(f.volume_raw) : (googleData?.volume || 'N/A'),
       price_history
     };
 
