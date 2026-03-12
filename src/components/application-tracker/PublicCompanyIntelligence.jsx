@@ -395,9 +395,10 @@ H) SECTOR & COMPETITORS:
             disabled={isRefreshing}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/20"
+            className="text-white hover:bg-white/20 gap-1.5"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="text-xs">{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
           </Button>
         </div>
 
