@@ -144,30 +144,30 @@ Deno.serve(async (req) => {
     let fundamentalsData = null;
     try {
       fundamentalsData = await base44.integrations.Core.InvokeLLM({
-        prompt: `Look up the CURRENT financial data for stock ticker ${t} on Google Finance and Yahoo Finance.
+        prompt: `Search Google Finance, Yahoo Finance, and Macrotrends for the ticker symbol "${t}". 
 
-Return ONLY real, current data. If you cannot find a specific number, return null for that field.
+I need CURRENT, REAL financial data. Search for "${t} financial data" and "${t} key statistics" and "${t} analyst ratings".
 
-Required data:
-- market_cap_raw: market capitalization in raw number (e.g. 3010000000000 for $3.01T)
-- pe_ratio: trailing P/E ratio
-- dividend_yield_pct: annual dividend yield as percentage (e.g. 0.5 for 0.5%)
-- volume_raw: today's trading volume as raw number
-- revenue_ttm: trailing 12-month revenue as raw number
-- net_income: net income as raw number
-- profit_margin_pct: profit margin as percentage (e.g. 25.5)
-- employee_count: number of full-time employees
-- revenue_growth_yoy_pct: year-over-year revenue growth as percentage
-- earnings_growth_yoy_pct: year-over-year earnings growth as percentage
-- debt_to_equity: debt-to-equity ratio (e.g. 0.45)
-- roe_pct: return on equity as percentage (e.g. 35.2)
-- current_ratio: current ratio (e.g. 1.5)
-- quick_ratio: quick ratio (e.g. 1.2)
-- sector: company's sector
-- industry: company's industry
-- analyst_count: number of analysts covering the stock
-- analyst_consensus: consensus rating (Strong Buy, Buy, Hold, Sell, Strong Sell)
-- price_target_avg: average analyst price target
+Return ALL of these as numbers (not strings). Use null ONLY if truly unavailable after searching:
+- market_cap_raw: total market capitalization in dollars (e.g. 3010000000000 for ~$3T). Search "${t} market cap"
+- pe_ratio: trailing price-to-earnings ratio. Search "${t} PE ratio"
+- dividend_yield_pct: dividend yield as a percentage number (e.g. 0.82 means 0.82%). Search "${t} dividend yield"
+- volume_raw: average daily trading volume as a number (e.g. 25000000 for 25M shares)
+- revenue_ttm: trailing twelve months revenue in dollars (e.g. 254000000000 for $254B). Search "${t} annual revenue"
+- net_income: annual net income in dollars. Search "${t} net income"
+- profit_margin_pct: net profit margin as percentage (e.g. 25.5 means 25.5%)
+- employee_count: full-time employees as integer. Search "${t} number of employees"
+- revenue_growth_yoy_pct: year-over-year revenue growth percentage (e.g. 12.5 means +12.5%)
+- earnings_growth_yoy_pct: year-over-year earnings growth percentage
+- debt_to_equity: debt-to-equity ratio as decimal (e.g. 0.45 or 1.87). Search "${t} debt to equity ratio"
+- roe_pct: return on equity as percentage (e.g. 35.2 means 35.2%)
+- current_ratio: current ratio (e.g. 1.53). Search "${t} current ratio"
+- quick_ratio: quick ratio (e.g. 1.21). Search "${t} quick ratio"
+- sector: company sector (e.g. "Technology")
+- industry: specific industry (e.g. "Software—Infrastructure")
+- analyst_count: number of Wall Street analysts with ratings
+- analyst_consensus: one of: "Strong Buy", "Buy", "Hold", "Sell", "Strong Sell"
+- price_target_avg: average analyst price target in dollars
 - price_target_high: highest analyst price target
 - price_target_low: lowest analyst price target`,
         add_context_from_internet: true,
