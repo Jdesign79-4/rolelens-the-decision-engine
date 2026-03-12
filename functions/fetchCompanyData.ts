@@ -455,9 +455,9 @@ Deno.serve(async (req) => {
       recent_changes: []
     };
 
-    // === NEWS ===
+    // === NEWS (Yahoo first, Google News RSS fallback if <3 articles) ===
     const articles = newsData?.news || [];
-    const news_articles = articles.slice(0, 8).map(a => {
+    const yahooArticles = articles.slice(0, 8).map(a => {
       const hl = (a.title || '').toLowerCase();
       let sentiment = 'neutral';
       if (['beat', 'surge', 'record', 'growth', 'gain', 'rise', 'jump', 'upgrade', 'profit', 'strong', 'boost', 'rally', 'soar', 'win', 'expand', 'success'].some(w => hl.includes(w))) sentiment = 'positive';
@@ -472,6 +472,14 @@ Deno.serve(async (req) => {
         sentiment
       };
     });
+
+    let news_articles = yahooArticles;
+    if (yahooArticles.length < 3) {
+      console.log(`[INFO] Yahoo returned only ${yahooArticles.length} articles, fetching Google News RSS fallback`);
+      const googleArticles = await fetchGoogleNewsRSS(company_name || t);
+      news_articles = deduplicateArticles(yahooArticles, googleArticles, 8);
+      console.log(`[INFO] After dedup: ${news_articles.length} total articles`);
+    }
 
     const sector = f.sector ? `${f.sector} — ${f.industry || ''}` : null;
 
