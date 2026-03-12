@@ -475,9 +475,9 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financ
               />
             )}
             {companyData.fundamentals.roe != null && (
-              <RatioCard title="Return on Equity (ROE)" value={`${(companyData.fundamentals.roe * 100).toFixed(1)}%`} color="text-emerald-600"
-                badge={companyData.fundamentals.roe > 0.15 ? 'Excellent' : companyData.fundamentals.roe > 0.10 ? 'Good' : 'Below Average'}
-                badgeColor={companyData.fundamentals.roe > 0.15 ? 'bg-emerald-100 text-emerald-700' : companyData.fundamentals.roe > 0.10 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}
+              <RatioCard title="Return on Equity (ROE)" value={`${companyData.fundamentals.roe > 1 ? companyData.fundamentals.roe.toFixed(1) : (companyData.fundamentals.roe * 100).toFixed(1)}%`} color="text-emerald-600"
+                badge={(() => { const v = companyData.fundamentals.roe > 1 ? companyData.fundamentals.roe : companyData.fundamentals.roe * 100; return v > 15 ? 'Excellent' : v > 10 ? 'Good' : 'Below Average'; })()}
+                badgeColor={(() => { const v = companyData.fundamentals.roe > 1 ? companyData.fundamentals.roe : companyData.fundamentals.roe * 100; return v > 15 ? 'bg-emerald-100 text-emerald-700' : v > 10 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'; })()}
                 description="Measures profitability by showing how much profit a company generates with shareholders' equity. ROE above 15% is strong."
               />
             )}
