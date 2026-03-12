@@ -293,7 +293,7 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financ
 
         <div className="mt-6 p-3 rounded-lg bg-white/20 border border-white/30">
           <p className="text-xs opacity-90">
-            <span className="font-semibold">ℹ️ Data Sources:</span> Stock data from Yahoo Finance API (delayed ~15min). Fundamentals from Yahoo Finance quoteSummary. News from Yahoo Finance search.
+            <span className="font-semibold">ℹ️ Data Sources:</span> Stock prices & charts from Yahoo Finance API. Fundamentals from AI-aggregated public financial data. News from Yahoo Finance.
             <span className="block mt-1">Always verify independently before making decisions.</span>
           </p>
         </div>
