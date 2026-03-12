@@ -140,37 +140,13 @@ Deno.serve(async (req) => {
 
     console.log(`[INFO] Chart data: price=${currentPrice}, 52wkH=${chartMeta.fiftyTwoWeekHigh}, history=${price_history.length}pts`);
 
-    // === STEP 2: Use LLM with web search for fundamentals (Yahoo endpoints now require auth) ===
-    let fundamentalsData = null;
+    // === STEP 2: Use LLM with web search for fundamentals ===
+    let f = {};
     try {
-      fundamentalsData = await base44.integrations.Core.InvokeLLM({
-        prompt: `Search Google Finance, Yahoo Finance, and Macrotrends for the ticker symbol "${t}". 
-
-I need CURRENT, REAL financial data. Search for "${t} financial data" and "${t} key statistics" and "${t} analyst ratings".
-
-Return ALL of these as numbers (not strings). Use null ONLY if truly unavailable after searching:
-- market_cap_raw: total market capitalization in dollars (e.g. 3010000000000 for ~$3T). Search "${t} market cap"
-- pe_ratio: trailing price-to-earnings ratio. Search "${t} PE ratio"
-- dividend_yield_pct: dividend yield as a percentage number (e.g. 0.82 means 0.82%). Search "${t} dividend yield"
-- volume_raw: average daily trading volume as a number (e.g. 25000000 for 25M shares)
-- revenue_ttm: trailing twelve months revenue in dollars (e.g. 254000000000 for $254B). Search "${t} annual revenue"
-- net_income: annual net income in dollars. Search "${t} net income"
-- profit_margin_pct: net profit margin as percentage (e.g. 25.5 means 25.5%)
-- employee_count: full-time employees as integer. Search "${t} number of employees"
-- revenue_growth_yoy_pct: year-over-year revenue growth percentage (e.g. 12.5 means +12.5%)
-- earnings_growth_yoy_pct: year-over-year earnings growth percentage
-- debt_to_equity: debt-to-equity ratio as decimal (e.g. 0.45 or 1.87). Search "${t} debt to equity ratio"
-- roe_pct: return on equity as percentage (e.g. 35.2 means 35.2%)
-- current_ratio: current ratio (e.g. 1.53). Search "${t} current ratio"
-- quick_ratio: quick ratio (e.g. 1.21). Search "${t} quick ratio"
-- sector: company sector (e.g. "Technology")
-- industry: specific industry (e.g. "Software—Infrastructure")
-- analyst_count: number of Wall Street analysts with ratings
-- analyst_consensus: one of: "Strong Buy", "Buy", "Hold", "Sell", "Strong Sell"
-- price_target_avg: average analyst price target in dollars
-- price_target_high: highest analyst price target
-- price_target_low: lowest analyst price target`,
+      f = await base44.integrations.Core.InvokeLLM({
+        prompt: `Stock ticker ${t}: market_cap_raw (number in dollars), pe_ratio, dividend_yield_pct, volume_raw (daily shares), revenue_ttm (dollars), net_income (dollars), profit_margin_pct, employee_count, revenue_growth_yoy_pct, earnings_growth_yoy_pct, debt_to_equity, roe_pct, current_ratio, quick_ratio, sector, industry, analyst_count, analyst_consensus (Strong Buy/Buy/Hold/Sell), price_target_avg, price_target_high, price_target_low. Return numbers only, null if unknown.`,
         add_context_from_internet: true,
+        model: 'gemini_3_flash',
         response_json_schema: {
           type: "object",
           properties: {
@@ -197,13 +173,11 @@ Return ALL of these as numbers (not strings). Use null ONLY if truly unavailable
             price_target_low: { type: "number" }
           }
         }
-      });
-      console.log(`[INFO] LLM fundamentals: mcap=${fundamentalsData.market_cap_raw}, pe=${fundamentalsData.pe_ratio}, rev=${fundamentalsData.revenue_ttm}`);
+      }) || {};
+      console.log(`[INFO] LLM: mcap=${f.market_cap_raw}, pe=${f.pe_ratio}, rev=${f.revenue_ttm}, cr=${f.current_ratio}`);
     } catch (e) {
-      console.warn(`[WARN] LLM fundamentals fetch failed: ${e.message}`);
+      console.warn(`[WARN] LLM failed: ${e.message}`);
     }
-
-    const f = fundamentalsData || {};
 
     // === BUILD stock_data ===
     const stock_data = {
