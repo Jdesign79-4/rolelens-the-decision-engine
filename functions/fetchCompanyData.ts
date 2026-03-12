@@ -436,7 +436,7 @@ Deno.serve(async (req) => {
       net_income: f.net_income ? formatLargeNumber(f.net_income) : 'N/A',
       profit_margin: f.profit_margin_pct ?? null,
       employee_count: f.employee_count || null,
-      market_cap_category: f.market_cap_raw ? marketCapCategory(f.market_cap_raw) : 'Unknown',
+      market_cap_category: f.market_cap_raw ? marketCapCategory(f.market_cap_raw) : (googleData?.market_cap_raw ? marketCapCategory(googleData.market_cap_raw) : 'Unknown'),
       revenue_growth_yoy: f.revenue_growth_yoy_pct ?? null,
       earnings_growth_yoy: f.earnings_growth_yoy_pct ?? null,
       debt_to_equity: f.debt_to_equity != null ? Math.round(f.debt_to_equity * 100) / 100 : null,
