@@ -349,7 +349,20 @@ Deno.serve(async (req) => {
     const priceDelta = currentPrice && prevClose ? Math.round((currentPrice - prevClose) * 100) / 100 : null;
     const priceDeltaPct = currentPrice && prevClose ? Math.round(((currentPrice - prevClose) / prevClose) * 10000) / 100 : null;
 
-    console.log(`[INFO] Chart data: price=${currentPrice}, 52wkH=${chartMeta.fiftyTwoWeekHigh}, history=${price_history.length}pts`);
+    console.log(`[INFO] Yahoo chart data: price=${currentPrice}, 52wkH=${chartMeta.fiftyTwoWeekHigh}, history=${price_history.length}pts`);
+
+    // === STEP 1b: Google Finance fallback if Yahoo chart has no valid price ===
+    let googleData = null;
+    const yahooHasPrice = currentPrice != null && currentPrice > 0;
+    if (!yahooHasPrice) {
+      console.log(`[WARN] Yahoo Finance failed for ${t} (price=${currentPrice}), trying Google Finance fallback`);
+      googleData = await fetchGoogleFinanceData(t);
+      if (googleData?.current_price) {
+        console.log(`[INFO] Google Finance fallback succeeded: price=${googleData.current_price}`);
+      } else {
+        console.log(`[WARN] Google Finance fallback also failed for ${t}`);
+      }
+    }
 
     // === STEP 2: Use LLM with web search for fundamentals ===
     let f = {};
