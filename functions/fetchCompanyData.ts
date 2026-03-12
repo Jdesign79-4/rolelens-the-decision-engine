@@ -47,6 +47,217 @@ async function fetchJSON(url) {
   }
 }
 
+async function fetchHTML(url) {
+  try {
+    const resp = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+    console.log(`[FETCH] ${url.substring(0, 100)} → ${resp.status}`);
+    if (!resp.ok) return null;
+    return resp.text();
+  } catch (e) {
+    console.warn(`[FETCH ERR] ${e.message}`);
+    return null;
+  }
+}
+
+function extractBetween(html, before, after) {
+  const i = html.indexOf(before);
+  if (i === -1) return null;
+  const start = i + before.length;
+  const end = html.indexOf(after, start);
+  if (end === -1) return null;
+  return html.substring(start, end).trim();
+}
+
+function parseGoogleFinanceNum(str) {
+  if (!str) return null;
+  const clean = str.replace(/[,$%]/g, '').trim();
+  const num = parseFloat(clean);
+  return isNaN(num) ? null : num;
+}
+
+function parseGoogleFinanceSuffix(str) {
+  if (!str) return null;
+  const clean = str.replace(/[$,]/g, '').trim();
+  let multiplier = 1;
+  if (clean.endsWith('T')) multiplier = 1e12;
+  else if (clean.endsWith('B')) multiplier = 1e9;
+  else if (clean.endsWith('M')) multiplier = 1e6;
+  const num = parseFloat(clean.replace(/[TBMtbm]$/, ''));
+  return isNaN(num) ? null : num * multiplier;
+}
+
+async function fetchGoogleFinanceData(ticker) {
+  const exchanges = ['NASDAQ', 'NYSE', 'NYSEARCA', 'BATS'];
+  let html = null;
+
+  for (const exchange of exchanges) {
+    const url = `https://www.google.com/finance/quote/${encodeURIComponent(ticker)}:${exchange}`;
+    html = await fetchHTML(url);
+    if (html && html.includes('data-last-price')) {
+      console.log(`[GOOGLE] Found data on ${exchange}`);
+      break;
+    }
+    html = null;
+  }
+
+  if (!html) {
+    console.log(`[GOOGLE] No data found for ${ticker} on any exchange`);
+    return null;
+  }
+
+  const result = {};
+
+  // Current price from data-last-price attribute
+  const lastPriceMatch = html.match(/data-last-price="([^"]+)"/);
+  if (lastPriceMatch) result.current_price = parseFloat(lastPriceMatch[1]);
+
+  // Price change percent from data-change-percent
+  // Try data attributes first
+  const changePctMatch = html.match(/data-change-percent="([^"]+)"/);
+  if (changePctMatch) result.price_change_percent = parseFloat(changePctMatch[1]);
+
+  const changeDollarMatch = html.match(/data-change="([^"]+)"/);
+  if (changeDollarMatch) result.price_change_dollar = parseFloat(changeDollarMatch[1]);
+
+  // Extract key stats section — look for labeled values
+  // 52-week range
+  const weekRangeMatch = html.match(/Year range.*?>([\d,.]+)\s*-\s*([\d,.]+)/s) ||
+                          html.match(/52-week.*?>([\d,.]+)\s*-\s*([\d,.]+)/s);
+  if (weekRangeMatch) {
+    result.week_52_low = parseGoogleFinanceNum(weekRangeMatch[1]);
+    result.week_52_high = parseGoogleFinanceNum(weekRangeMatch[2]);
+  }
+
+  // Market cap
+  const mcapMatch = html.match(/Market cap[^>]*>.*?>([\d,.]+[TBM])/s);
+  if (mcapMatch) {
+    result.market_cap_raw = parseGoogleFinanceSuffix(mcapMatch[1]);
+    result.market_cap = mcapMatch[1].trim();
+  }
+
+  // PE ratio
+  const peMatch = html.match(/P\/E ratio[^>]*>.*?>([\d,.]+)/s);
+  if (peMatch) result.pe_ratio = parseGoogleFinanceNum(peMatch[1]);
+
+  // Volume
+  const volMatch = html.match(/Avg volume[^>]*>.*?>([\d,.]+[TBMKtbmk]?)/s);
+  if (volMatch) result.volume = volMatch[1].trim();
+
+  // Dividend yield
+  const divMatch = html.match(/Dividend yield[^>]*>.*?>([\d,.]+)%/s);
+  if (divMatch) result.dividend_yield = parseGoogleFinanceNum(divMatch[1]);
+
+  console.log(`[GOOGLE] Extracted: price=${result.current_price}, mcap=${result.market_cap}, pe=${result.pe_ratio}`);
+  return result;
+}
+
+async function fetchGoogleNewsRSS(companyName) {
+  try {
+    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(companyName + ' stock')}&hl=en-US&gl=US&ceid=US:en`;
+    const resp = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+    console.log(`[FETCH] Google News RSS → ${resp.status}`);
+    if (!resp.ok) return [];
+
+    const xml = await resp.text();
+    const articles = [];
+    const items = xml.split('<item>').slice(1);
+
+    for (const item of items.slice(0, 10)) {
+      let title = extractBetween(item, '<title>', '</title>') || '';
+      title = title.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+
+      let link = extractBetween(item, '<link>', '</link>') || '';
+      link = link.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+      // Sometimes link comes after a newline from <link/>
+      if (!link) {
+        const linkMatch = item.match(/<link\s*\/?>([^<]+)/);
+        if (linkMatch) link = linkMatch[1].trim();
+      }
+
+      const pubDate = extractBetween(item, '<pubDate>', '</pubDate>') || '';
+      let source = extractBetween(item, '<source', '</source>');
+      if (source) {
+        // <source url="...">SourceName</source>
+        const srcNameMatch = source.match(/>([^<]+)$/);
+        source = srcNameMatch ? srcNameMatch[1].trim() : source.replace(/<[^>]+>/g, '').trim();
+      }
+
+      // Strip " - SourceName" from end of title
+      if (source && title.endsWith(` - ${source}`)) {
+        title = title.slice(0, title.length - ` - ${source}`.length).trim();
+      }
+
+      let description = extractBetween(item, '<description>', '</description>') || '';
+      description = description.replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, '').trim();
+      if (description.length > 150) description = description.substring(0, 150) + '...';
+
+      let formattedDate = '';
+      if (pubDate) {
+        try {
+          formattedDate = new Date(pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch { formattedDate = pubDate; }
+      }
+
+      if (title) {
+        articles.push({
+          headline: title,
+          source: source || 'Google News',
+          date: formattedDate,
+          url: link,
+          excerpt: description || title,
+          category: 'news',
+          sentiment: 'neutral'
+        });
+      }
+    }
+
+    // Apply simple sentiment
+    for (const a of articles) {
+      const hl = a.headline.toLowerCase();
+      if (['beat', 'surge', 'record', 'growth', 'gain', 'rise', 'jump', 'upgrade', 'profit', 'strong', 'boost', 'rally', 'soar', 'win', 'expand', 'success'].some(w => hl.includes(w))) a.sentiment = 'positive';
+      if (['fall', 'drop', 'loss', 'decline', 'cut', 'layoff', 'miss', 'warn', 'plunge', 'crash', 'weak', 'downgrade', 'risk', 'concern', 'fear', 'slump', 'tumble'].some(w => hl.includes(w))) a.sentiment = 'negative';
+    }
+
+    console.log(`[GOOGLE NEWS] Fetched ${articles.length} articles`);
+    return articles;
+  } catch (e) {
+    console.warn(`[GOOGLE NEWS ERR] ${e.message}`);
+    return [];
+  }
+}
+
+function deduplicateArticles(primary, secondary, maxTotal = 8) {
+  const seen = new Set();
+  const result = [];
+
+  for (const a of primary) {
+    const key = a.headline.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 50);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(a);
+    }
+  }
+
+  for (const a of secondary) {
+    if (result.length >= maxTotal) break;
+    const key = a.headline.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 50);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(a);
+    }
+  }
+
+  return result.slice(0, maxTotal);
+}
+
 async function searchTicker(companyName) {
   const data = await fetchJSON(
     `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(companyName)}&quotesCount=5&newsCount=0`
