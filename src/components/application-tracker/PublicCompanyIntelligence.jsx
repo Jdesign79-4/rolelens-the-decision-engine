@@ -20,6 +20,23 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
+  // Auto-refresh Yahoo Finance data if stale (>24h) or missing
+  const triggerYahooRefresh = async (record) => {
+    if (!record?.ticker_symbol && !record?.parent_ticker) return;
+    const ticker = record.ticker_symbol || record.parent_ticker;
+    try {
+      const resp = await base44.functions.invoke('fetchYahooFinance', {
+        ticker,
+        entityId: record.id
+      });
+      if (resp.data?.success) {
+        queryClient.invalidateQueries({ queryKey: ['public-company', companyName] });
+      }
+    } catch (err) {
+      console.warn('Yahoo Finance refresh failed:', err);
+    }
+  };
+
   const { data: companyData, isLoading, refetch } = useQuery({
     queryKey: ['public-company', companyName],
     queryFn: async () => {
@@ -27,9 +44,23 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
       const existing = await base44.entities.PublicCompanyData.filter({ company_name: companyName });
       if (existing.length > 0 && existing[0].last_updated) {
         const age = Date.now() - new Date(existing[0].last_updated).getTime();
-        if (age < 3600000) { // Less than 1 hour old
+        const isStale = age > 86400000; // 24 hours
+
+        if (!isStale) {
           return existing[0];
         }
+
+        // Data exists but is stale — return cached immediately, refresh Yahoo in background
+        if (existing[0].is_public && (existing[0].ticker_symbol || existing[0].parent_ticker)) {
+          triggerYahooRefresh(existing[0]);
+        }
+        return existing[0];
+      }
+
+      // If data exists but has no last_updated, also trigger background refresh
+      if (existing.length > 0 && existing[0].is_public && (existing[0].ticker_symbol || existing[0].parent_ticker)) {
+        triggerYahooRefresh(existing[0]);
+        return existing[0];
       }
 
       // Fetch fresh data
