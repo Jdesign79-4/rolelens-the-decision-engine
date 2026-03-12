@@ -306,7 +306,19 @@ H) SECTOR & COMPETITORS:
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await refetch();
+    try {
+      // If we have a ticker, fetch live data from Yahoo Finance first
+      const ticker = companyData?.ticker_symbol || companyData?.parent_ticker;
+      if (ticker && companyData?.id) {
+        await base44.functions.invoke('fetchYahooFinance', {
+          ticker,
+          entityId: companyData.id
+        });
+      }
+      await refetch();
+    } catch (err) {
+      console.warn('Refresh failed:', err);
+    }
     setIsRefreshing(false);
   };
 
