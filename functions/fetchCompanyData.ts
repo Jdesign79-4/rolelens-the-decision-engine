@@ -432,7 +432,7 @@ Deno.serve(async (req) => {
       pe_ratio: f.pe_ratio ? Math.round(f.pe_ratio * 100) / 100 : (googleData?.pe_ratio ?? null),
       dividend_yield: f.dividend_yield_pct ? Math.round(f.dividend_yield_pct * 100) / 100 : (googleData?.dividend_yield ?? 0),
       volume: f.volume_raw ? formatVolume(f.volume_raw) : (googleData?.volume || 'N/A'),
-      price_history
+      price_history: deduped_price_history
     };
 
     // === BUILD fundamentals ===
