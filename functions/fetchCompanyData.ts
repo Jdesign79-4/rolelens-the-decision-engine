@@ -412,6 +412,11 @@ Deno.serve(async (req) => {
       price_history.push({ month: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }), price: Math.round(gfPrice * 100) / 100 });
     }
 
+    // Deduplicate price_history — keep the last entry for each month
+    const seen = {};
+    price_history.forEach(entry => { seen[entry.month] = entry.price; });
+    const deduped_price_history = Object.entries(seen).map(([month, price]) => ({ month, price }));
+
     const stock_data = {
       current_price: resolvedPrice,
       price_change_dollar: priceDelta ?? (googleData?.price_change_dollar ? Math.round(googleData.price_change_dollar * 100) / 100 : null),
