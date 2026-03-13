@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Plus, BarChart3, Calendar, FileText, Filter } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, BarChart3, FileText } from 'lucide-react';
 import ApplicationKanban from '@/components/application-tracker/ApplicationKanban';
 import ApplicationTimeline from '@/components/application-tracker/ApplicationTimeline';
 import ApplicationCalendar from '@/components/application-tracker/ApplicationCalendar';
@@ -11,18 +10,14 @@ import ApplicationStats from '@/components/application-tracker/ApplicationStats'
 import EmailTemplateGenerator from '@/components/application-tracker/EmailTemplateGenerator';
 import AddApplicationModal from '@/components/application-tracker/AddApplicationModal';
 import ApplicationFilters from '@/components/application-tracker/ApplicationFilters';
+import { Link } from 'react-router-dom';
 
 export default function ApplicationTracker() {
   const [activeView, setActiveView] = useState('kanban');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEmailGen, setShowEmailGen] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
-  const [filters, setFilters] = useState({
-    stage: 'all',
-    priority: 'all',
-    tags: [],
-    sortBy: 'stage_updated_at'
-  });
+  const [filters, setFilters] = useState({ stage: 'all', priority: 'all', tags: [], sortBy: 'stage_updated_at' });
 
   const { data: applications = [], isLoading, refetch } = useQuery({
     queryKey: ['applications'],
@@ -38,48 +33,47 @@ export default function ApplicationTracker() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
+      <div className="sticky top-0 z-40 card-raised" style={{ borderRadius: 0, borderBottom: '1px solid var(--sf2)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800">Application Tracker</h1>
-              <p className="text-sm text-slate-500">Manage and track your job applications</p>
+            <div className="flex items-center gap-4">
+              <Link to="/RoleLens" className="card-subtle w-9 h-9 flex items-center justify-center rounded-full">
+                <div className="w-3 h-3 rounded-full" style={{ background: 'var(--sk)' }} />
+              </Link>
+              <div>
+                <h1 className="font-serif-zen text-xl font-semibold" style={{ color: 'var(--t1)' }}>My Applications</h1>
+                <p className="text-xs" style={{ color: 'var(--t3)' }}>Track your journey with grace</p>
+              </div>
             </div>
             <div className="flex gap-3">
-              <Button
-                onClick={() => setShowEmailGen(true)}
-                variant="outline"
-                className="gap-2"
-              >
+              <button onClick={() => setShowEmailGen(true)}
+                className="card-subtle px-4 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2 zen-transition"
+                style={{ color: 'var(--t2)' }}>
                 <FileText className="w-4 h-4" />
                 Email Templates
-              </Button>
-              <Button
-                onClick={() => setShowAddModal(true)}
-                className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white gap-2"
-              >
+              </button>
+              <button onClick={() => setShowAddModal(true)}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white flex items-center gap-2 zen-transition"
+                style={{ background: 'var(--sk)', boxShadow: 'var(--ns)' }}>
                 <Plus className="w-4 h-4" />
                 Add Application
-              </Button>
+              </button>
             </div>
           </div>
 
-          {/* Tabs and Filters */}
           <div className="flex items-center justify-between">
             <Tabs value={activeView} onValueChange={setActiveView}>
-              <TabsList>
-                <TabsTrigger value="kanban">Kanban Board</TabsTrigger>
-                <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                <TabsTrigger value="calendar">Calendar</TabsTrigger>
-                <TabsTrigger value="stats">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
+              <TabsList className="rounded-xl" style={{ background: 'var(--sf)' }}>
+                <TabsTrigger value="kanban" className="rounded-lg text-xs">Board</TabsTrigger>
+                <TabsTrigger value="timeline" className="rounded-lg text-xs">Timeline</TabsTrigger>
+                <TabsTrigger value="calendar" className="rounded-lg text-xs">Calendar</TabsTrigger>
+                <TabsTrigger value="stats" className="rounded-lg text-xs">
+                  <BarChart3 className="w-3.5 h-3.5 mr-1.5" />Analytics
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-
             <ApplicationFilters filters={filters} onFiltersChange={setFilters} />
           </div>
         </div>
@@ -87,41 +81,14 @@ export default function ApplicationTracker() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {activeView === 'kanban' && (
-          <ApplicationKanban 
-            applications={filteredApplications} 
-            onRefetch={refetch}
-            onSelectApp={setSelectedApp}
-          />
-        )}
-        {activeView === 'timeline' && (
-          <ApplicationTimeline applications={filteredApplications} />
-        )}
-        {activeView === 'calendar' && (
-          <ApplicationCalendar applications={filteredApplications} onRefetch={refetch} />
-        )}
-        {activeView === 'stats' && (
-          <ApplicationStats applications={applications} />
-        )}
+        {activeView === 'kanban' && <ApplicationKanban applications={filteredApplications} onRefetch={refetch} onSelectApp={setSelectedApp} />}
+        {activeView === 'timeline' && <ApplicationTimeline applications={filteredApplications} />}
+        {activeView === 'calendar' && <ApplicationCalendar applications={filteredApplications} onRefetch={refetch} />}
+        {activeView === 'stats' && <ApplicationStats applications={applications} />}
       </div>
 
-      {/* Modals */}
-      {showAddModal && (
-        <AddApplicationModal
-          onClose={() => setShowAddModal(false)}
-          onSuccess={() => {
-            refetch();
-            setShowAddModal(false);
-          }}
-        />
-      )}
-      
-      {showEmailGen && (
-        <EmailTemplateGenerator
-          application={selectedApp}
-          onClose={() => setShowEmailGen(false)}
-        />
-      )}
+      {showAddModal && <AddApplicationModal onClose={() => setShowAddModal(false)} onSuccess={() => { refetch(); setShowAddModal(false); }} />}
+      {showEmailGen && <EmailTemplateGenerator application={selectedApp} onClose={() => setShowEmailGen(false)} />}
     </div>
   );
 }
