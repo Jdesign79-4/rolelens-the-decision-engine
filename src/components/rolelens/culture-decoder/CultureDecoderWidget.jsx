@@ -30,8 +30,10 @@ export default function CultureDecoderWidget({ job, jobPostingText, tunerSetting
     const postingContext = jobPostingText ? `Job Posting Text:\n${jobPostingText.substring(0, 2000)}` : 'No job posting text available.';
     const baseContext = `Company: ${companyName}\nPosition: ${jobTitle || 'General'}\n${postingContext}`;
 
-    // Call 1: Red/green flags + verdict
-    const flagsPromise = base44.integrations.Core.InvokeLLM({
+    let flagsResult, dimensionsResult, questionsResult;
+    try {
+      // Call 1: Red/green flags + verdict
+      flagsResult = await base44.integrations.Core.InvokeLLM({
       prompt: `Analyze this job opportunity for cultural red flags and green flags.
 
 ${baseContext}
