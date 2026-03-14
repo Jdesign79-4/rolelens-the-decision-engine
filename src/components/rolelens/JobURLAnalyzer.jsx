@@ -414,25 +414,41 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
   };
 
   const buildJobObject = (analysis, extracted) => {
-    const jobId = analysis.meta.company.toLowerCase().replace(/\s+/g, '_') + '_url_' + Date.now();
+    const companyName = analysis.company_name || extracted.company || 'Unknown Company';
+    const jobId = companyName.toLowerCase().replace(/\s+/g, '_') + '_url_' + Date.now();
     return {
       ...analysis,
       id: jobId,
       meta: {
-        ...analysis.meta,
-        title: extracted.title || analysis.meta.title,
-        company: extracted.company || analysis.meta.company,
-        location: extracted.location || analysis.meta.location,
+        title: analysis.role_analyzed || extracted.title || 'Unknown Role',
+        company: companyName,
+        location: extracted.location || 'Unknown Location',
         date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(analysis.meta.company)}&background=random&size=100`,
+        logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=random&size=100`,
         sourceUrl: url,
         sourcePlatform: detectedPlatform?.name
       },
-      comp: {
-        ...analysis.comp,
-        location: extracted.location || analysis.meta.location
+      // Keep old structures temporarily for backward compatibility with other cards
+      stability: {
+        health: analysis.company_health?.stability_label || 'Unknown',
+        risk_score: (100 - (analysis.dimensions?.job_security?.score || 50)) / 100,
+        runway: analysis.company_health?.funding_stage || 'Unknown',
+        headcount_trend: analysis.company_health?.headcount_trend || 'Unknown'
       },
-      sources: analysis.sources || [],
+      comp: {
+        headline: analysis.dimensions?.compensation?.market_median || 0,
+        real_feel: analysis.dimensions?.compensation?.market_median || 0,
+        range_min: analysis.dimensions?.compensation?.market_low || 0,
+        range_max: analysis.dimensions?.compensation?.market_high || 0,
+        location: extracted.location
+      },
+      culture: {
+        wlb_score: (analysis.dimensions?.job_security?.score || 50) / 10,
+        growth_score: (analysis.dimensions?.career_growth?.score || 50) / 10,
+        stress_level: (analysis.dimensions?.risk_assessment?.score || 50) / 100,
+        type: analysis.dimensions?.market_sentiment?.headline || 'Unknown'
+      },
+      sources: analysis.news || [],
       alternatives: [],
       _extracted: {
         skills: extracted.skills,
