@@ -120,7 +120,7 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
           job_title: analysisResult?.role_analyzed || extractedData.title,
           job_url: url,
           applied_date: new Date().toISOString().split('T')[0],
-          stage: "saved",
+          stage: "Reaching Out",
           company_data_id: companyId
         });
       } catch (err) {
