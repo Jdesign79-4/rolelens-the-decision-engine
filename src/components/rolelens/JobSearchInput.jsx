@@ -44,203 +44,85 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
     const isCompanyOnly = !jobTitle;
 
     try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: isCompanyOnly ? 
-          // Company-only research prompt
-          `Research this company and provide comprehensive data for a job seeker researching potential employers:
-
-Company: "${searchTerm}"
-${city ? `Location Focus: ${city}` : ''}
-
-CRITICAL: This is a COMPANY RESEARCH request, NOT a specific role. Provide general company information.
-
-Provide comprehensive company-level data:
-1. Company Overview & Culture: Overall work environment, employee satisfaction, culture type
-2. Work-Life Balance: General WLB scores from employee reviews (Glassdoor, Blind, etc.)
-3. Growth & Career Development: Opportunities for advancement, learning culture, promotion rates
-4. Compensation Philosophy: Overall pay competitiveness, benefits quality, equity practices
-5. Stability & Financial Health: Funding status, recent layoffs, runway, headcount trends, business health
-6. Employee Reviews: Key themes from Glassdoor, Blind, Comparably
-7. Risks & Concerns: Any red flags about management, culture, or business stability
-8. Growth Metrics: Revenue growth, market position, expansion plans
-
-For compensation data, provide GENERAL company compensation trends (not role-specific):
-- Use Glassdoor/Levels.fyi to understand overall pay ranges at this company
-- Indicate if the company pays above/below/at market rate generally
-- Note any compensation-related complaints or praise from reviews
-
-IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers.`
-          :
-          // Original role-specific prompt
-          `Research this job opportunity and provide comprehensive data for a job seeker decision engine:
-
-Company: "${searchTerm}"
-${hasStructuredData ? `Job Title: ${jobTitle}` : ''}
-
-${hasStructuredData ? `
-USER PROVIDED EXACT JOB DETAILS:
-${jobTitle ? `Job Title: ${jobTitle}` : ''}
-${city ? `Location: ${city}` : ''}
-${salaryMinNum && salaryMaxNum ? `Compensation Range: $${salaryMinNum.toLocaleString()} - $${salaryMaxNum.toLocaleString()}` : ''}
-
-CRITICAL: Use these EXACT values provided by the user.
-` : ''}
-
-CRITICAL - COMPENSATION DATA SOURCES (MUST USE):
-For ALL compensation calculations, you MUST gather data from these specific vetted sources:
-1. MIT Living Wage Calculator (livingwage.mit.edu) - Use this to determine minimum required income based on the job's location and typical family sizes
-2. Bureau of Labor Statistics (bls.gov/oes) - Official US government wage data by occupation code and metropolitan area
-3. Glassdoor AND Levels.fyi - Cross-reference real salary reports for this specific company and role
-4. PayScale - Salary data with cost-of-living adjustments
-
-ALTERNATIVES: Must return exactly 5 similar roles at competing companies, not 3.
-
-Calculate the following based on these sources:
-- range_min: ${salaryMinNum ? `USE EXACT VALUE: ${salaryMinNum}` : 'null (no user input, use external data)'}
-- range_max: ${salaryMaxNum ? `USE EXACT VALUE: ${salaryMaxNum}` : 'null (no user input, use external data)'}
-- headline: ${salaryMinNum && salaryMaxNum ? `MUST BE: (${salaryMinNum} + ${salaryMaxNum}) / 2 = ${(salaryMinNum + salaryMaxNum) / 2}` : 'Total compensation from Levels.fyi/Glassdoor'}
-- base: ${salaryMinNum && salaryMaxNum ? 'Use headline value' : 'Base salary from BLS and salary sites'}
-- equity: Annual equity value from Levels.fyi or estimate based on company type
-- real_feel: Apply MIT Living Wage data and local tax rates to calculate actual purchasing power after taxes and COL adjustments
-- tax_rate: State + Federal effective tax rate for this income level and location (research actual tax brackets)
-- col_adjustment: Use MIT Living Wage and PayScale COL data (1.0 = national average, <1 = expensive, >1 = affordable)
-- leak_label: Describe what reduces purchasing power (e.g., "SF Tax + COL", "NYC Housing Costs")
-
-OTHER DATA to gather from web:
-1. Company stability: funding status, recent layoffs, runway estimates, headcount trends
-2. Culture: work-life balance scores, stress levels, growth opportunities (use glassdoor, blind reviews)
-3. 3 alternative similar roles at competing companies (with their compensation from same sources)
-4. IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vetted publishers
-
-Be specific with numbers. Show your work - reference which source each number comes from.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            meta: {
-              type: "object",
-              properties: {
-                title: { type: "string" },
-                company: { type: "string" },
-                location: { type: "string" },
-                logo_search_term: { type: "string" },
-                website: { type: "string" }
-              },
-              required: ["company"]
-            },
-            stability: {
-              type: "object",
-              properties: {
-                health: { type: "string" },
-                risk_score: { type: "number" },
-                division: { type: "string" },
-                runway: { type: "string" },
-                headcount_trend: { type: "string" },
-                analysis: { type: "string" }
-              }
-            },
-            comp: {
-              type: "object",
-              properties: {
-                headline: { type: "number" },
-                base: { type: "number" },
-                equity: { type: "number" },
-                real_feel: { type: "number" },
-                leak_label: { type: "string" },
-                tax_rate: { type: "number" },
-                col_adjustment: { type: "number" }
-              },
-              required: ["headline"]
-            },
-            culture: {
-              type: "object",
-              properties: {
-                type: { type: "string" },
-                stress_level: { type: "number" },
-                wlb_score: { type: "number" },
-                growth_score: { type: "number" },
-                politics_level: { type: "string" },
-                analysis: { type: "string" }
-              },
-              required: ["type", "stress_level", "wlb_score"]
-            },
-            sources: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  url: { type: "string" },
-                  publisher: { type: "string" }
-                }
-              }
-            }
-          },
-          required: ["meta", "stability", "comp", "culture"]
-        }
-      });
+      const inputStr = \`Company: \${searchTerm}\${jobTitle ? \`, Role: \${jobTitle}\` : ''}\${city ? \`, Location: \${city}\` : ''}\`;
+      const analysisResult = await analyzeJobOpportunity(inputStr, jobPostingText);
 
       // Validate result structure
-      if (!result) {
+      if (!analysisResult) {
         throw new Error('No response from AI');
       }
-      if (!result.meta) {
-        throw new Error('Response missing meta data');
-      }
-      if (!result.meta.company) {
-        throw new Error('Response missing company name');
-      }
-      
-      // Provide fallbacks for optional fields
-      if (!result.stability) {
-        result.stability = { health: "Unknown", risk_score: 0.5, division: "N/A", runway: "N/A", headcount_trend: "N/A" };
-      }
-      if (!result.comp) {
-        result.comp = { headline: 0, base: 0, equity: 0 };
-      }
-      if (!result.culture) {
-        result.culture = { type: "Unknown", stress_level: 0.5, wlb_score: 5, growth_score: 5, politics_level: "Unknown" };
-      }
 
-      // Sanitize stability fields — LLM often returns long prose instead of short values
-      if (result.stability) {
-        const sanitizeShort = (val, maxLen = 40) => {
-          if (!val || typeof val !== 'string') return 'N/A';
-          let clean = val.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/g, '').replace(/\(\s*\)/g, '').trim();
-          if (clean.length > maxLen) return clean.substring(0, maxLen).trim() + '…';
-          return clean || 'N/A';
-        };
-        result.stability.runway = sanitizeShort(result.stability.runway);
-        result.stability.headcount_trend = sanitizeShort(result.stability.headcount_trend);
-        result.stability.division = sanitizeShort(result.stability.division);
-      }
-
-      // Sanitize comp — ensure headline and real_feel are realistic salary numbers
-      if (result.comp) {
-        if (typeof result.comp.headline === 'number' && result.comp.headline < 1000) result.comp.headline = 0;
-        if (typeof result.comp.real_feel === 'number' && result.comp.real_feel < 1000) result.comp.real_feel = 0;
-        // Sanitize leak_label
-        if (result.comp.leak_label && typeof result.comp.leak_label === 'string') {
-          let lbl = result.comp.leak_label.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/g, '').replace(/\(\s*\)/g, '').trim();
-          if (lbl.length > 50) lbl = lbl.substring(0, 50).trim() + '…';
-          result.comp.leak_label = lbl;
+      // Save to entities
+      let companyId = null;
+      try {
+        if (analysisResult?.company_name) {
+          const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: analysisResult.company_name });
+          if (existingCompanies.length > 0) {
+            companyId = existingCompanies[0].id;
+            await base44.entities.PublicCompanyData.update(companyId, {
+              job_seeker_intelligence: analysisResult,
+              financial_health_score: analysisResult.company_health?.financial_health_score,
+              last_updated: new Date().toISOString()
+            });
+          } else {
+            const newCompany = await base44.entities.PublicCompanyData.create({
+              company_name: analysisResult.company_name,
+              is_public: analysisResult.company_health?.funding_stage === 'public',
+              job_seeker_intelligence: analysisResult,
+              financial_health_score: analysisResult.company_health?.financial_health_score,
+              last_updated: new Date().toISOString()
+            });
+            companyId = newCompany.id;
+          }
         }
+
+        await base44.entities.JobApplication.create({
+          company_name: analysisResult?.company_name || searchTerm,
+          job_title: analysisResult?.role_analyzed || jobTitle || "Unknown Role",
+          job_url: "",
+          applied_date: new Date().toISOString().split('T')[0],
+          stage: "saved",
+          company_data_id: companyId
+        });
+      } catch (err) {
+        console.warn("Failed to save entities:", err);
       }
 
-      // Generate a unique ID
-      const jobId = result.meta.company.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+      const companyName = analysisResult.company_name || searchTerm || 'Unknown Company';
+      const jobId = companyName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
 
-      // Add logo URL (using company initial as fallback concept)
+      // Build fallback structure for existing components
       const processedJob = {
-        ...result,
+        ...analysisResult,
         id: jobId,
         meta: {
-          ...result.meta,
+          title: analysisResult.role_analyzed || jobTitle || 'Company Research',
+          company: companyName,
+          location: city || 'Unknown Location',
           date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-          logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(result.meta.company)}&background=random&size=100`
+          logo: \`https://ui-avatars.com/api/?name=\${encodeURIComponent(companyName)}&background=random&size=100\`
         },
-        sources: result.sources || [],
-        alternatives: [] // will be populated below
+        stability: {
+          health: analysisResult.company_health?.stability_label || 'Unknown',
+          risk_score: (100 - (analysisResult.dimensions?.job_security?.score || 50)) / 100,
+          runway: analysisResult.company_health?.funding_stage || 'Unknown',
+          headcount_trend: analysisResult.company_health?.headcount_trend || 'Unknown'
+        },
+        comp: {
+          headline: analysisResult.dimensions?.compensation?.market_median || 0,
+          real_feel: analysisResult.dimensions?.compensation?.market_median || 0,
+          range_min: analysisResult.dimensions?.compensation?.market_low || 0,
+          range_max: analysisResult.dimensions?.compensation?.market_high || 0,
+          location: city
+        },
+        culture: {
+          wlb_score: (analysisResult.dimensions?.job_security?.score || 50) / 10,
+          growth_score: (analysisResult.dimensions?.career_growth?.score || 50) / 10,
+          stress_level: (analysisResult.dimensions?.risk_assessment?.score || 50) / 100,
+          type: analysisResult.dimensions?.market_sentiment?.headline || 'Unknown'
+        },
+        sources: analysisResult.news || [],
+        alternatives: []
       };
 
       // Generate smart alternatives in parallel (non-blocking for main card display)
