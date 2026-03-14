@@ -1165,34 +1165,41 @@ function RoleLensContent() {
                 </button>
                 <button
                   onClick={() => setShowInterviewPrep(true)}
-                  className="neumorphic-feature-btn" style={{ color: '#3A4868' }}
+                  disabled={!currentJob}
+                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#3A4868' }}
                 >
                   Interview Prep
                 </button>
                 <button
                   onClick={() => setShowApplicationStrategy(true)}
-                  className="neumorphic-feature-btn" style={{ color: '#4A6741' }}
+                  disabled={!currentJob}
+                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#4A6741' }}
                 >
                   Application Plan
                 </button>
                 <button
                   onClick={() => setShowSalaryNegotiation(true)}
-                  className="neumorphic-feature-btn" style={{ color: '#B07535' }}
+                  disabled={!currentJob}
+                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#B07535' }}
                 >
                   Negotiate Salary
                 </button>
                 <button
                   onClick={() => setShowMockInterview(true)}
-                  className="neumorphic-feature-btn" style={{ color: '#C0706A' }}
+                  disabled={!currentJob}
+                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#C0706A' }}
                 >
                   🎤 Mock Interview
                 </button>
                 <button
                   onClick={() => {
-                    setComparisonJobIds([activeJob]);
-                    setShowComparison(true);
+                    if (activeJob) {
+                      setComparisonJobIds([activeJob]);
+                      setShowComparison(true);
+                    }
                   }}
-                  className="neumorphic-feature-btn" style={{ color: '#3A4868' }}
+                  disabled={!currentJob}
+                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#3A4868' }}
                 >
                   Compare Companies
                 </button>
