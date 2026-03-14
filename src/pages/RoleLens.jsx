@@ -942,7 +942,7 @@ function RoleLensContent() {
                 <AstrolabePanel
                   settings={tunerSettings}
                   onSettingsChange={setTunerSettings}
-                  isConnecting={isConnecting}
+                  isConnecting={isConnecting || isSearching}
                 />
               </motion.div>
             </motion.div>
