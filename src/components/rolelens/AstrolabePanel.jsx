@@ -337,16 +337,16 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
       </motion.div>
 
       {/* Tuner Sliders */}
-      <div className="flex-1 space-y-8 mt-4">
+      <div className="flex-1 mt-4">
         {/* Risk Appetite */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-teal-600" />
-              <span className="text-sm font-medium text-slate-700">Risk Appetite</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Risk Appetite</span>
             </div>
             <div className="flex items-center gap-2">
-              <Sword className="w-4 h-4 text-terracotta-500" style={{ color: '#E9967A' }} />
+              <Sword className="w-4 h-4" style={{ color: '#E9967A' }} />
             </div>
           </div>
           <Slider
@@ -355,22 +355,24 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
+            thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4, 0 0 0 2.5px #4A6741', border: 'none', cursor: 'pointer' }}
           />
-          <div className="flex justify-between text-xs text-slate-400">
+          <div className="flex justify-between mt-3" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#A89E9A' }}>
             <span>Stability Seeker</span>
             <span>Growth Hunter</span>
           </div>
         </div>
 
         {/* Life Anchors */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-slate-500" />
-              <span className="text-sm font-medium text-slate-700">Life Anchors</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Life Anchors</span>
             </div>
             <div className="flex items-center gap-2">
-              <Anchor className="w-4 h-4 text-sage-600" style={{ color: '#8FBC8F' }} />
+              <Anchor className="w-4 h-4" style={{ color: '#8FBC8F' }} />
             </div>
           </div>
           <Slider
@@ -379,19 +381,21 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
+            thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4, 0 0 0 2.5px #C0706A', border: 'none', cursor: 'pointer' }}
           />
-          <div className="flex justify-between text-xs text-slate-400">
+          <div className="flex justify-between mt-3" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#A89E9A' }}>
             <span>Nomad</span>
             <span>Provider</span>
           </div>
         </div>
 
         {/* Career Stage */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
+        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Sprout className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium text-slate-700">Career Stage</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Career Stage</span>
             </div>
             <div className="flex items-center gap-2">
               <TreeDeciduous className="w-4 h-4 text-green-700" />
@@ -403,19 +407,32 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
+            thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4, 0 0 0 2.5px #3A4868', border: 'none', cursor: 'pointer' }}
           />
-          <div className="flex justify-between text-xs text-slate-400">
+          
+          {/* Career Stage display */}
+          <div className="mt-4 mb-2">
+            <div style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '20px', fontWeight: 500, color: '#3A4868', textAlign: 'center', display: 'block' }}>
+              {settings.careerStage < 0.2 ? 'Seedling' : settings.careerStage < 0.4 ? 'Sapling' : settings.careerStage < 0.6 ? 'Grove' : settings.careerStage < 0.8 ? 'Oak' : 'Elder'}
+            </div>
+            <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#A89E9A', textAlign: 'center' }}>
+              {settings.careerStage < 0.2 ? 'ENTRY LEVEL' : settings.careerStage < 0.4 ? 'EARLY CAREER' : settings.careerStage < 0.6 ? 'MID-LEVEL' : settings.careerStage < 0.8 ? 'SENIOR' : 'EXECUTIVE / LEADERSHIP'}
+            </div>
+          </div>
+
+          <div className="flex justify-between mt-3" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#A89E9A' }}>
             <span>Seedling</span>
-            <span>Oak</span>
+            <span>Elder</span>
           </div>
         </div>
 
         {/* Honest Self-Reflection */}
-        <div className="space-y-3 pt-4 border-t border-slate-200">
-          <div className="flex items-center justify-between">
+        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-indigo-500" />
-              <span className="text-sm font-medium text-slate-700">Honest Self-Reflection</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Honest Self-Reflection</span>
             </div>
           </div>
           <Slider
@@ -424,12 +441,14 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
+            thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4', border: 'none', cursor: 'pointer' }}
           />
-          <div className="flex justify-between text-xs text-slate-400">
+          <div className="flex justify-between mt-3" style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#A89E9A' }}>
             <span>Underqualified</span>
             <span>Exceptional Fit</span>
           </div>
-          <p className="text-xs text-slate-500 italic">
+          <p className="mt-2" style={{ fontSize: '10px', fontStyle: 'italic', color: '#786F6A' }}>
             Your honest assessment of skill match and experience level for this role
           </p>
         </div>
