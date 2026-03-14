@@ -188,9 +188,15 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           style={{ background: '#3A4868', color: '#FFFFFF', border: 'none', boxShadow: '4px 4px 14px rgba(58, 72, 104, 0.35), -2px -2px 8px rgba(255,255,255,0.5)', borderRadius: '12px' }}
         >
           {isLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Analyzing...
+            </>
           ) : (
-            <Sparkles className="w-4 h-4" />
+            <>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Analyze
+            </>
           )}
         </Button>
       </div>
