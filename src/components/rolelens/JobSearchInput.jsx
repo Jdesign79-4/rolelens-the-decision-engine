@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { Input } from "@/components/ui/input";
