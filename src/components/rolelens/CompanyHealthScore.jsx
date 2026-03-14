@@ -85,13 +85,13 @@ Be specific and cite recent events or data points when possible. Focus on inform
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}
-      className="p-6 transition-shadow"
-      style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
+      className="transition-shadow"
+      style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #EBEeF3 0%, #E4EAF0 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
     >
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">AI Company Health Monitor</p>
-          <h3 className="text-lg font-semibold text-slate-800">{company}</h3>
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>AI Company Health Monitor</p>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>{company}</h3>
           {lastUpdated && (
             <p className="text-xs text-slate-400 mt-1">
               Updated {lastUpdated.toLocaleTimeString()}
