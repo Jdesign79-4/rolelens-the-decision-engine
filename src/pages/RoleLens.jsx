@@ -1134,7 +1134,7 @@ function RoleLensContent() {
             )}
 
             {/* Data Source Disclaimer — always visible */}
-            <div className="mb-6 p-4 rounded-[10px]" style={{ background: 'rgba(176, 117, 53, 0.08)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
+            <div className="mb-[18px] p-4 rounded-[10px]" style={{ background: 'linear-gradient(135deg, rgba(176,117,53,0.05) 0%, rgba(176,117,53,0.10) 100%)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
               <p className="text-xs text-amber-900">
                 <span className="font-bold">⚠️ Important — AI-Generated Estimates:</span> All data shown (salary ranges, company metrics, culture scores, health scores, alternatives) 
                 is <strong>estimated by AI</strong> from web searches and public information. These are not verified facts. 
