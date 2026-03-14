@@ -1211,7 +1211,7 @@ function RoleLensContent() {
             </div>
 
             {/* Company Research Notice */}
-            {currentJob.isCompanyOnly && (
+            {currentJob?.isCompanyOnly && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
