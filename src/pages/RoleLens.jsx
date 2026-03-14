@@ -1145,7 +1145,7 @@ function RoleLensContent() {
             </div>
 
             {/* Widget Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4" style={{ background: '#F0EAE1', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
+            <div className="flex flex-wrap items-center justify-between gap-3 p-[20px_22px] mb-[18px]" style={{ background: 'linear-gradient(180deg, #F5F1EC 0%, #EDE7DE 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowSavedLists(true)}
