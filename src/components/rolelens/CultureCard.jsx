@@ -426,14 +426,14 @@ export default function CultureCard({ data, tunerSettings, postingHealthScore })
   const groveHealth = getGroveHealth();
 
   return (
-    <div className="p-6 transition-shadow" style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
+    <div className="transition-shadow" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F0EAE1 0%, #E7EAF0 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Company Fit</p>
-          <h3 className="text-lg font-semibold text-slate-800">{data.type}</h3>
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>Company Fit</p>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>{data.type}</h3>
         </div>
-        <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-400 to-green-500">
-          <Heart className="w-5 h-5 text-white" />
+        <div className="p-2 rounded-xl" style={{ background: 'rgba(58,72,104,0.15)' }}>
+          <Heart className="w-5 h-5" style={{ color: '#3A4868' }} />
         </div>
       </div>
 
