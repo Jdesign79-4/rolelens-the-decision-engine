@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
 import { generateAlternatives } from './alternativesEngine';
+import { analyzeJobOpportunity } from './intelligenceEngine';
 
 export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoading, tunerSettings }) {
   const [query, setQuery] = useState('');
