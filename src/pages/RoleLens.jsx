@@ -969,6 +969,53 @@ function RoleLensContent() {
         <main className="flex-1 p-4 lg:p-8 xl:p-12 bg-[#F0EAE1] dark:bg-transparent">
           <div className="max-w-5xl mx-auto">
 
+            {/* Search Mode Toggle */}
+            <div className="flex items-center gap-2 mb-3">
+              <button
+                onClick={() => setSearchMode('url')}
+                className="px-4 py-2 text-sm font-medium transition-all"
+                style={
+                  searchMode === 'url'
+                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
+                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
+                }
+              >
+                🔗 Paste Job URL
+              </button>
+              <button
+                onClick={() => setSearchMode('manual')}
+                className="px-4 py-2 text-sm font-medium transition-all"
+                style={
+                  searchMode === 'manual'
+                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
+                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
+                }
+              >
+                ✏️ Search Manually
+              </button>
+            </div>
+
+            {/* URL Analyzer */}
+            {searchMode === 'url' && (
+              <JobURLAnalyzer
+                onJobDataLoaded={handleJobDataLoaded}
+                isLoading={isSearching}
+                setIsLoading={setIsSearching}
+                tunerSettings={tunerSettings}
+                onFallbackToManual={() => setSearchMode('manual')}
+              />
+            )}
+
+            {/* Manual Search Input */}
+            {searchMode === 'manual' && (
+              <JobSearchInput 
+                onJobDataLoaded={handleJobDataLoaded}
+                isLoading={isSearching}
+                setIsLoading={setIsSearching}
+                tunerSettings={tunerSettings}
+              />
+            )}
+
             {/* Job Header — pinned to top */}
             <AnimatePresence mode="wait">
               <motion.div
@@ -1095,53 +1142,6 @@ function RoleLensContent() {
                 )}
               </motion.div>
             </AnimatePresence>
-
-            {/* Search Mode Toggle */}
-            <div className="flex items-center gap-2 mb-3">
-              <button
-                onClick={() => setSearchMode('url')}
-                className="px-4 py-2 text-sm font-medium transition-all"
-                style={
-                  searchMode === 'url'
-                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
-                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
-                }
-              >
-                🔗 Paste Job URL
-              </button>
-              <button
-                onClick={() => setSearchMode('manual')}
-                className="px-4 py-2 text-sm font-medium transition-all"
-                style={
-                  searchMode === 'manual'
-                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
-                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
-                }
-              >
-                ✏️ Search Manually
-              </button>
-            </div>
-
-            {/* URL Analyzer */}
-            {searchMode === 'url' && (
-              <JobURLAnalyzer
-                onJobDataLoaded={handleJobDataLoaded}
-                isLoading={isSearching}
-                setIsLoading={setIsSearching}
-                tunerSettings={tunerSettings}
-                onFallbackToManual={() => setSearchMode('manual')}
-              />
-            )}
-
-            {/* Manual Search Input */}
-            {searchMode === 'manual' && (
-              <JobSearchInput 
-                onJobDataLoaded={handleJobDataLoaded}
-                isLoading={isSearching}
-                setIsLoading={setIsSearching}
-                tunerSettings={tunerSettings}
-              />
-            )}
 
             {/* Data Source Disclaimer — always visible */}
             <div className="mb-[18px] p-4 rounded-[10px]" style={{ background: 'linear-gradient(135deg, rgba(176,117,53,0.05) 0%, rgba(176,117,53,0.10) 100%)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
