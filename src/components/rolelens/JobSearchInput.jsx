@@ -100,7 +100,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           company: companyName,
           location: city || 'Unknown Location',
           date: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-          logo: \`https://ui-avatars.com/api/?name=\${encodeURIComponent(companyName)}&background=random&size=100\`
+          logo: `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=random&size=100`
         },
         stability: {
           health: analysisResult.company_health?.stability_label || 'Unknown',
