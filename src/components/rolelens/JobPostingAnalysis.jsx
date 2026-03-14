@@ -148,16 +148,16 @@ Calculate an overall Posting Health Score (0-100):
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 transition-shadow"
-      style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
+      className="transition-shadow"
+      style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F0EAE1 0%, #F2EAE9 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
     >
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Culture Intelligence</p>
-          <h3 className="text-lg font-semibold text-slate-800">Posting Health Analysis</h3>
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>Culture Intelligence</p>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>Posting Health Analysis</h3>
         </div>
-        <div className="p-2 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500">
-          <Shield className="w-5 h-5 text-white" />
+        <div className="p-2 rounded-xl" style={{ background: 'rgba(192,112,106,0.12)' }}>
+          <Shield className="w-5 h-5" style={{ color: '#C0706A' }} />
         </div>
       </div>
 
