@@ -412,7 +412,7 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
   const analyzing = isLoading && currentStep >= 0;
 
   return (
-    <div className="mb-6">
+    <div className="mb-[18px]">
       {/* URL Input */}
       <div className="relative">
         <div className="flex gap-2">
@@ -425,7 +425,7 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
               onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
               placeholder="Paste job URL from LinkedIn, Indeed, Glassdoor..."
               className="pl-10 pr-4 py-5 outline-none focus:ring-0"
-              style={{ background: '#E9E3DA', borderRadius: '12px', border: 'none', boxShadow: 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4' }}
+              style={{ background: 'linear-gradient(135deg, #F0EAE1 0%, #EBEeF2 100%)', borderRadius: '12px', border: 'none', boxShadow: 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4' }}
               disabled={isLoading}
             />
             {/* Platform badge */}
