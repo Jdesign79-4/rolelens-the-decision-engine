@@ -1224,6 +1224,8 @@ function RoleLensContent() {
               </motion.div>
             )}
 
+            <BambooGroveStability data={currentJob.stability} />
+
             {/* Intelligence Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
               {visibleWidgets.includes('stability') && (
