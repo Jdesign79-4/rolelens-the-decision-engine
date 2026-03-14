@@ -14,6 +14,23 @@ export default function Layout({ children }) {
         h1, h2, h3 {
           font-family: "Cormorant Garamond", serif !important;
         }
+
+        .neumorphic-feature-btn {
+          background: #F0EAE1;
+          border: none;
+          box-shadow: 3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 8px 16px;
+          transition: all 0.2s ease;
+        }
+        .neumorphic-feature-btn:hover {
+          box-shadow: 6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4;
+        }
+        .neumorphic-feature-btn:active {
+          box-shadow: inset 3px 3px 8px #C2BCB4, inset -2px -2px 6px #FEFAF4;
+        }
       `}</style>
       {children}
     </>

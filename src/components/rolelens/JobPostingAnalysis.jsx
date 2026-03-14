@@ -148,7 +148,8 @@ Calculate an overall Posting Health Score (0-100):
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
+      className="p-6 transition-shadow"
+      style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
     >
       <div className="flex items-start justify-between mb-6">
         <div>

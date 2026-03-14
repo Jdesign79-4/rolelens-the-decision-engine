@@ -70,7 +70,7 @@ export default function StabilityCard({ data, tunerSettings }) {
   const InsightIcon = insight.icon;
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+    <div className="p-6 transition-shadow" style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
       <div className="flex items-start justify-between mb-6">
          <div>
            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Job Security Rating</p>

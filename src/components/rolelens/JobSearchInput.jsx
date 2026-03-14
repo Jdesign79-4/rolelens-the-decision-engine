@@ -286,7 +286,8 @@ Be specific with numbers. Show your work - reference which source each number co
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Enter company name... e.g. 'Stripe', 'Google', 'Tesla'"
-            className="pl-10 pr-4 py-5 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm focus:border-teal-400 focus:ring-teal-400/20"
+            className="pl-10 pr-4 py-5 outline-none focus:ring-0"
+            style={{ background: '#E9E3DA', borderRadius: '12px', border: 'none', boxShadow: 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4' }}
             disabled={isLoading}
           />
         </div>
@@ -300,7 +301,8 @@ Be specific with numbers. Show your work - reference which source each number co
         <Button
           onClick={handleSearch}
           disabled={isLoading || !query.trim()}
-          className="px-6 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-lg shadow-teal-500/20"
+          className="px-6 font-bold"
+          style={{ background: '#3A4868', color: '#FFFFFF', border: 'none', boxShadow: '4px 4px 14px rgba(58, 72, 104, 0.35), -2px -2px 8px rgba(255,255,255,0.5)', borderRadius: '12px' }}
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

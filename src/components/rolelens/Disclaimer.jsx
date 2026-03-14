@@ -3,7 +3,7 @@ import { AlertTriangle, ExternalLink } from 'lucide-react';
 
 export default function Disclaimer() {
   return (
-    <div className="mt-8 p-4 rounded-2xl bg-amber-50/50 border border-amber-200/50">
+    <div className="mt-8 p-4 rounded-[10px]" style={{ background: 'rgba(176, 117, 53, 0.08)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
       <div className="flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
         <div className="space-y-2">

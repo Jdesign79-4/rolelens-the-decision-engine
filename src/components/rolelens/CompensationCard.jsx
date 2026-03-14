@@ -197,7 +197,7 @@ Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to me
   const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+    <div className="p-6 transition-shadow" style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>

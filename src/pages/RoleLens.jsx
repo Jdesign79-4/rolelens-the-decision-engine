@@ -977,7 +977,7 @@ function RoleLensContent() {
                 transition={{ duration: 0.4 }}
                 className="mb-6"
               >
-                <div className="flex items-start gap-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex items-start gap-4 p-4" style={{ background: '#F0EAE1', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden shadow-sm flex-shrink-0">
                     <img src={currentJob.meta.logo} alt="" className="w-full h-full object-cover" />
                   </div>
@@ -1090,21 +1090,23 @@ function RoleLensContent() {
             <div className="flex items-center gap-2 mb-3">
               <button
                 onClick={() => setSearchMode('url')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                className="px-4 py-2 text-sm font-medium transition-all"
+                style={
                   searchMode === 'url'
-                    ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300'
-                }`}
+                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
+                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
+                }
               >
                 🔗 Paste Job URL
               </button>
               <button
                 onClick={() => setSearchMode('manual')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                className="px-4 py-2 text-sm font-medium transition-all"
+                style={
                   searchMode === 'manual'
-                    ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-300'
-                }`}
+                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
+                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
+                }
               >
                 ✏️ Search Manually
               </button>
@@ -1132,7 +1134,7 @@ function RoleLensContent() {
             )}
 
             {/* Data Source Disclaimer — always visible */}
-            <div className="mb-6 p-4 rounded-xl bg-amber-50 border-2 border-amber-300">
+            <div className="mb-6 p-4 rounded-[10px]" style={{ background: 'rgba(176, 117, 53, 0.08)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
               <p className="text-xs text-amber-900">
                 <span className="font-bold">⚠️ Important — AI-Generated Estimates:</span> All data shown (salary ranges, company metrics, culture scores, health scores, alternatives) 
                 is <strong>estimated by AI</strong> from web searches and public information. These are not verified facts. 
@@ -1143,35 +1145,35 @@ function RoleLensContent() {
             </div>
 
             {/* Widget Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4 bg-white rounded-2xl border border-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-4" style={{ background: '#F0EAE1', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowSavedLists(true)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium text-sm hover:from-amber-600 hover:to-orange-600 transition-all"
+                  className="neumorphic-feature-btn" style={{ color: '#C0706A' }}
                 >
                   Saved Lists
                 </button>
                 <button
                   onClick={() => setShowInterviewPrep(true)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-medium text-sm hover:from-indigo-700 hover:to-blue-700 transition-all"
+                  className="neumorphic-feature-btn" style={{ color: '#3A4868' }}
                 >
                   Interview Prep
                 </button>
                 <button
                   onClick={() => setShowApplicationStrategy(true)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 text-white font-medium text-sm hover:from-rose-600 hover:to-pink-700 transition-all"
+                  className="neumorphic-feature-btn" style={{ color: '#4A6741' }}
                 >
                   Application Plan
                 </button>
                 <button
                   onClick={() => setShowSalaryNegotiation(true)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium text-sm hover:from-emerald-600 hover:to-teal-700 transition-all"
+                  className="neumorphic-feature-btn" style={{ color: '#B07535' }}
                 >
                   Negotiate Salary
                 </button>
                 <button
                   onClick={() => setShowMockInterview(true)}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-600 text-white font-medium text-sm hover:from-fuchsia-600 hover:to-pink-700 transition-all"
+                  className="neumorphic-feature-btn" style={{ color: '#C0706A' }}
                 >
                   🎤 Mock Interview
                 </button>
@@ -1180,7 +1182,7 @@ function RoleLensContent() {
                     setComparisonJobIds([activeJob]);
                     setShowComparison(true);
                   }}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium text-sm hover:from-violet-700 hover:to-purple-700 transition-all"
+                  className="neumorphic-feature-btn" style={{ color: '#3A4868' }}
                 >
                   Compare Companies
                 </button>
@@ -1368,7 +1370,8 @@ function RoleLensContent() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-200"
+                className="mt-6 p-4"
+                style={{ background: '#F0EAE1', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}
               >
                 <p className="text-sm font-medium text-slate-600 mb-3">Hidden Widgets - Click to Show:</p>
                 <div className="flex flex-wrap gap-2">
