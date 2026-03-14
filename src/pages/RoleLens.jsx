@@ -727,7 +727,7 @@ export default function RoleLens() {
 }
 
 function RoleLensContent() {
-  const [activeJob, setActiveJob] = useState("zentree");
+  const [activeJob, setActiveJob] = useState(null);
   const [customJobs, setCustomJobs] = useState({});
   const [tunerSettings, setTunerSettings] = useState({
     riskAppetite: 0.3,
