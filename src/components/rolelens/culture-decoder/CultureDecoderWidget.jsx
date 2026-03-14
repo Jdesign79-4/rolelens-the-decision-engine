@@ -87,8 +87,8 @@ Also provide: overall culture health score 0-100, culture type label, verdict, 3
       }
     });
 
-    // Call 2: Cultural dimensions
-    const dimensionsPromise = base44.integrations.Core.InvokeLLM({
+      // Call 2: Cultural dimensions
+      dimensionsResult = await base44.integrations.Core.InvokeLLM({
       prompt: `Score this company across 10 cultural dimensions (0-100 each) based on available information.
 
 ${baseContext}
@@ -127,8 +127,8 @@ For each: name, score 0-100, level (Excellent/Good/Moderate/Poor/Severe), brief 
       }
     });
 
-    // Call 3: Contradictions + interview questions
-    const questionsPromise = base44.integrations.Core.InvokeLLM({
+      // Call 3: Contradictions + interview questions
+      questionsResult = await base44.integrations.Core.InvokeLLM({
       prompt: `Analyze contradictions and generate interview questions for this opportunity.
 
 ${baseContext}
@@ -175,23 +175,21 @@ Also provide confidence level (High/Medium/Low) and reason.`,
       }
     });
 
-    const [flagsResult, dimensionsResult, questionsResult] = await Promise.all([
-      flagsPromise,
-      dimensionsPromise,
-      questionsPromise
-    ]);
-
-    const merged = {
-      ...flagsResult,
-      dimensions: dimensionsResult?.dimensions || [],
-      contradictions: questionsResult?.contradictions || [],
-      interviewQuestions: questionsResult?.interviewQuestions || [],
-      confidenceLevel: questionsResult?.confidenceLevel || 'Medium',
-      confidenceReason: questionsResult?.confidenceReason || 'Based on available public data'
-    };
-    setAnalysis(merged);
-    onAnalysisComplete?.(merged);
-    setLoading(false);
+      const merged = {
+        ...flagsResult,
+        dimensions: dimensionsResult?.dimensions || [],
+        contradictions: questionsResult?.contradictions || [],
+        interviewQuestions: questionsResult?.interviewQuestions || [],
+        confidenceLevel: questionsResult?.confidenceLevel || 'Medium',
+        confidenceReason: questionsResult?.confidenceReason || 'Based on available public data'
+      };
+      setAnalysis(merged);
+      onAnalysisComplete?.(merged);
+    } catch (error) {
+      console.error("Culture analysis failed:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!companyName) return null;
