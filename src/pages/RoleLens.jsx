@@ -975,7 +975,7 @@ function RoleLensContent() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4 }}
-                className="mb-6"
+                className="mb-[18px]"
               >
                 <div className="flex items-start gap-4" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F5F0EB 0%, #F2E8E7 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden shadow-sm flex-shrink-0">
