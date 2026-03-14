@@ -277,7 +277,7 @@ Be specific with numbers. Show your work - reference which source each number co
   };
 
   return (
-    <div className="mb-6">
+    <div className="mb-[18px]">
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -287,7 +287,7 @@ Be specific with numbers. Show your work - reference which source each number co
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Enter company name... e.g. 'Stripe', 'Google', 'Tesla'"
             className="pl-10 pr-4 py-5 outline-none focus:ring-0"
-            style={{ background: '#E9E3DA', borderRadius: '12px', border: 'none', boxShadow: 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4' }}
+            style={{ background: 'linear-gradient(135deg, #F0EAE1 0%, #EBEeF2 100%)', borderRadius: '12px', border: 'none', boxShadow: 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4' }}
             disabled={isLoading}
           />
         </div>
