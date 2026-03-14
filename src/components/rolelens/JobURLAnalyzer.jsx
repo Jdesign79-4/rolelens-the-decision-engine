@@ -142,7 +142,7 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         company_name: parsedJSON.company_name || companyName,
         job_title: parsedJSON.role_analyzed || jobTitle,
         job_url: url,
-        stage: "saved",
+        stage: "Reaching Out",
         job_seeker_intelligence: parsedJSON,
         company_data_id: companyId
       });
