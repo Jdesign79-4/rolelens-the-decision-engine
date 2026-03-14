@@ -1337,17 +1337,19 @@ function RoleLensContent() {
             )}
 
             {/* Job Feedback Widget */}
-            <div className="mt-6">
-              <JobFeedback 
-                job={currentJob} 
-                tunerSettings={tunerSettings}
-                onFeedbackSubmitted={() => {
-                  // Force re-render of alternatives to show updated matches
-                  setIsConnecting(true);
-                  setTimeout(() => setIsConnecting(false), 400);
-                }}
-              />
-            </div>
+            {currentJob && (
+              <div className="mt-6">
+                <JobFeedback 
+                  job={currentJob} 
+                  tunerSettings={tunerSettings}
+                  onFeedbackSubmitted={() => {
+                    // Force re-render of alternatives to show updated matches
+                    setIsConnecting(true);
+                    setTimeout(() => setIsConnecting(false), 400);
+                  }}
+                />
+              </div>
+            )}
 
             {/* AI Collaboration Opportunity Widget */}
             {currentJob?.meta?.company && (
@@ -1382,15 +1384,17 @@ function RoleLensContent() {
             )}
 
             {/* Culture Decoder — comprehensive culture intelligence */}
-            <CultureDecoderWidget
-              job={currentJob}
-              jobPostingText={jobPostingText}
-              tunerSettings={tunerSettings}
-              onAnalysisComplete={setCultureDecoderData}
-            />
+            {currentJob && (
+              <CultureDecoderWidget
+                job={currentJob}
+                jobPostingText={jobPostingText}
+                tunerSettings={tunerSettings}
+                onAnalysisComplete={setCultureDecoderData}
+              />
+            )}
 
             {/* Job Posting Analysis - Red/Green Flags (only for specific roles) */}
-            {!currentJob.isCompanyOnly && (
+            {currentJob && !currentJob.isCompanyOnly && (
               <JobPostingAnalysis 
                 jobPostingText={jobPostingText}
                 companyName={currentJob.meta.company}
@@ -1400,93 +1404,103 @@ function RoleLensContent() {
             )}
 
             {/* AI Strategic Insights */}
-            <div className="mt-6">
-              <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
-            </div>
+            {currentJob && (
+              <div className="mt-6">
+                <AIInsightsPanel currentJob={currentJob} tunerSettings={tunerSettings} />
+              </div>
+            )}
 
             {/* Company Health Score */}
-            <div className="mt-6">
-              <CompanyHealthScore company={currentJob.meta.company} />
-            </div>
+            {currentJob?.meta?.company && (
+              <div className="mt-6">
+                <CompanyHealthScore company={currentJob.meta.company} />
+              </div>
+            )}
 
             {/* Benefits Hub */}
-            <div className="mt-6">
-              <BenefitsHub benefits={currentJob.benefits} tunerSettings={tunerSettings} />
-            </div>
+            {currentJob && (
+              <div className="mt-6">
+                <BenefitsHub benefits={currentJob.benefits} tunerSettings={tunerSettings} />
+              </div>
+            )}
 
             {/* Meditation Panel - Vetted Sources */}
-            <MeditationPanel sources={currentJob.sources} />
+            {currentJob && <MeditationPanel sources={currentJob.sources} />}
 
             {/* LinkedIn Networking */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-6"
-            >
-              <a
-                href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(currentJob.meta.company + ' operations leader')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block p-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all group"
+            {currentJob?.meta?.company && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-6"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-white/10">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                      </svg>
+                <a
+                  href={`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(currentJob.meta.company + ' operations leader')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all group"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-white/10">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Network with Operations Leaders</p>
+                        <p className="text-sm text-blue-100">Connect on LinkedIn at {currentJob.meta.company}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold">Network with Operations Leaders</p>
-                      <p className="text-sm text-blue-100">Connect on LinkedIn at {currentJob.meta.company}</p>
-                    </div>
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                   </div>
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </div>
-              </a>
-            </motion.div>
+                </a>
+              </motion.div>
+            )}
 
             {/* True Fit Score */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-8 p-6 rounded-3xl bg-gradient-to-r from-slate-800 to-slate-900 text-white"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm font-medium mb-1">Your True Fit Score</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">
-                      {calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)}
-                    </span>
-                    <span className="text-slate-400 text-lg">/100</span>
+            {currentJob && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-8 p-6 rounded-3xl bg-gradient-to-r from-slate-800 to-slate-900 text-white"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm font-medium mb-1">Your True Fit Score</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold">
+                        {calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)}
+                      </span>
+                      <span className="text-slate-400 text-lg">/100</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-slate-400 text-sm">Based on your profile{cultureDecoderData ? ' + Culture Decoder' : ''}</p>
+                    <p className="text-lg font-medium mt-1">
+                      {getMatchLabel(calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)).label}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-slate-400 text-sm">Based on your profile{cultureDecoderData ? ' + Culture Decoder' : ''}</p>
-                  <p className="text-lg font-medium mt-1">
-                    {getMatchLabel(calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)).label}
-                  </p>
+                
+                {/* Fit Bar */}
+                <div className="mt-4 h-2 bg-slate-700 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)}%` }}
+                    transition={{ duration: 0.8, delay: 0.5 }}
+                    className="h-full rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateJobMatch(currentJob, tunerSettings, cultureDecoderData) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
+                    }}
+                  />
                 </div>
-              </div>
-              
-              {/* Fit Bar */}
-              <div className="mt-4 h-2 bg-slate-700 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${calculateJobMatch(currentJob, tunerSettings, cultureDecoderData)}%` }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
-                  className="h-full rounded-full"
-                  style={{
-                    background: `linear-gradient(90deg, #8FBC8F 0%, #4682B4 50%, ${calculateJobMatch(currentJob, tunerSettings, cultureDecoderData) > 70 ? '#8FBC8F' : '#E9967A'} 100%)`
-                  }}
-                />
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
 
             {/* Compensation Data Sources */}
             <CompensationSources />
