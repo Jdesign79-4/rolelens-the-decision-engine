@@ -44,7 +44,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
     const isCompanyOnly = !jobTitle;
 
     try {
-      const inputStr = `Company: ${searchTerm}${jobTitle ? `, Role: ${jobTitle}` : ""}${city ? `, Location: ${city}` : ""}`;
+      const inputStr = "Company: " + searchTerm + (jobTitle ? ", Role: " + jobTitle : "") + (city ? ", Location: " + city : "");
       const analysisResult = await analyzeJobOpportunity(inputStr, jobPostingText);
 
       // Validate result structure
