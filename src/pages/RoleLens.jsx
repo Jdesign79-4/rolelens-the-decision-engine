@@ -977,17 +977,17 @@ function RoleLensContent() {
                 transition={{ duration: 0.4 }}
                 className="mb-6"
               >
-                <div className="flex items-start gap-4 p-4" style={{ background: '#F0EAE1', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
+                <div className="flex items-start gap-4" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F5F0EB 0%, #F2E8E7 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden shadow-sm flex-shrink-0">
                     <img src={currentJob.meta.logo} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <h1 className="text-2xl lg:text-3xl font-semibold text-slate-800 tracking-tight">
+                        <h1 className="tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', fontWeight: 600, color: '#272320' }}>
                           {currentJob.isCompanyOnly ? currentJob.meta.company : currentJob.meta.title}
                         </h1>
-                        <div className="flex items-center gap-2 mt-1 text-slate-500 text-sm flex-wrap">
+                        <div className="flex items-center gap-2 mt-1 flex-wrap" style={{ fontSize: '13px', color: '#786F6A', fontWeight: 500 }}>
                           {!currentJob.isCompanyOnly && (
                             <>
                               <span className="font-medium text-slate-700">{currentJob.meta.company}</span>
