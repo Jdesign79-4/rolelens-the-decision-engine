@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
 import { generateAlternatives } from './alternativesEngine';
+import { analyzeJobOpportunity } from './intelligenceEngine';
 
 const PLATFORMS = [
   { name: 'LinkedIn', pattern: /linkedin\.com\/jobs/i, icon: '💼', color: 'bg-blue-100 text-blue-700' },
