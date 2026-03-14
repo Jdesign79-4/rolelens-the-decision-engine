@@ -41,6 +41,7 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
   const [currentStep, setCurrentStep] = useState(-1);
   const [detectedPlatform, setDetectedPlatform] = useState(null);
   const abortRef = useRef(false);
+  const [analysisStatus, setAnalysisStatus] = useState('idle');
 
   const handleUrlChange = (e) => {
     const val = e.target.value;
@@ -63,97 +64,103 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
     }, 0);
   };
 
-  const handleAnalyze = async () => {
-    if (!url.trim() || isLoading) return;
-    if (!isValidUrl(url)) {
-      setError('Please enter a valid URL (e.g., https://www.linkedin.com/jobs/view/...)');
-      return;
-    }
+  const extractInfoFromUrl = (inputUrl) => {
+    try {
+      const urlObj = new URL(inputUrl);
+      const hostname = urlObj.hostname;
+      const path = urlObj.pathname;
+      
+      let companyName = "Unknown Company";
+      let jobTitle = inputUrl;
 
-    setIsLoading(true);
+      if (hostname.includes('linkedin.com')) {
+        const parts = path.split('/').filter(Boolean);
+        const viewIndex = parts.indexOf('view');
+        if (viewIndex !== -1 && parts[viewIndex + 1]) {
+           jobTitle = parts[viewIndex + 1].replace(/-/g, ' ');
+           const atMatch = jobTitle.match(/(.+)\s+at\s+(.+)(?:\s+\d+)?$/);
+           if (atMatch) {
+             jobTitle = atMatch[1].trim();
+             companyName = atMatch[2].trim();
+           }
+        }
+      } else if (hostname.includes('greenhouse.io') || hostname.includes('lever.co')) {
+        const parts = path.split('/').filter(Boolean);
+        if (parts.length >= 2) {
+          companyName = parts[0].replace(/-/g, ' ');
+          jobTitle = parts.slice(1).join(' ').replace(/-/g, ' ');
+        }
+      } else if (hostname.includes('workday')) {
+        const parts = path.split('/').filter(Boolean);
+        companyName = hostname.split('.')[0];
+        if (parts.length > 0) {
+          jobTitle = parts[parts.length - 1].replace(/-/g, ' ');
+        }
+      } else {
+        jobTitle = inputUrl;
+      }
+      return { companyName, jobTitle };
+    } catch {
+      return { companyName: "Unknown Company", jobTitle: inputUrl };
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!url.trim() || analysisStatus === 'loading') return;
+    
+    setAnalysisStatus('loading');
     setError(null);
-    abortRef.current = false;
-    setCurrentStep(0);
 
     try {
-      // Step 1: Fetch the job posting page
-      const pageContent = await fetchJobPage(url);
-      if (abortRef.current) return;
-      setCurrentStep(1);
+      const { companyName, jobTitle } = extractInfoFromUrl(url);
 
-      // Step 2: Extract structured data from the page content using LLM
-      const extractedData = await extractJobData(pageContent, url);
-      if (abortRef.current) return;
-      setCurrentStep(2);
+      const prompt = `You are a job market intelligence analyst. Research the following job opportunity and return a JSON object.\n\nCompany/Role to research: ${companyName} - ${jobTitle}\n\nSearch the web for current information about this company and role. Return ONLY a valid JSON object with this exact structure:\n\n{\n  "generated_at": "<ISO timestamp>",\n  "company_name": "<company name>",\n  "role_analyzed": "<job title>",\n  "analysis_status": "complete",\n  "dimensions": {\n    "job_security": {\n      "score": <0-100>,\n      "headline": "<one sentence>",\n      "insight": "<2-3 sentences of actionable insight>",\n      "confidence": "<high|medium|low>",\n      "sources": ["<source1>", "<source2>"]\n    },\n    "compensation": {\n      "score": <0-100>,\n      "market_low": <number>,\n      "market_median": <number>,\n      "market_high": <number>,\n      "headline": "<one sentence>",\n      "insight": "<2-3 sentences>",\n      "confidence": "<high|medium|low>",\n      "sources": ["<source1>"]\n    },\n    "market_sentiment": {\n      "score": <0-100>,\n      "headline": "<one sentence>",\n      "insight": "<2-3 sentences>",\n      "confidence": "<high|medium|low>",\n      "sources": ["<source1>"]\n    },\n    "career_growth": {\n      "score": <0-100>,\n      "headline": "<one sentence>",\n      "insight": "<2-3 sentences>",\n      "confidence": "<high|medium|low>",\n      "sources": ["<source1>"]\n    },\n    "risk_assessment": {\n      "score": <0-100>,\n      "headline": "<one sentence>",\n      "insight": "<2-3 sentences>",\n      "risk_flags": ["<flag1>", "<flag2>"],\n      "confidence": "<high|medium|low>",\n      "sources": ["<source1>"]\n    },\n    "timing": {\n      "score": <0-100>,\n      "headline": "<one sentence>",\n      "insight": "<2-3 sentences>",\n      "confidence": "<high|medium|low>",\n      "sources": ["<source1>"]\n    }\n  },\n  "company_health": {\n    "financial_health_score": <0-100>,\n    "stability_label": "<Deep Roots|Shifting Winds|Storm Season>",\n    "headcount_trend": "<growing|stable|shrinking|unknown>",\n    "recent_layoffs": <true|false>,\n    "glassdoor_rating": <number or null>\n  },\n  "news": [\n    {"headline": "<headline>", "sentiment": "<positive|neutral|negative>", "date": "<YYYY-MM>", "source": "<source name>"}\n  ],\n  "key_takeaways": ["<takeaway1>", "<takeaway2>", "<takeaway3>"],\n  "action_items": {\n    "questions_to_ask": ["<question1>", "<question2>"],\n    "negotiation_points": ["<point1>"],\n    "research_needed": ["<item1>"]\n  },\n  "data_sources_used": ["<source1>", "<source2>"],\n  "disclaimer": "Analysis generated by AI. Verify critical information independently."\n}`;
 
-      // Step 3: Run the full company/role analysis (same as manual search)
-      const analysisResult = await analyzeJobOpportunity(`Company: ${extractedData.company}, Role: ${extractedData.title}, Location: ${extractedData.location}`, extractedData.fullDescription);
-      if (abortRef.current) return;
-      setCurrentStep(3);
-
-      // Save to entities
-      try {
-        let companyId = null;
-        if (analysisResult?.company_name) {
-          const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: analysisResult.company_name });
-          if (existingCompanies.length > 0) {
-            companyId = existingCompanies[0].id;
-            await base44.entities.PublicCompanyData.update(companyId, {
-              job_seeker_intelligence: analysisResult,
-              financial_health_score: analysisResult.company_health?.financial_health_score,
-              last_updated: new Date().toISOString()
-            });
-          } else {
-            const newCompany = await base44.entities.PublicCompanyData.create({
-              company_name: analysisResult.company_name,
-              is_public: analysisResult.company_health?.funding_stage === 'public',
-              job_seeker_intelligence: analysisResult,
-              financial_health_score: analysisResult.company_health?.financial_health_score,
-              last_updated: new Date().toISOString()
-            });
-            companyId = newCompany.id;
-          }
+      const aiResponse = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          additionalProperties: true
         }
+      });
 
-        await base44.entities.JobApplication.create({
-          company_name: analysisResult?.company_name || extractedData.company,
-          job_title: analysisResult?.role_analyzed || extractedData.title,
-          job_url: url,
-          applied_date: new Date().toISOString().split('T')[0],
-          stage: "Reaching Out",
-          company_data_id: companyId
-        });
-      } catch (err) {
-        console.warn("Failed to save entities:", err);
+      const parsedJSON = typeof aiResponse === 'string' ? JSON.parse(aiResponse) : aiResponse;
+
+      let companyId = null;
+      const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
+      if (existingCompanies.length > 0) {
+        companyId = existingCompanies[0].id;
+        if (parsedJSON.company_health?.financial_health_score !== undefined) {
+          await base44.entities.PublicCompanyData.update(companyId, {
+            financial_health_score: parsedJSON.company_health.financial_health_score
+          });
+        }
       }
 
-      // Step 4: Build the job object and notify parent
-      const jobObject = buildJobObject(analysisResult, extractedData);
+      await base44.entities.JobApplication.create({
+        company_name: parsedJSON.company_name || companyName,
+        job_title: parsedJSON.role_analyzed || jobTitle,
+        job_url: url,
+        stage: "saved",
+        job_seeker_intelligence: parsedJSON,
+        company_data_id: companyId
+      });
 
-      // Generate alternatives in background
-      generateAlternatives({
-        companyName: extractedData.company,
-        jobTitle: extractedData.title,
-        location: extractedData.location,
-        isCompanyOnly: false,
-        tunerSettings
-      }).then(smartAlts => {
-        if (smartAlts?.length > 0) {
-          jobObject.alternatives = smartAlts;
-          onJobDataLoaded(jobObject, extractedData.fullDescription || '', analysisResult);
-        }
-      }).catch(() => {});
-
-      onJobDataLoaded(jobObject, extractedData.fullDescription || '', analysisResult);
+      setAnalysisStatus('complete');
+      setTimeout(() => setAnalysisStatus('idle'), 3000);
+      
+      // Notify parent to load the UI 
+      const extractedData = { company: parsedJSON.company_name, title: parsedJSON.role_analyzed, location: "Remote" };
+      const jobObject = buildJobObject(parsedJSON, extractedData);
+      onJobDataLoaded(jobObject, '', parsedJSON);
+      
       setUrl('');
       setDetectedPlatform(null);
-      setCurrentStep(-1);
     } catch (err) {
       console.error('URL analysis failed:', err);
-      setError(err?.message || 'Failed to analyze job posting. Try pasting the job description manually instead.');
-    } finally {
-      setIsLoading(false);
-      if (!abortRef.current) setCurrentStep(-1);
+      setError(err?.message || 'Failed to analyze job posting.');
+      setAnalysisStatus('error');
     }
   };
 
