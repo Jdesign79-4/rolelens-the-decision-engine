@@ -197,20 +197,20 @@ Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to me
   const isUnderqualified = tunerSettings.honestSelfReflection < 0.4;
 
   return (
-    <div className="p-6 transition-shadow" style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
+    <div className="transition-shadow" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F0EAE1 0%, #F2EBE0 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>
             {isCompanyOnly ? 'Company Compensation' : 'Compensation Reality'}
           </p>
-          <h3 className="text-lg font-semibold text-slate-800">The Water Basin</h3>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>The Water Basin</h3>
           {location && <p className="text-xs text-slate-500 mt-0.5">{location}</p>}
         </div>
         <div className="flex items-center gap-2">
           {isLoadingCOL && <Loader2 className="w-4 h-4 text-teal-500 animate-spin" />}
-          <div className="p-2 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-500">
-            <DollarSign className="w-5 h-5 text-white" />
+          <div className="p-2 rounded-xl" style={{ background: 'rgba(176,117,53,0.12)' }}>
+            <DollarSign className="w-5 h-5" style={{ color: '#B07535' }} />
           </div>
         </div>
       </div>
