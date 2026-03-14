@@ -87,9 +87,45 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       setCurrentStep(2);
 
       // Step 3: Run the full company/role analysis (same as manual search)
-      const analysisResult = await runFullAnalysis(extractedData);
+      const analysisResult = await analyzeJobOpportunity(`Company: ${extractedData.company}, Role: ${extractedData.title}, Location: ${extractedData.location}`, extractedData.fullDescription);
       if (abortRef.current) return;
       setCurrentStep(3);
+
+      // Save to entities
+      try {
+        let companyId = null;
+        if (analysisResult?.company_name) {
+          const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: analysisResult.company_name });
+          if (existingCompanies.length > 0) {
+            companyId = existingCompanies[0].id;
+            await base44.entities.PublicCompanyData.update(companyId, {
+              job_seeker_intelligence: analysisResult,
+              financial_health_score: analysisResult.company_health?.financial_health_score,
+              last_updated: new Date().toISOString()
+            });
+          } else {
+            const newCompany = await base44.entities.PublicCompanyData.create({
+              company_name: analysisResult.company_name,
+              is_public: analysisResult.company_health?.funding_stage === 'public',
+              job_seeker_intelligence: analysisResult,
+              financial_health_score: analysisResult.company_health?.financial_health_score,
+              last_updated: new Date().toISOString()
+            });
+            companyId = newCompany.id;
+          }
+        }
+
+        await base44.entities.JobApplication.create({
+          company_name: analysisResult?.company_name || extractedData.company,
+          job_title: analysisResult?.role_analyzed || extractedData.title,
+          job_url: url,
+          applied_date: new Date().toISOString().split('T')[0],
+          stage: "saved",
+          company_data_id: companyId
+        });
+      } catch (err) {
+        console.warn("Failed to save entities:", err);
+      }
 
       // Step 4: Build the job object and notify parent
       const jobObject = buildJobObject(analysisResult, extractedData);
@@ -104,11 +140,11 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       }).then(smartAlts => {
         if (smartAlts?.length > 0) {
           jobObject.alternatives = smartAlts;
-          onJobDataLoaded(jobObject, extractedData.fullDescription || '');
+          onJobDataLoaded(jobObject, extractedData.fullDescription || '', analysisResult);
         }
       }).catch(() => {});
 
-      onJobDataLoaded(jobObject, extractedData.fullDescription || '');
+      onJobDataLoaded(jobObject, extractedData.fullDescription || '', analysisResult);
       setUrl('');
       setDetectedPlatform(null);
       setCurrentStep(-1);
