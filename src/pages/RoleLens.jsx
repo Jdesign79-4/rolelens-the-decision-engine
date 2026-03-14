@@ -36,6 +36,8 @@ import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator
 import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
+import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
+import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb } from 'lucide-react';
 
 const jobDatabase = {
   standing_stones: {
