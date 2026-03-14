@@ -34,7 +34,7 @@ export default function CultureDecoderWidget({ job, jobPostingText, tunerSetting
     try {
       // Call 1: Red/green flags + verdict
       flagsResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `Analyze this job opportunity for cultural red flags and green flags.
+        prompt: `Analyze this job opportunity for cultural red flags and green flags.
 
 ${baseContext}
 
@@ -45,51 +45,51 @@ For each red flag found: phrase, severity, what it really means, when acceptable
 GREEN FLAGS: salary range, structured onboarding, career ladder, 1-on-1s, dev budget, core hours, KPIs, inclusive language, etc.
 
 Also provide: overall culture health score 0-100, culture type label, verdict, 3 strengths, 3 concerns.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          cultureHealthScore: { type: "number" },
-          cultureType: { type: "string" },
-          verdict: { type: "string" },
-          verdictSummary: { type: "string" },
-          topStrengths: { type: "array", items: { type: "string" } },
-          topConcerns: { type: "array", items: { type: "string" } },
-          redFlags: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                phrase: { type: "string" },
-                severity: { type: "string" },
-                realMeaning: { type: "string" },
-                acceptable: { type: "string" },
-                concerning: { type: "string" },
-                interviewQuestion: { type: "string" },
-                goodAnswer: { type: "string" },
-                badAnswer: { type: "string" }
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            cultureHealthScore: { type: "number" },
+            cultureType: { type: "string" },
+            verdict: { type: "string" },
+            verdictSummary: { type: "string" },
+            topStrengths: { type: "array", items: { type: "string" } },
+            topConcerns: { type: "array", items: { type: "string" } },
+            redFlags: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  phrase: { type: "string" },
+                  severity: { type: "string" },
+                  realMeaning: { type: "string" },
+                  acceptable: { type: "string" },
+                  concerning: { type: "string" },
+                  interviewQuestion: { type: "string" },
+                  goodAnswer: { type: "string" },
+                  badAnswer: { type: "string" }
+                }
               }
-            }
-          },
-          greenFlags: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                signal: { type: "string" },
-                importance: { type: "string" },
-                explanation: { type: "string" },
-                evidenceToVerify: { type: "string" }
+            },
+            greenFlags: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  signal: { type: "string" },
+                  importance: { type: "string" },
+                  explanation: { type: "string" },
+                  evidenceToVerify: { type: "string" }
+                }
               }
             }
           }
         }
-      }
-    });
+      });
 
       // Call 2: Cultural dimensions
       dimensionsResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `Score this company across 10 cultural dimensions (0-100 each) based on available information.
+        prompt: `Score this company across 10 cultural dimensions (0-100 each) based on available information.
 
 ${baseContext}
 
@@ -106,30 +106,30 @@ Dimensions to score:
 10. Collaboration (cross-team)
 
 For each: name, score 0-100, level (Excellent/Good/Moderate/Poor/Severe), brief analysis, and 2-3 evidence signals.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          dimensions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                name: { type: "string" },
-                score: { type: "number" },
-                level: { type: "string" },
-                analysis: { type: "string" },
-                evidenceSignals: { type: "array", items: { type: "string" } }
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            dimensions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  score: { type: "number" },
+                  level: { type: "string" },
+                  analysis: { type: "string" },
+                  evidenceSignals: { type: "array", items: { type: "string" } }
+                }
               }
             }
           }
         }
-      }
-    });
+      });
 
       // Call 3: Contradictions + interview questions
       questionsResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `Analyze contradictions and generate interview questions for this opportunity.
+        prompt: `Analyze contradictions and generate interview questions for this opportunity.
 
 ${baseContext}
 
@@ -138,42 +138,42 @@ ${baseContext}
 2. INTERVIEW QUESTIONS: Generate 6 specific tactical questions based on cultural concerns. For each: the question, category, priority (critical/high/medium), why to ask, what a good answer looks like, what a bad answer looks like.
 
 Also provide confidence level (High/Medium/Low) and reason.`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: "object",
-        properties: {
-          contradictions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                claim: { type: "string" },
-                severity: { type: "string" },
-                whatTheySay: { type: "string" },
-                likelyReality: { type: "string" },
-                questionToAsk: { type: "string" }
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            contradictions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  claim: { type: "string" },
+                  severity: { type: "string" },
+                  whatTheySay: { type: "string" },
+                  likelyReality: { type: "string" },
+                  questionToAsk: { type: "string" }
+                }
               }
-            }
-          },
-          interviewQuestions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                question: { type: "string" },
-                category: { type: "string" },
-                priority: { type: "string" },
-                whyAsk: { type: "string" },
-                goodAnswer: { type: "string" },
-                badAnswer: { type: "string" }
+            },
+            interviewQuestions: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  question: { type: "string" },
+                  category: { type: "string" },
+                  priority: { type: "string" },
+                  whyAsk: { type: "string" },
+                  goodAnswer: { type: "string" },
+                  badAnswer: { type: "string" }
+                }
               }
-            }
-          },
-          confidenceLevel: { type: "string" },
-          confidenceReason: { type: "string" }
+            },
+            confidenceLevel: { type: "string" },
+            confidenceReason: { type: "string" }
+          }
         }
-      }
-    });
+      });
 
       const merged = {
         ...flagsResult,
