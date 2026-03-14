@@ -70,19 +70,14 @@ export default function StabilityCard({ data, tunerSettings }) {
   const InsightIcon = insight.icon;
 
   return (
-    <div className="p-6 transition-shadow" style={{ background: '#F0EAE1', border: 'none', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
+    <div className="transition-shadow" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F0EAE1 0%, #EAF0E7 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
       <div className="flex items-start justify-between mb-6">
          <div>
-           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">Job Security Rating</p>
-           <h3 className="text-lg font-semibold text-slate-800">{getHealthRating()}</h3>
+           <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>Job Security Rating</p>
+           <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>{getHealthRating()}</h3>
          </div>
-         <div className={`p-2 rounded-xl bg-gradient-to-br ${getHealthColor()} bg-opacity-10`}>
-           <Shield className={`w-5 h-5 ${
-             riskLevel < 0.2 ? 'text-emerald-600' :
-             riskLevel < 0.4 ? 'text-teal-600' :
-             riskLevel < 0.6 ? 'text-amber-600' :
-             'text-red-600'
-           }`} />
+         <div className="p-2 rounded-xl" style={{ background: 'rgba(74,103,65,0.12)' }}>
+           <Shield className="w-5 h-5" style={{ color: '#4A6741' }} />
          </div>
        </div>
 
