@@ -1253,148 +1253,61 @@ function RoleLensContent() {
               ))}
             </div>
 
-            {/* Alternatives / Old Cards */}
-            {currentJob && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px]">
-                {visibleWidgets.includes('stability') && (
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`stability-${activeJob}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: 0.05 }}
-                    >
-                      <div className="relative group">
+            {/* Alternatives */}
+            {currentJob && visibleWidgets.includes('alternatives') && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`alts-${activeJob}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
+                  {/* Filters for Alternatives */}
+                  <div className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-slate-200">
+                    <span className="text-xs font-medium text-slate-500">Filter Alternatives:</span>
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'all', label: 'All' },
+                        { id: 'high-match', label: 'High Match' },
+                        { id: 'low-risk', label: 'Low Risk' },
+                        { id: 'high-growth', label: 'High Growth' }
+                      ].map(option => (
                         <button
-                          onClick={() => toggleWidget('stability')}
-                          className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                          key={option.id}
+                          onClick={() => setFilterBy(option.id)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                            filterBy === option.id
+                              ? 'bg-violet-600 text-white'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
                         >
-                          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
+                          {option.label}
                         </button>
-                        <StabilityCard 
-                          data={currentJob.stability} 
-                          tunerSettings={tunerSettings}
-                        />
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
+                      ))}
+                    </div>
+                  </div>
 
-                {visibleWidgets.includes('compensation') && (
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`comp-${activeJob}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: 0.1 }}
+                  <div className="relative group">
+                    <button
+                      onClick={() => toggleWidget('alternatives')}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <div className="relative group">
-                        <button
-                          onClick={() => toggleWidget('compensation')}
-                          className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                        <CompensationCard 
-                          data={currentJob.comp} 
-                          tunerSettings={tunerSettings}
-                          isCompanyOnly={currentJob.isCompanyOnly}
-                        />
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-
-                {visibleWidgets.includes('culture') && (
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`culture-${activeJob}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: 0.15 }}
-                    >
-                      <div className="relative group">
-                        <button
-                          onClick={() => toggleWidget('culture')}
-                          className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                        <CultureCard 
-                          data={currentJob.culture} 
-                          tunerSettings={tunerSettings}
-                          postingHealthScore={postingHealthScore}
-                        />
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-
-                {visibleWidgets.includes('alternatives') && (
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={`alts-${activeJob}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: 0.2 }}
-                    >
-                      {/* Filters for Alternatives */}
-                      <div className="flex flex-wrap items-center gap-3 mb-4 pb-4 border-b border-slate-200">
-                        <span className="text-xs font-medium text-slate-500">Filter Alternatives:</span>
-                        <div className="flex gap-2">
-                          {[
-                            { id: 'all', label: 'All' },
-                            { id: 'high-match', label: 'High Match' },
-                            { id: 'low-risk', label: 'Low Risk' },
-                            { id: 'high-growth', label: 'High Growth' }
-                          ].map(option => (
-                            <button
-                              key={option.id}
-                              onClick={() => setFilterBy(option.id)}
-                              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                                filterBy === option.id
-                                  ? 'bg-violet-600 text-white'
-                                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                              }`}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="relative group">
-                        <button
-                          onClick={() => toggleWidget('alternatives')}
-                          className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                        <AlternativesCard 
-                          alternatives={getAlternativeJobs()}
-                          currentJob={currentJob}
-                          onSwap={handleJobSwap}
-                          tunerSettings={tunerSettings}
-                          favorites={favorites}
-                          onToggleFavorite={toggleFavorite}
-                        />
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-              </div>
+                      <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <AlternativesCard 
+                      alternatives={getAlternativeJobs()}
+                      currentJob={currentJob}
+                      onSwap={handleJobSwap}
+                      tunerSettings={tunerSettings}
+                      favorites={favorites}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             )}
 
             {/* Widget Manager */}
