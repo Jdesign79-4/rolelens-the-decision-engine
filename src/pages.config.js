@@ -49,6 +49,7 @@
  */
 import ApplicationTracker from './pages/ApplicationTracker';
 import RoleLens from './pages/RoleLens';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -59,4 +60,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "RoleLens",
     Pages: PAGES,
+    Layout: __Layout,
 };
