@@ -81,7 +81,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           job_title: analysisResult?.role_analyzed || jobTitle || "Unknown Role",
           job_url: "",
           applied_date: new Date().toISOString().split('T')[0],
-          stage: "saved",
+          stage: "Reaching Out",
           company_data_id: companyId
         });
       } catch (err) {
