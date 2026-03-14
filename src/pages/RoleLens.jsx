@@ -36,7 +36,6 @@ import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator
 import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
-import BambooGroveStability from '@/components/rolelens/BambooGroveStability';
 
 const jobDatabase = {
   standing_stones: {
