@@ -503,19 +503,24 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
           </div>
           <Button
             onClick={handleAnalyze}
-            disabled={isLoading || !url.trim()}
+            disabled={isLoading || analysisStatus === 'loading' || !url.trim()}
             className="px-6 font-bold"
             style={{ background: '#3A4868', color: '#FFFFFF', border: 'none', boxShadow: '4px 4px 14px rgba(58, 72, 104, 0.35), -2px -2px 8px rgba(255,255,255,0.5)', borderRadius: '12px' }}
           >
-            {analyzing ? (
+            {analysisStatus === 'loading' || isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Analyzing...
               </>
+            ) : analysisStatus === 'complete' ? (
+              <>
+                <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                Analysis Complete ✓
+              </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-1.5" />
-                Analyze
+                Analyze Role
               </>
             )}
           </Button>
