@@ -1311,7 +1311,7 @@ function RoleLensContent() {
             )}
 
             {/* Widget Manager */}
-            {visibleWidgets.length < 4 && (
+            {!visibleWidgets.includes('alternatives') && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1321,9 +1321,6 @@ function RoleLensContent() {
                 <p className="text-sm font-medium text-slate-600 mb-3">Hidden Widgets - Click to Show:</p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { id: 'stability', label: 'Stability Forensics', icon: '🛡️' },
-                    { id: 'compensation', label: 'Compensation Reality', icon: '💰' },
-                    { id: 'culture', label: 'Culture Scan', icon: '❤️' },
                     { id: 'alternatives', label: 'Market Alternatives', icon: '⚡' }
                   ].filter(w => !visibleWidgets.includes(w.id)).map(widget => (
                     <button
