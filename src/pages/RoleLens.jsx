@@ -19,12 +19,6 @@ import SavedLists from '@/components/rolelens/SavedLists';
 import CompensationSources from '@/components/rolelens/CompensationSources';
 import BenefitsHub from '@/components/rolelens/BenefitsHub';
 import { calculateJobMatch, getMatchLabel } from '@/components/rolelens/MatchingAlgorithm';
-
-const DEFAULT_CATEGORIES = [
-  { id: 'dream', name: 'Dream Companies', icon: 'Star', color: 'from-amber-500 to-orange-500' },
-  { id: 'target', name: 'Target Roles', icon: 'Target', color: 'from-violet-500 to-purple-500' },
-  { id: 'research', name: 'Researching', icon: 'Search', color: 'from-teal-500 to-cyan-500' },
-];
 import JobURLAnalyzer from '@/components/rolelens/JobURLAnalyzer';
 import JobPostingAnalysis from '@/components/rolelens/JobPostingAnalysis';
 import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator';
@@ -38,6 +32,12 @@ import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
 import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb } from 'lucide-react';
+
+const DEFAULT_CATEGORIES = [
+  { id: 'dream', name: 'Dream Companies', icon: 'Star', color: 'from-amber-500 to-orange-500' },
+  { id: 'target', name: 'Target Roles', icon: 'Target', color: 'from-violet-500 to-purple-500' },
+  { id: 'research', name: 'Researching', icon: 'Search', color: 'from-teal-500 to-cyan-500' },
+];
 
 const jobDatabase = {
   standing_stones: {
