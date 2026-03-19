@@ -118,70 +118,27 @@ Tasks:
   };
 }
 
-async function processJob(base44, job) {
-  let f = null;
-  try {
-    f = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `For the job role "${job.job_title}" at "${job.company_name}", provide role demand metrics.`,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
-      response_json_schema: {
-        type: "object",
-        properties: {
-          supply_demand_ratio: { type: "string" },
-          avg_time_to_fill: { type: "string" },
-          typical_applicants_per_posting: { type: "string" },
-          negotiation_leverage: { type: "string", enum: ["low", "moderate", "high"] }
-        }
-      }
-    });
-  } catch(err) {
-    console.error(`LLM failed for job ${job.id}:`, err);
-  }
-
-  return {
-    job_seeker_intelligence: null,
-    role_demand: f || null
-  };
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
 
     if (body.type === 'companies') {
-      const companies = await base44.asServiceRole.entities.PublicCompanyData.list();
+      const { skip = 0, limit = 5 } = body;
+      const companies = await base44.asServiceRole.entities.PublicCompanyData.list('-created_date', limit, skip);
       let updatedCount = 0;
       
-      const promises = companies.map(async (company) => {
+      for (const company of companies) {
         const payload = await processCompany(base44, company);
         if (payload) {
           await base44.asServiceRole.entities.PublicCompanyData.update(company.id, payload);
           updatedCount++;
         }
-      });
+      }
       
-      await Promise.all(promises);
       return Response.json({ success: true, updatedCount });
     }
     
-    if (body.type === 'jobs') {
-      const jobs = await base44.asServiceRole.entities.JobApplication.list();
-      let updatedCount = 0;
-      
-      const promises = jobs.map(async (job) => {
-        const payload = await processJob(base44, job);
-        if (payload) {
-          await base44.asServiceRole.entities.JobApplication.update(job.id, payload);
-          updatedCount++;
-        }
-      });
-      
-      await Promise.all(promises);
-      return Response.json({ success: true, updatedCount });
-    }
-
     return Response.json({ error: 'invalid type' }, {status: 400});
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
