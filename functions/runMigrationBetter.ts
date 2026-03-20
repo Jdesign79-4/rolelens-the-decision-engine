@@ -43,7 +43,7 @@ Return ONLY valid JSON with exactly this structure:
     const rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
       add_context_from_internet: true,
-      model: 'automatic'
+      model: 'gemini_3_pro'
     });
 
     let jsonStr = rawResponse;
@@ -92,11 +92,11 @@ Deno.serve(async (req) => {
     const body = await req.json();
 
     if (body.type === 'companies') {
-      const { limit = 3, skip = 0 } = body;
+      const { limit = 22, skip = 0 } = body;
       const companies = await base44.asServiceRole.entities.PublicCompanyData.list('-created_date', limit, skip);
       let updatedCount = 0;
       
-      for (const company of companies) {
+      const promises = companies.map(async (company) => {
         if (!company.company_health) {
           const payload = await processCompany(base44, company);
           if (payload) {
@@ -104,7 +104,10 @@ Deno.serve(async (req) => {
             updatedCount++;
           }
         }
-      }
+      });
+
+      await Promise.all(promises);
+      
       return Response.json({ success: true, updatedCount });
     }
     
