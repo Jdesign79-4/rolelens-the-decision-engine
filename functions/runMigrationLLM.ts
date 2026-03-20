@@ -34,17 +34,14 @@ Return valid JSON:
     "common_formats": [string],
     "tips": string
   },
-  "news_articles": [
-    { "headline": string, "source": string, "date": string, "url": string, "excerpt": string, "category": string, "sentiment": "positive" | "neutral" | "negative" }
-  ] (up to 6 articles about employment/layoffs/hiring),
   "opportunity_flags": {
     "green": [string],
     "yellow": [string],
     "red": [string]
   } (max 3 per list, framed for job seekers)
 }`,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash',
+      add_context_from_internet: false,
+      model: 'gpt_5_mini',
       response_json_schema: {
         type: "object",
         properties: {
@@ -82,21 +79,6 @@ Return valid JSON:
               tips: { type: "string" }
             }
           },
-          news_articles: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                headline: { type: "string" },
-                source: { type: "string" },
-                date: { type: "string" },
-                url: { type: "string" },
-                excerpt: { type: "string" },
-                category: { type: "string" },
-                sentiment: { type: "string" }
-              }
-            }
-          },
           opportunity_flags: {
             type: "object",
             properties: {
@@ -109,31 +91,30 @@ Return valid JSON:
       }
     });
 
-    return f;
-  } catch (err) {
-    console.error(`LLM failed for ${company.company_name}:`, err);
-    return null;
-  }
-}
+    let news = company.news_articles || [];
+    // Keep max 6 articles
+    news = news.slice(0, 6);
 
-async function processJob(base44, job) {
-  try {
-    return await base44.asServiceRole.integrations.Core.InvokeLLM({
-      prompt: `For the job role "${job.job_title}" at "${job.company_name}", provide role demand metrics.`,
-      add_context_from_internet: false,
-      model: 'gpt_5_mini',
-      response_json_schema: {
-        type: "object",
-        properties: {
-          supply_demand_ratio: { type: "string" },
-          avg_time_to_fill: { type: "string" },
-          typical_applicants_per_posting: { type: "string" },
-          negotiation_leverage: { type: "string", enum: ["low", "moderate", "high"] }
+    let jsi = company.job_seeker_intelligence;
+    if (jsi && jsi.dimensions) {
+      for (const key in jsi.dimensions) {
+        if (jsi.dimensions[key].sources) {
+          jsi.dimensions[key].sources = jsi.dimensions[key].sources.filter(s => !s.startsWith('turn0search'));
         }
       }
-    });
-  } catch(err) {
-    console.error(`LLM failed for job ${job.id}:`, err);
+    }
+
+    return {
+      company_health: f.company_health || null,
+      culture_signals: f.culture_signals || null,
+      interview_intel: f.interview_intel || null,
+      opportunity_flags: f.opportunity_flags || null,
+      news_articles: news,
+      job_seeker_intelligence: jsi
+    };
+
+  } catch (err) {
+    console.error(`LLM failed for ${company.company_name}:`, err);
     return null;
   }
 }
@@ -159,21 +140,6 @@ Deno.serve(async (req) => {
       return Response.json({ success: true, updatedCount });
     }
     
-    if (body.type === 'jobs') {
-      const jobs = await base44.asServiceRole.entities.JobApplication.list();
-      let updatedCount = 0;
-      for (const job of jobs) {
-        if (!job.role_demand) {
-          const payload = await processJob(base44, job);
-          if (payload) {
-            await base44.asServiceRole.entities.JobApplication.update(job.id, { role_demand: payload });
-            updatedCount++;
-          }
-        }
-      }
-      return Response.json({ success: true, updatedCount });
-    }
-
     return Response.json({ error: 'invalid type' }, {status: 400});
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });
