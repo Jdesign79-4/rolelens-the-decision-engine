@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     if (body.type === 'companies') {
       const { limit = 50, skip = 0 } = body;
       const allCompanies = await base44.asServiceRole.entities.PublicCompanyData.filter({}, '-created_date', limit, skip);
-      const companies = allCompanies.filter(c => !c.company_health);
+      const companies = allCompanies.filter(c => !c.company_health).slice(0, 5);
       let updatedCount = 0;
       
       for (const company of companies) {
