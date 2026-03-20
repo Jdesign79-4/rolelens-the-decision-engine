@@ -42,8 +42,7 @@ Return ONLY valid JSON with exactly this structure:
 
     const rawResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt,
-      add_context_from_internet: true,
-      model: 'gemini_3_flash'
+      add_context_from_internet: false
     });
 
     let jsonStr = rawResponse;
