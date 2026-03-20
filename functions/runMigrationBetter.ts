@@ -93,18 +93,17 @@ Deno.serve(async (req) => {
     if (body.type === 'companies') {
       const { limit = 50, skip = 0 } = body;
       const allCompanies = await base44.asServiceRole.entities.PublicCompanyData.filter({}, '-created_date', limit, skip);
-      const companies = allCompanies.filter(c => !c.company_health).slice(0, 5);
+      const companies = allCompanies.filter(c => !c.company_health).slice(0, 10);
       let updatedCount = 0;
       
-      for (const company of companies) {
-        if (!company.company_health) {
-          const payload = await processCompany(base44, company);
-          if (payload) {
-            await base44.asServiceRole.entities.PublicCompanyData.update(company.id, payload);
-            updatedCount++;
-          }
+      const promises = companies.map(async (company) => {
+        const payload = await processCompany(base44, company);
+        if (payload) {
+          await base44.asServiceRole.entities.PublicCompanyData.update(company.id, payload);
+          updatedCount++;
         }
-      }
+      });
+      await Promise.all(promises);
       
       return Response.json({ success: true, updatedCount });
     }
