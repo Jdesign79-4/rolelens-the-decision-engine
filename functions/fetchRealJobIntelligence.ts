@@ -97,7 +97,9 @@ Deno.serve(async (req) => {
         market_high: compData.market_high,
         confidence: "high",
         verified: true,
-        sources: cosSources
+        sources: cosSources,
+        _salaryLow: salary_low,
+        _salaryHigh: salary_high
       };
     } else {
       dimensions.compensation = {
