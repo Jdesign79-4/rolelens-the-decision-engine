@@ -216,6 +216,7 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financ
 
   return (
     <div className="space-y-4">
+      <RealCompanyHealthCard companyName={companyName} companyData={companyData} onRefresh={handleRefresh} />
       <JobSecurityRating data={companyData} isLoading={isLoading} onRefresh={handleRefresh} />
 
       {/* Public Company Badge & Summary */}
