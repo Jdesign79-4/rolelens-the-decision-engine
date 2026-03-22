@@ -274,6 +274,9 @@ Deno.serve(async (req) => {
                 buyRatio = (latest.buy + latest.strongBuy) / total;
                 sellRatio = (latest.sell + latest.strongSell) / total;
                 analystScore = buyRatio * 100;
+                dimensions.market_sentiment = dimensions.market_sentiment || {};
+                dimensions.market_sentiment._analystData = latest;
+                dimensions.market_sentiment._analystTrend = fhJson.slice(0, 3);
               }
             }
           }
