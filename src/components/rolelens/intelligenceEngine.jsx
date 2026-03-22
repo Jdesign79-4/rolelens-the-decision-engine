@@ -227,6 +227,8 @@ Return your analysis as a JSON object matching the intelligence schema provided.
       ticker_symbol: tickerSymbol || parentTicker,
       job_title: jobTitle,
       location: location,
+      salary_low: salaryLow,
+      salary_high: salaryHigh,
       company_health: companyHealth
     });
 
