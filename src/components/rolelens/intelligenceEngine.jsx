@@ -169,6 +169,14 @@ Return your analysis as a JSON object matching the intelligence schema provided.
   const locationMatch = userInput.match(/Location:\s*([^,]+)/i);
   const location = locationMatch ? locationMatch[1].trim() : null;
 
+  const salaryMatch = userInput.match(/Salary:\s*\$?([\d,]+)\s*-\s*\$?([\d,]+)/i) || userInput.match(/Salary:\s*\$?([\d,]+)/i);
+  let salaryLow = null;
+  let salaryHigh = null;
+  if (salaryMatch) {
+    salaryLow = parseInt(salaryMatch[1].replace(/,/g, ''), 10);
+    salaryHigh = salaryMatch[2] ? parseInt(salaryMatch[2].replace(/,/g, ''), 10) : salaryLow;
+  }
+
   try {
     // 1. Fetch public company data to get ticker & health
     let isPublic = true;
