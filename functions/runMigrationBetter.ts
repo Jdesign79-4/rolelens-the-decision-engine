@@ -8,18 +8,7 @@ Is Public: ${company.is_public}
 
 Return ONLY valid JSON with exactly this structure:
 {
-  "company_health": {
-    "stability_score": 7.5,
-    "stability_label": "Steady Ground", // ("Deep Roots", "Steady Ground", "Shifting Winds", "Rough Waters", "Sinking Ship")
-    "stability_summary": "2-3 sentences on job security",
-    "market_cap_category": "Large Cap", // or null if private
-    "revenue_trend": "growing", // ("growing", "flat", "declining")
-    "headcount_trend": "hiring", // ("hiring", "stable", "cutting")
-    "actively_hiring": true,
-    "hiring_velocity": "steady", // ("ramping up", "steady", "slowing down", "paused")
-    "recent_earnings": "beating", // ("beating", "meeting", "missing", null)
-    "last_earnings_date": "Feb 2026" // or null
-  },
+
   "culture_signals": {
     "glassdoor_rating": 4.2,
     "glassdoor_review_trend": "stable", // ("improving", "declining", "stable", null)
