@@ -127,6 +127,39 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
 
       const parsedJSON = typeof aiResponse === 'string' ? JSON.parse(aiResponse) : aiResponse;
 
+      try {
+        // Enhance with real API data
+        let tickerSymbol = null;
+        let parentTicker = null;
+        let companyHealth = null;
+
+        const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
+        if (dbResp.length > 0) {
+          tickerSymbol = dbResp[0].ticker_symbol;
+          parentTicker = dbResp[0].parent_ticker;
+          companyHealth = dbResp[0].company_health;
+        }
+
+        const realIntelRes = await base44.functions.invoke('fetchRealJobIntelligence', {
+          company_name: parsedJSON.company_name || companyName,
+          ticker_symbol: tickerSymbol || parentTicker,
+          job_title: parsedJSON.role_analyzed || jobTitle,
+          location: null, // location might be hard to extract from URL cleanly without another step
+          company_health: companyHealth
+        });
+
+        if (realIntelRes.data?.success && realIntelRes.data?.dimensions) {
+          if (!parsedJSON.dimensions) parsedJSON.dimensions = {};
+          Object.assign(parsedJSON.dimensions, realIntelRes.data.dimensions);
+          
+          if (realIntelRes.data.newsArticles && realIntelRes.data.newsArticles.length > 0) {
+            parsedJSON.news = realIntelRes.data.newsArticles;
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch real job intelligence in URL analyzer:", e);
+      }
+
       let companyId = null;
       const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
       if (existingCompanies.length > 0) {
