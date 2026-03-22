@@ -164,11 +164,20 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financ
     setIsRefreshing(true);
     try {
       if (companyData?.id) {
-        await base44.functions.invoke('fetchCompanyData', {
-          company_name: companyData?.company_name || companyName,
-          ticker_symbol: companyData?.ticker_symbol || companyData?.parent_ticker || undefined,
-          entityId: companyData.id
-        });
+        await Promise.all([
+          base44.functions.invoke('fetchCompanyData', {
+            company_name: companyData?.company_name || companyName,
+            ticker_symbol: companyData?.ticker_symbol || companyData?.parent_ticker || undefined,
+            entityId: companyData.id
+          }),
+          base44.functions.invoke('fetchRealCompanyHealth', {
+            company_name: companyData?.company_name || companyName,
+            ticker_symbol: companyData?.ticker_symbol || undefined,
+            parent_ticker: companyData?.parent_ticker || undefined,
+            is_public: companyData?.is_public ?? true,
+            entityId: companyData.id
+          })
+        ]);
       }
       await refetch();
     } catch (err) {
