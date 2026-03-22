@@ -138,14 +138,44 @@ export default function IntelligenceCard({
                     <span>90th: ${dimensionData.market_high?.toLocaleString()}</span>
                   </div>
                   <div className="relative h-4 bg-slate-200 rounded-full w-full mb-2">
+                    {/* Range 25th to 75th */}
+                    {dimensionData.market_25th && dimensionData.market_75th && (
+                      <div 
+                        className="absolute h-full bg-slate-400 opacity-30" 
+                        style={{ 
+                          left: `${Math.max(0, Math.min(100, ((dimensionData.market_25th - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`,
+                          width: `${Math.max(0, Math.min(100, ((dimensionData.market_75th - dimensionData.market_25th) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`
+                        }}
+                      />
+                    )}
+                    {/* 25th Marker */}
+                    {dimensionData.market_25th && (
+                      <div 
+                        className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" 
+                        style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_25th - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
+                        title={`25th: $${dimensionData.market_25th?.toLocaleString()}`}
+                      />
+                    )}
+                    {/* 75th Marker */}
+                    {dimensionData.market_75th && (
+                      <div 
+                        className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" 
+                        style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_75th - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
+                        title={`75th: $${dimensionData.market_75th?.toLocaleString()}`}
+                      />
+                    )}
                     {/* Median Marker */}
                     <div 
-                      className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-10" 
+                      className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" 
                       style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_median - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
                       title={`Median: $${dimensionData.market_median?.toLocaleString()}`}
                     />
                   </div>
-                  <p className="text-[10px] text-center text-slate-500 font-medium">Median: ${dimensionData.market_median?.toLocaleString()}</p>
+                  <div className="flex justify-between text-[10px] text-slate-500 font-medium px-1">
+                    {dimensionData.market_25th && <span>25th</span>}
+                    <span>Median: ${dimensionData.market_median?.toLocaleString()}</span>
+                    {dimensionData.market_75th && <span>75th</span>}
+                  </div>
                 </div>
               </div>
             )}
