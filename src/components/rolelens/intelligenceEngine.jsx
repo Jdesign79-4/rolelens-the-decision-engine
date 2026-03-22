@@ -153,8 +153,87 @@ Return your analysis as a JSON object matching the intelligence schema provided.
     }
   });
 
+  let intelligence = typeof intelligenceResponse === 'string' ? JSON.parse(intelligenceResponse) : intelligenceResponse;
+
   if (intelligence) {
     intelligence.generated_at = new Date().toISOString();
+  }
+
+  // Extract variables for real API lookup
+  const companyNameMatch = userInput.match(/Company:\s*([^,]+)/i);
+  const companyName = companyNameMatch ? companyNameMatch[1].trim() : intelligence?.company_name;
+
+  const roleMatch = userInput.match(/Role:\s*([^,]+)/i);
+  const jobTitle = roleMatch ? roleMatch[1].trim() : intelligence?.role_analyzed;
+
+  const locationMatch = userInput.match(/Location:\s*([^,]+)/i);
+  const location = locationMatch ? locationMatch[1].trim() : null;
+
+  try {
+    // 1. Fetch public company data to get ticker & health
+    let isPublic = true;
+    let tickerSymbol = null;
+    let parentTicker = null;
+    let companyHealth = null;
+
+    if (companyName) {
+      const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: companyName });
+      if (dbResp.length > 0) {
+        tickerSymbol = dbResp[0].ticker_symbol;
+        parentTicker = dbResp[0].parent_ticker;
+        companyHealth = dbResp[0].company_health;
+      } else {
+        const tickerResp = await base44.integrations.Core.InvokeLLM({
+          prompt: `Is "${companyName}" publicly traded? If so, what is its ticker symbol? If it's a subsidiary, what is its parent company and parent ticker? Return JSON.`,
+          add_context_from_internet: true,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              is_public: { type: "boolean" },
+              ticker_symbol: { type: "string" },
+              parent_ticker: { type: "string" }
+            }
+          }
+        });
+        const parsedTicker = typeof tickerResp === 'string' ? JSON.parse(tickerResp) : tickerResp;
+        isPublic = parsedTicker?.is_public ?? false;
+        tickerSymbol = parsedTicker?.ticker_symbol;
+        parentTicker = parsedTicker?.parent_ticker;
+        
+        // Fetch real company health
+        if (isPublic && (tickerSymbol || parentTicker)) {
+          const healthRes = await base44.functions.invoke('fetchRealCompanyHealth', {
+            company_name: companyName,
+            ticker_symbol: tickerSymbol,
+            parent_ticker: parentTicker,
+            is_public: true
+          });
+          companyHealth = healthRes.data?.company_health;
+        }
+      }
+    }
+
+    // 2. Fetch Real Job Intelligence (Comp, Market Sentiment, Career Growth, Risk)
+    const realIntelRes = await base44.functions.invoke('fetchRealJobIntelligence', {
+      company_name: companyName,
+      ticker_symbol: tickerSymbol || parentTicker,
+      job_title: jobTitle,
+      location: location,
+      company_health: companyHealth
+    });
+
+    if (realIntelRes.data?.success && realIntelRes.data?.dimensions) {
+      if (!intelligence.dimensions) intelligence.dimensions = {};
+      
+      // Merge real dimensions over LLM dimensions
+      Object.assign(intelligence.dimensions, realIntelRes.data.dimensions);
+      
+      if (realIntelRes.data.newsArticles && realIntelRes.data.newsArticles.length > 0) {
+        intelligence.news = realIntelRes.data.newsArticles;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch real job intelligence:", err);
   }
 
   return intelligence;
