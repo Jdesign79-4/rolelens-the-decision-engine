@@ -145,6 +145,25 @@ Deno.serve(async (req) => {
         }
       } catch (e) { console.warn("ONET outlook error", e); }
 
+      // Get tech skills and related occs
+      try {
+        const skillsRes = await fetchWithTimeout(`https://services.onetcenter.org/ws/online/occupations/${onetCode}/summary/technology_skills`, { headers: onetHeaders });
+        if (skillsRes.ok) {
+          const skillsJson = await skillsRes.json();
+          if (skillsJson.category) {
+            outlookData.techSkills = skillsJson.category.slice(0, 5).map(c => c.title?.name || c.title);
+          }
+        }
+        
+        const relatedRes = await fetchWithTimeout(`https://services.onetcenter.org/ws/online/occupations/${onetCode}/summary/related_occupations`, { headers: onetHeaders });
+        if (relatedRes.ok) {
+          const relatedJson = await relatedRes.json();
+          if (relatedJson.occupation) {
+            outlookData.related = relatedJson.occupation.slice(0, 4).map(o => o.title);
+          }
+        }
+      } catch (e) { console.warn("ONET extended error", e); }
+
       // Get BLS projections via CareerOneStop
       if (COS_TOKEN) {
         try {
