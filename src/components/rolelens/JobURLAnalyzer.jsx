@@ -131,10 +131,15 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
       if (existingCompanies.length > 0) {
         companyId = existingCompanies[0].id;
+        const updateData = {};
         if (parsedJSON.company_health?.financial_health_score !== undefined) {
-          await base44.entities.PublicCompanyData.update(companyId, {
-            financial_health_score: parsedJSON.company_health.financial_health_score
-          });
+          updateData.financial_health_score = parsedJSON.company_health.financial_health_score;
+        }
+        if (parsedJSON.news && parsedJSON.news.length > 0) {
+          updateData.news_articles = parsedJSON.news;
+        }
+        if (Object.keys(updateData).length > 0) {
+          await base44.entities.PublicCompanyData.update(companyId, updateData);
         }
       }
 
