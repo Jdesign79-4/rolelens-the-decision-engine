@@ -129,24 +129,132 @@ export default function IntelligenceCard({
               {dimensionData.insight}
             </p>
 
-            {dimensionData.market_median && (
-              <div className="mb-4 p-3 rounded-xl bg-white/50 border border-slate-200/50">
-                <p className="text-xs text-slate-500 mb-1">Market Range</p>
-                <p className="text-sm font-semibold text-slate-800">
-                  ${dimensionData.market_low?.toLocaleString()} - ${dimensionData.market_high?.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Median: ${dimensionData.market_median?.toLocaleString()}</p>
+            {/* Specialized UI based on card type */}
+            {title === 'Compensation' && dimensionData.market_median && (
+              <div className="mb-4 space-y-3">
+                <div className="p-4 rounded-xl bg-white/50 border border-slate-200/50">
+                  <div className="flex justify-between text-xs text-slate-500 mb-2">
+                    <span>10th: ${dimensionData.market_low?.toLocaleString()}</span>
+                    <span>90th: ${dimensionData.market_high?.toLocaleString()}</span>
+                  </div>
+                  <div className="relative h-4 bg-slate-200 rounded-full w-full mb-2">
+                    {/* Median Marker */}
+                    <div 
+                      className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-10" 
+                      style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_median - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
+                      title={`Median: $${dimensionData.market_median?.toLocaleString()}`}
+                    />
+                  </div>
+                  <p className="text-[10px] text-center text-slate-500 font-medium">Median: ${dimensionData.market_median?.toLocaleString()}</p>
+                </div>
               </div>
             )}
 
-            {dimensionData.risk_flags?.length > 0 && (
-              <div className="mb-4 space-y-1">
-                {dimensionData.risk_flags.map((flag, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs">
-                    <span className="text-amber-500 mt-0.5">⚠</span>
-                    <span className="text-slate-600">{flag}</span>
+            {title === 'Market Sentiment' && dimensionData._analystData && (
+              <div className="mb-4 space-y-3">
+                <div className="p-3 rounded-xl bg-white/50 border border-slate-200/50">
+                  <p className="text-xs font-semibold text-slate-700 mb-2">Analyst Consensus</p>
+                  <div className="flex gap-1 h-6 w-full rounded overflow-hidden">
+                    <div className="bg-emerald-500 h-full flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${Math.max(5, ((dimensionData._analystData.strongBuy + dimensionData._analystData.buy) / (dimensionData._analystData.strongBuy + dimensionData._analystData.buy + dimensionData._analystData.hold + dimensionData._analystData.sell + dimensionData._analystData.strongSell)) * 100)}%` }}>
+                      {dimensionData._analystData.strongBuy + dimensionData._analystData.buy > 0 ? (dimensionData._analystData.strongBuy + dimensionData._analystData.buy) : ''}
+                    </div>
+                    <div className="bg-amber-400 h-full flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${Math.max(5, (dimensionData._analystData.hold / (dimensionData._analystData.strongBuy + dimensionData._analystData.buy + dimensionData._analystData.hold + dimensionData._analystData.sell + dimensionData._analystData.strongSell)) * 100)}%` }}>
+                      {dimensionData._analystData.hold > 0 ? dimensionData._analystData.hold : ''}
+                    </div>
+                    <div className="bg-rose-500 h-full flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${Math.max(5, ((dimensionData._analystData.sell + dimensionData._analystData.strongSell) / (dimensionData._analystData.strongBuy + dimensionData._analystData.buy + dimensionData._analystData.hold + dimensionData._analystData.sell + dimensionData._analystData.strongSell)) * 100)}%` }}>
+                      {dimensionData._analystData.sell + dimensionData._analystData.strongSell > 0 ? (dimensionData._analystData.sell + dimensionData._analystData.strongSell) : ''}
+                    </div>
                   </div>
-                ))}
+                  <div className="flex justify-between text-[10px] mt-1 text-slate-500">
+                    <span>Buy</span>
+                    <span>Hold</span>
+                    <span>Sell</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {title === 'Career Growth' && (
+              <div className="mb-4 space-y-3">
+                {dimensionData._brightOutlook && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200 shadow-sm">
+                    <span>☀️</span> Bright Outlook (O*NET)
+                  </div>
+                )}
+                {dimensionData._growthPct !== undefined && (
+                  <div className="p-3 rounded-xl bg-white/50 border border-slate-200/50">
+                    <p className="text-[10px] text-slate-500 mb-1">Projected Growth (2023-2033)</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <div className="flex justify-between text-xs font-semibold mb-1">
+                          <span className="text-indigo-700">This Role: {dimensionData._growthPct}%</span>
+                          <span className="text-slate-500">Avg: 4%</span>
+                        </div>
+                        <div className="relative h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div className="absolute top-0 bottom-0 left-0 bg-slate-400 opacity-50" style={{ width: '4%' }} />
+                          <div className={`absolute top-0 bottom-0 left-0 ${dimensionData._growthPct >= 4 ? 'bg-indigo-500' : 'bg-amber-500'}`} style={{ width: `${Math.max(0, Math.min(100, dimensionData._growthPct))}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {dimensionData._related?.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-[10px] text-slate-500 mb-1">Career Pathways (Related Roles):</p>
+                    <div className="flex flex-wrap gap-1">
+                      {dimensionData._related.map((role, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-[10px] text-slate-600 rounded">
+                          {typeof role === 'string' ? role : role.title}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {dimensionData._techSkills?.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-[10px] text-slate-500 mb-1">Top Tech Skills:</p>
+                    <p className="text-[10px] text-slate-700 font-medium">
+                      {dimensionData._techSkills.map(s => typeof s === 'string' ? s : s.name).join(', ')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {title === 'Risk Assessment' && (
+              <div className="mb-4 space-y-3">
+                {dimensionData._warnFound !== undefined && (
+                  <div className={`p-3 rounded-xl border ${dimensionData._warnFound ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{dimensionData._warnFound ? '🚨' : '✅'}</span>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider">{dimensionData._warnFound ? 'WARN Act Notice Found' : 'No WARN Notices Found'}</p>
+                        <p className="text-[10px] opacity-80 mt-0.5">Checked against state labor department filings</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {dimensionData._riskFlagObjects?.length > 0 ? (
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Detected Risks</p>
+                    {dimensionData._riskFlagObjects.map((flag, i) => (
+                      <div key={i} className={`p-2.5 rounded-lg border flex gap-2 items-start ${
+                        flag.severity === 'high' ? 'bg-rose-50 border-rose-100 text-rose-900' : 
+                        flag.severity === 'medium' ? 'bg-amber-50 border-amber-100 text-amber-900' : 
+                        'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}>
+                        <span className="text-sm shrink-0">{flag.severity === 'high' ? '🔴' : flag.severity === 'medium' ? '🟡' : '⚪'}</span>
+                        <p className="text-xs font-medium leading-relaxed">{flag.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center gap-2">
+                    <span className="text-emerald-500">✓</span>
+                    <p className="text-xs text-slate-600 font-medium">No verified risk signals detected in available data.</p>
+                  </div>
+                )}
               </div>
             )}
 
