@@ -8,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { formatDistanceToNow } from 'date-fns';
 import JobSeekerIntelligenceReport from './JobSeekerIntelligenceReport';
 import JobSecurityRating from '../rolelens/JobSecurityRating';
+import RealCompanyHealthCard from '../rolelens/RealCompanyHealthCard';
 
 const SENTIMENT_COLORS = {
   positive: '#10b981',
