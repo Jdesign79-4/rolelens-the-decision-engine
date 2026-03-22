@@ -7,13 +7,8 @@ Company/Role Input: ${userInput}
 ${pageText ? `\nJob Posting Text (if applicable):\n${pageText.substring(0, 4000)}` : ''}
 
 Search the web for current, factual information about this company. Gather:
-1. Recent news (last 6 months) — layoffs, leadership changes, funding, earnings, restructuring
-2. Financial health — is this a public company? Revenue trend, profitability, stock performance
-3. Compensation data — what does this role typically pay? Use Levels.fyi, Glassdoor, LinkedIn Salary, or similar sources
-4. Employee sentiment — Glassdoor ratings, "Great Place to Work" rankings, recent reviews
-5. Job security signals — hiring freeze? Recent layoffs? Rapid growth?
-6. Career growth — is this company known for promoting internally? Does this role have a clear trajectory?
-7. Market timing — is this a good time to join? Company stage, industry headwinds/tailwinds
+1. Job security signals — hiring freeze? Recent layoffs? Rapid growth?
+2. Market timing — is this a good time to join? Company stage, industry headwinds/tailwinds
 
 CRITICAL RULES:
 - Every insight MUST cite its source and approximate date
@@ -21,12 +16,11 @@ CRITICAL RULES:
 - Mark data as "verified: true" only if it comes from an official or highly reliable source (SEC filing, official press release, established financial data provider)
 - Mark data as "verified: false" if it is estimated, aggregated, or from crowdsourced sources
 - Assign confidence: "high" only when you have 2+ corroborating sources; "medium" for single reliable source; "low" for estimated or inferred
-- For compensation, always provide a range (low/median/high) rather than a single number
 - Be honest about what you don't know — a "low confidence" honest answer is better than a confident fabrication
 
-Return your analysis as a JSON object matching the intelligence schema provided. Ensure all fields are populated or explicitly null with a reason.`;
+Return your analysis as a JSON object matching the intelligence schema provided. Leave compensation, market_sentiment, career_growth, and risk_assessment as null (they will be populated by a separate API).`;
 
-  const intelligence = await base44.integrations.Core.InvokeLLM({
+  const intelligenceResponse = await base44.integrations.Core.InvokeLLM({
     prompt,
     add_context_from_internet: true,
     model: 'gemini_3_flash',
