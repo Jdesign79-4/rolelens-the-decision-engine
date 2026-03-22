@@ -59,19 +59,27 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: analysisResult.company_name });
           if (existingCompanies.length > 0) {
             companyId = existingCompanies[0].id;
-            await base44.entities.PublicCompanyData.update(companyId, {
+            const updateData = {
               job_seeker_intelligence: analysisResult,
               financial_health_score: analysisResult.company_health?.financial_health_score,
               last_updated: new Date().toISOString()
-            });
+            };
+            if (analysisResult.news && analysisResult.news.length > 0) {
+              updateData.news_articles = analysisResult.news;
+            }
+            await base44.entities.PublicCompanyData.update(companyId, updateData);
           } else {
-            const newCompany = await base44.entities.PublicCompanyData.create({
+            const createData = {
               company_name: analysisResult.company_name,
               is_public: analysisResult.company_health?.funding_stage === 'public',
               job_seeker_intelligence: analysisResult,
               financial_health_score: analysisResult.company_health?.financial_health_score,
               last_updated: new Date().toISOString()
-            });
+            };
+            if (analysisResult.news && analysisResult.news.length > 0) {
+              createData.news_articles = analysisResult.news;
+            }
+            const newCompany = await base44.entities.PublicCompanyData.create(createData);
             companyId = newCompany.id;
           }
         }
