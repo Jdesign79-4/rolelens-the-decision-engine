@@ -229,7 +229,11 @@ Deno.serve(async (req) => {
         insight,
         confidence: cgScores.length >= 2 ? "high" : "medium",
         verified: true,
-        sources: growthSources
+        sources: growthSources,
+        _brightOutlook: outlookData.bright,
+        _growthPct: outlookData.growthPct,
+        _related: outlookData.related,
+        _techSkills: outlookData.techSkills
       };
     } else {
       dimensions.career_growth = {
