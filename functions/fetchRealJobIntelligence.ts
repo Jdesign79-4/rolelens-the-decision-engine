@@ -52,9 +52,11 @@ Deno.serve(async (req) => {
             if (occ.WageInfo && occ.WageInfo.length > 0) {
               const wage = occ.WageInfo[0]; // Usually State or National
               compData = {
-                market_low: wage.Pct10AnnualWage || wage.Pct25AnnualWage,
+                market_low: wage.Pct10AnnualWage,
+                market_25th: wage.Pct25AnnualWage,
                 market_median: wage.MedianAnnualWage,
-                market_high: wage.Pct90AnnualWage || wage.Pct75AnnualWage,
+                market_75th: wage.Pct75AnnualWage,
+                market_high: wage.Pct90AnnualWage,
                 occ_title: occ.OnetTitle
               };
               cosSources.push("CareerOneStop Salary Data (U.S. Department of Labor)");
