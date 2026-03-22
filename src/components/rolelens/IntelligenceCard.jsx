@@ -164,6 +164,17 @@ export default function IntelligenceCard({
                         title={`75th: $${dimensionData.market_75th?.toLocaleString()}`}
                       />
                     )}
+                    {/* User Salary Range Overlay */}
+                    {dimensionData._salaryLow && dimensionData._salaryHigh && (
+                      <div 
+                        className="absolute h-full bg-indigo-500 opacity-60 z-10" 
+                        style={{ 
+                          left: `${Math.max(0, Math.min(100, ((dimensionData._salaryLow - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`,
+                          width: `${Math.max(0, Math.min(100, ((dimensionData._salaryHigh - dimensionData._salaryLow) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`
+                        }}
+                        title={`Your Offer: $${dimensionData._salaryLow.toLocaleString()} - $${dimensionData._salaryHigh.toLocaleString()}`}
+                      />
+                    )}
                     {/* Median Marker */}
                     <div 
                       className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" 
