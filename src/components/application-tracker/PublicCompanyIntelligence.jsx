@@ -25,12 +25,21 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
   const triggerLiveRefresh = async (record) => {
     const ticker = record?.ticker_symbol || record?.parent_ticker;
     try {
-      const resp = await base44.functions.invoke('fetchCompanyData', {
-        company_name: record?.company_name || companyName,
-        ticker_symbol: ticker || undefined,
-        entityId: record?.id
-      });
-      if (resp.data?.success) {
+      const [resp, healthResp] = await Promise.all([
+        base44.functions.invoke('fetchCompanyData', {
+          company_name: record?.company_name || companyName,
+          ticker_symbol: ticker || undefined,
+          entityId: record?.id
+        }),
+        base44.functions.invoke('fetchRealCompanyHealth', {
+          company_name: record?.company_name || companyName,
+          ticker_symbol: record?.ticker_symbol || undefined,
+          parent_ticker: record?.parent_ticker || undefined,
+          is_public: record?.is_public ?? true,
+          entityId: record?.id
+        })
+      ]);
+      if (resp.data?.success || healthResp.data?.success) {
         queryClient.invalidateQueries({ queryKey: ['public-company', companyName] });
       }
     } catch (err) {
