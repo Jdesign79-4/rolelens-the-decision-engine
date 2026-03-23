@@ -23,13 +23,23 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const records = await base44.asServiceRole.entities.UserApiKeys.filter({ created_by: user.email });
+    const dbKeys = records.length > 0 ? records[0] : {};
+    const env = {
+        ALPHA_VANTAGE_API_KEY: dbKeys.alpha_vantage_api_key || Deno.env.get("ALPHA_VANTAGE_API_KEY"),
+        FINNHUB_API_KEY: dbKeys.finnhub_api_key || Deno.env.get("FINNHUB_API_KEY"),
+        CAREER_ONE_STOP_USER_ID: dbKeys.career_one_stop_user_id || Deno.env.get("CAREER_ONE_STOP_USER_ID"),
+        CAREER_ONE_STOP_API_KEY: dbKeys.career_one_stop_api_key || Deno.env.get("CAREER_ONE_STOP_API_KEY"),
+        ONET_API_KEY: dbKeys.onet_api_key || Deno.env.get("ONET_API_KEY")
+    };
+
     const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health } = await req.json();
 
-    const COS_USER_ID = Deno.env.get("CAREER_ONE_STOP_USER_ID");
-    const COS_TOKEN = Deno.env.get("CAREER_ONE_STOP_API_KEY");
+    const COS_USER_ID = env.CAREER_ONE_STOP_USER_ID;
+    const COS_TOKEN = env.CAREER_ONE_STOP_API_KEY;
     const ONET_KEY = env.ONET_API_KEY;
-    const FINNHUB_KEY = Deno.env.get("FINNHUB_API_KEY");
-    const ALPHA_KEY = Deno.env.get("ALPHA_VANTAGE_API_KEY");
+    const FINNHUB_KEY = env.FINNHUB_API_KEY;
+    const ALPHA_KEY = env.ALPHA_VANTAGE_API_KEY;
 
     const cosHeaders = COS_TOKEN ? { Authorization: `Bearer ${COS_TOKEN}` } : {};
     const onetHeaders = ONET_KEY ? { Authorization: `Basic ${btoa(ONET_KEY + ':')}`, Accept: 'application/json' } : {};

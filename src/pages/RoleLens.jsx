@@ -28,6 +28,7 @@ import MockInterviewModal from '@/components/rolelens/mock-interview/MockIntervi
 import JobFeedback from '@/components/rolelens/JobFeedback';
 import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator';
 import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
+import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
@@ -1512,7 +1513,8 @@ function RoleLensContent() {
             {/* Compensation Data Sources */}
             <CompensationSources />
 
-            {/* Disclaimer */}
+            {/* Disclaimer & Attributions */}
+            <DataAttributionFooter />
             <Disclaimer />
           </div>
         </main>
