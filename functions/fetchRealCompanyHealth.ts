@@ -13,9 +13,9 @@ async function fetchWithTimeout(url, options = {}, timeout = 8000) {
   }
 }
 
-export async function getRealCompanyHealth(base44, company_name, ticker_symbol, parent_ticker, is_public) {
-  const FMP_API_KEY = Deno.env.get("FMP_API_KEY");
-  const ALPHA_VANTAGE_API_KEY = Deno.env.get("ALPHA_VANTAGE_API_KEY");
+export async function getRealCompanyHealth(base44, company_name, ticker_symbol, parent_ticker, is_public, env = {}) {
+  const FMP_API_KEY = env.FMP_API_KEY || Deno.env.get("FMP_API_KEY");
+  const ALPHA_VANTAGE_API_KEY = env.ALPHA_VANTAGE_API_KEY || Deno.env.get("ALPHA_VANTAGE_API_KEY");
 
   let actualTicker = ticker_symbol || parent_ticker;
   let isPrivate = !is_public || !actualTicker;
@@ -252,9 +252,17 @@ Output only the summary text.`;
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    const records = user ? await base44.asServiceRole.entities.UserApiKeys.filter({ created_by: user.email }) : [];
+    const dbKeys = records.length > 0 ? records[0] : {};
+    const env = {
+        FMP_API_KEY: dbKeys.fmp_api_key || Deno.env.get("FMP_API_KEY"),
+        ALPHA_VANTAGE_API_KEY: dbKeys.alpha_vantage_api_key || Deno.env.get("ALPHA_VANTAGE_API_KEY")
+    };
+
     const { company_name, ticker_symbol, parent_ticker, is_public, entityId } = await req.json();
 
-    const company_health = await getRealCompanyHealth(base44, company_name, ticker_symbol, parent_ticker, is_public);
+    const company_health = await getRealCompanyHealth(base44, company_name, ticker_symbol, parent_ticker, is_public, env);
 
     if (entityId) {
       await base44.asServiceRole.entities.PublicCompanyData.update(entityId, { company_health });

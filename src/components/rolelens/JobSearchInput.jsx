@@ -84,13 +84,27 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           }
         }
 
+        let roleDemand = null;
+        try {
+          const demandRes = await base44.functions.invoke('fetchRoleDemand', {
+            job_title: analysisResult?.role_analyzed || jobTitle || "Unknown Role",
+            sector: analysisResult?.company_health?.sector || "Information"
+          });
+          if (demandRes.data?.success) {
+            roleDemand = demandRes.data.role_demand;
+          }
+        } catch (err) {
+          console.warn("Failed to fetch role demand:", err);
+        }
+
         await base44.entities.JobApplication.create({
           company_name: analysisResult?.company_name || searchTerm,
           job_title: analysisResult?.role_analyzed || jobTitle || "Unknown Role",
           job_url: "",
           applied_date: new Date().toISOString().split('T')[0],
           stage: "Reaching Out",
-          company_data_id: companyId
+          company_data_id: companyId,
+          role_demand: roleDemand
         });
       } catch (err) {
         console.warn("Failed to save entities:", err);

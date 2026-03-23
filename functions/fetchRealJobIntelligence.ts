@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     const COS_USER_ID = Deno.env.get("CAREER_ONE_STOP_USER_ID");
     const COS_TOKEN = Deno.env.get("CAREER_ONE_STOP_API_KEY");
-    const ONET_KEY = Deno.env.get("ONET_API_KEY");
+    const ONET_KEY = env.ONET_API_KEY;
     const FINNHUB_KEY = Deno.env.get("FINNHUB_API_KEY");
     const ALPHA_KEY = Deno.env.get("ALPHA_VANTAGE_API_KEY");
 

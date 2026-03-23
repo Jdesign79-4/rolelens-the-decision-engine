@@ -176,13 +176,27 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         }
       }
 
+      let roleDemand = null;
+      try {
+        const demandRes = await base44.functions.invoke('fetchRoleDemand', {
+          job_title: parsedJSON.role_analyzed || jobTitle,
+          sector: parsedJSON.company_health?.sector || "Information"
+        });
+        if (demandRes.data?.success) {
+          roleDemand = demandRes.data.role_demand;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch role demand:", err);
+      }
+
       await base44.entities.JobApplication.create({
         company_name: parsedJSON.company_name || companyName,
         job_title: parsedJSON.role_analyzed || jobTitle,
         job_url: url,
         stage: "Reaching Out",
         job_seeker_intelligence: parsedJSON,
-        company_data_id: companyId
+        company_data_id: companyId,
+        role_demand: roleDemand
       });
 
       setAnalysisStatus('complete');

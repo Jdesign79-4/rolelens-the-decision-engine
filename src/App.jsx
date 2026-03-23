@@ -6,6 +6,8 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import ApiKeysSettings from './pages/ApiKeysSettings';
+import DataSources from './pages/DataSources';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -45,6 +47,16 @@ const AuthenticatedApp = () => {
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
+        </LayoutWrapper>
+      } />
+      <Route path="/api-keys" element={
+        <LayoutWrapper currentPageName="api-keys">
+          <ApiKeysSettings />
+        </LayoutWrapper>
+      } />
+      <Route path="/data-sources" element={
+        <LayoutWrapper currentPageName="data-sources">
+          <DataSources />
         </LayoutWrapper>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
