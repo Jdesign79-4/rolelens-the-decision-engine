@@ -59,13 +59,13 @@ Deno.serve(async (req) => {
       success = true;
       message = "O*NET key saved (live test skipped due to auth formatting constraints)";
     } else if (provider === "FRED") {
-      const res = await fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=JTS000000000000000JOR&api_key=${key}&file_type=json&limit=1`);
+      const res = await fetch(`https://api.stlouisfed.org/fred/series?series_id=GNPCA&api_key=${key}&file_type=json`);
+      const data = await res.json();
       if (res.status === 200) {
-         const data = await res.json();
-         if (data.observations) success = true;
-         else message = "Invalid key";
+         if (data.seriess) success = true;
+         else message = "Invalid key or unexpected response";
       } else {
-         message = `Error ${res.status}`;
+         message = data.error_message ? data.error_message : `Error ${res.status}`;
       }
     } else {
       message = "Unknown provider";
