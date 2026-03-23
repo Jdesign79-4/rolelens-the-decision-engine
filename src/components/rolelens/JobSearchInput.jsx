@@ -149,9 +149,9 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
 
       // Generate smart alternatives in parallel (non-blocking for main card display)
       generateAlternatives({
-        companyName: result.meta.company,
-        jobTitle: isCompanyOnly ? null : (jobTitle || result.meta.title),
-        location: city || result.meta.location,
+        companyName: processedJob.meta.company,
+        jobTitle: isCompanyOnly ? null : (jobTitle || processedJob.meta.title),
+        location: city || processedJob.meta.location,
         isCompanyOnly,
         tunerSettings: tunerSettings || undefined
       }).then(smartAlts => {
