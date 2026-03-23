@@ -10,8 +10,7 @@ Deno.serve(async (req) => {
     let updatedCount = 0;
 
     for (const app of applications) {
-      if (app.role_demand && app.role_demand.avg_time_to_fill === "45 days") {
-        // It's fabricated data. Let's update it.
+      if (app.role_demand && !app.role_demand.avg_time_to_fill?.includes("not available")) {
         try {
           const demandRes = await base44.asServiceRole.functions.invoke('fetchRoleDemand', {
             job_title: app.job_title || "Unknown Role",
