@@ -17,6 +17,184 @@ function clamp(val, min, max) {
   return Math.min(Math.max(val, min), max);
 }
 
+function matchJobTitleToSOC(jobTitle) {
+  if (!jobTitle) return null;
+  const title = jobTitle.trim().toLowerCase();
+
+  // STEP 1 - EXACT MAPPING TABLE
+  const exactMap = {
+    // Software/Tech
+    "software engineer": "15-1252", "software developer": "15-1252", "swe": "15-1252",
+    "backend engineer": "15-1252", "frontend engineer": "15-1252", "full stack engineer": "15-1252",
+    "full stack developer": "15-1252", "backend developer": "15-1252", "frontend developer": "15-1252",
+    "application developer": "15-1252", "applications engineer": "15-1252", "platform engineer": "15-1252",
+    
+    "software qa": "15-1253", "qa engineer": "15-1253", "qa analyst": "15-1253",
+    "quality assurance engineer": "15-1253", "quality assurance analyst": "15-1253",
+    "sdet": "15-1253", "test engineer": "15-1253", "software tester": "15-1253",
+    
+    "web developer": "15-1254", "web designer": "15-1254", "front end web developer": "15-1254",
+    
+    "ui designer": "15-1255", "ux designer": "15-1255", "ui/ux designer": "15-1255",
+    "digital designer": "15-1255", "web and digital interface designer": "15-1255",
+    
+    "data scientist": "15-1221", "machine learning engineer": "15-1221", "ml engineer": "15-1221",
+    "ai engineer": "15-1221", "ai researcher": "15-1221", "computer scientist": "15-1221", "research scientist": "15-1221",
+    
+    "data analyst": "15-1211", "business analyst": "15-1211", "systems analyst": "15-1211",
+    "computer systems analyst": "15-1211", "it analyst": "15-1211",
+    
+    "security engineer": "15-1212", "security analyst": "15-1212", "information security analyst": "15-1212",
+    "cybersecurity analyst": "15-1212", "cybersecurity engineer": "15-1212", "infosec analyst": "15-1212",
+    
+    "network engineer": "15-1241", "network architect": "15-1241", "cloud architect": "15-1241",
+    "solutions architect": "15-1241", "infrastructure architect": "15-1241",
+    
+    "database administrator": "15-1242", "dba": "15-1242", "database engineer": "15-1242",
+    "database architect": "15-1243", "data architect": "15-1243", "data engineer": "15-1243",
+    
+    "system administrator": "15-1244", "systems administrator": "15-1244", "sysadmin": "15-1244",
+    "network administrator": "15-1244", "it administrator": "15-1244", "linux administrator": "15-1244", "windows administrator": "15-1244",
+    "devops engineer": "15-1244", "site reliability engineer": "15-1244", "sre": "15-1244", "infrastructure engineer": "15-1244", "cloud engineer": "15-1244",
+    
+    "help desk": "15-1232", "it support": "15-1232", "desktop support": "15-1232",
+    "technical support specialist": "15-1232", "it support specialist": "15-1232",
+    
+    "network support": "15-1231", "network technician": "15-1231",
+    
+    "computer programmer": "15-1251", "programmer": "15-1251", "coder": "15-1251",
+    
+    "product manager": "11-1021", "technical product manager": "11-1021", "program manager": "11-1021",
+    "project manager": "15-1299", "it project manager": "15-1299", "technical project manager": "15-1299", "scrum master": "15-1299",
+    
+    // Management
+    "engineering manager": "11-3021", "software engineering manager": "11-3021",
+    "vp of engineering": "11-3021", "director of engineering": "11-3021", "cto": "11-3021", "chief technology officer": "11-3021",
+    "it manager": "11-3021", "it director": "11-3021", "information technology manager": "11-3021",
+    
+    // Non-Tech Roles
+    "mechanical engineer": "17-2141", "civil engineer": "17-2051", "electrical engineer": "17-2071",
+    "chemical engineer": "17-2041", "industrial engineer": "17-2112", "biomedical engineer": "17-2031",
+    "aerospace engineer": "17-2011", "environmental engineer": "17-2081", "structural engineer": "17-2051",
+    "accountant": "13-2011", "cpa": "13-2011", "financial analyst": "13-2051",
+    "marketing manager": "11-2021", "sales manager": "11-2022", "human resources manager": "11-3121", "hr manager": "11-3121",
+    "registered nurse": "29-1141", "rn": "29-1141", "nurse": "29-1141",
+    "physician": "29-1210", "doctor": "29-1210", "md": "29-1210",
+    "lawyer": "23-1011", "attorney": "23-1011",
+    "teacher": "25-1000", "professor": "25-1000",
+    "graphic designer": "27-1024"
+  };
+
+  const titlesMap = {
+    "15-1252": "Software Developers",
+    "15-1253": "Software Quality Assurance Analysts and Testers",
+    "15-1254": "Web Developers",
+    "15-1255": "Web and Digital Interface Designers",
+    "15-1221": "Computer and Information Research Scientists",
+    "15-1211": "Computer Systems Analysts",
+    "15-1212": "Information Security Analysts",
+    "15-1241": "Computer Network Architects",
+    "15-1242": "Database Administrators",
+    "15-1243": "Database Architects",
+    "15-1244": "Network and Computer Systems Administrators",
+    "15-1232": "Computer User Support Specialists",
+    "15-1231": "Computer Network Support Specialists",
+    "15-1251": "Computer Programmers",
+    "11-1021": "General and Operations Managers",
+    "15-1299": "Computer Occupations, All Other",
+    "11-3021": "Computer and Information Systems Managers",
+    "17-2141": "Mechanical Engineers",
+    "17-2051": "Civil Engineers",
+    "17-2071": "Electrical Engineers",
+    "17-2041": "Chemical Engineers",
+    "17-2112": "Industrial Engineers",
+    "17-2031": "Biomedical Engineers",
+    "17-2011": "Aerospace Engineers",
+    "17-2081": "Environmental Engineers",
+    "13-2011": "Accountants and Auditors",
+    "13-2051": "Financial and Investment Analysts",
+    "11-2021": "Marketing Managers",
+    "11-2022": "Sales Managers",
+    "11-3121": "Human Resources Managers",
+    "29-1141": "Registered Nurses",
+    "29-1210": "Physicians",
+    "23-1011": "Lawyers",
+    "25-1000": "Teachers and Instructors",
+    "27-1024": "Graphic Designers"
+  };
+
+  if (exactMap[title]) {
+    const code = exactMap[title];
+    return { socCode: code, socTitle: titlesMap[code], confidence: "high" };
+  }
+
+  // STEP 2 - HEURISTIC FUZZY MATCHING
+  // Rule A - Strip prefixes/suffixes
+  const prefixes = ["senior", "sr.", "sr", "junior", "jr.", "jr", "lead", "staff", "principal", "chief", "head", "associate", "assistant", "intern", "i", "ii", "iii", "iv", "v", "1", "2", "3", "level 1", "level 2", "level 3"];
+  let cleanedTitle = title;
+  
+  // Sort prefixes by length descending so "level 1" is checked before "1"
+  prefixes.sort((a, b) => b.length - a.length);
+  
+  let modified = true;
+  while (modified) {
+    modified = false;
+    for (const p of prefixes) {
+      if (cleanedTitle.startsWith(p + " ")) {
+        cleanedTitle = cleanedTitle.slice(p.length + 1).trim();
+        modified = true;
+      }
+      if (cleanedTitle.endsWith(" " + p)) {
+        cleanedTitle = cleanedTitle.slice(0, -(p.length + 1)).trim();
+        modified = true;
+      }
+    }
+  }
+
+  if (exactMap[cleanedTitle]) {
+    const code = exactMap[cleanedTitle];
+    return { socCode: code, socTitle: titlesMap[code], confidence: "medium" };
+  }
+
+  // Rule B - Domain keyword matching
+  function checkGroup(reqs, excls) {
+    const hasReq = reqs.some(r => cleanedTitle.includes(r));
+    const hasExcl = excls ? excls.some(e => cleanedTitle.includes(e)) : false;
+    return hasReq && !hasExcl;
+  }
+
+  if (checkGroup(["software", "developer", "coding", "programming", "full stack", "fullstack", "backend", "frontend", "full-stack", "back-end", "front-end"], ["mechanical", "civil", "electrical", "chemical", "industrial", "biomedical", "aerospace", "environmental", "structural", "hardware"])) {
+    return { socCode: "15-1252", socTitle: "Software Developers", confidence: "medium" };
+  }
+  if (checkGroup(["qa", "quality assurance", "test", "sdet"], ["manufacturing", "food", "clinical"])) {
+    return { socCode: "15-1253", socTitle: "Software Quality Assurance Analysts and Testers", confidence: "medium" };
+  }
+  if (checkGroup(["security", "infosec", "cybersecurity", "cyber"], ["guard", "officer", "physical"])) {
+    return { socCode: "15-1212", socTitle: "Information Security Analysts", confidence: "medium" };
+  }
+  if (checkGroup(["data scien", "machine learning", "ml engineer", "ai engineer", "artificial intelligence"])) {
+    return { socCode: "15-1221", socTitle: "Computer and Information Research Scientists", confidence: "medium" };
+  }
+  if (checkGroup(["data analyst", "business analyst", "systems analyst", "business intelligence", "bi analyst"])) {
+    return { socCode: "15-1211", socTitle: "Computer Systems Analysts", confidence: "medium" };
+  }
+  if (checkGroup(["database", "dba", "data engineer", "data architect"])) {
+    return { socCode: "15-1243", socTitle: "Database Architects", confidence: "medium" };
+  }
+  if (checkGroup(["network", "infrastructure", "devops", "sre", "site reliability", "cloud engineer", "sysadmin", "system admin"])) {
+    return { socCode: "15-1244", socTitle: "Network and Computer Systems Administrators", confidence: "medium" };
+  }
+  if (checkGroup(["web develop", "web design"])) {
+    return { socCode: "15-1254", socTitle: "Web Developers", confidence: "medium" };
+  }
+  if (checkGroup(["it manager", "it director", "cto", "vp engineer", "engineering manager"])) {
+    return { socCode: "11-3021", socTitle: "Computer and Information Systems Managers", confidence: "medium" };
+  }
+
+  // Rule C
+  return null;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
