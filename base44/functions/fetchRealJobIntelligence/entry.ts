@@ -228,10 +228,13 @@ Deno.serve(async (req) => {
     // --- 1. COMPENSATION ---
     let compData = null;
     let cosSources = [];
-    if (COS_TOKEN && job_title) {
+    const socMatch = matchJobTitleToSOC(job_title);
+    
+    if (COS_TOKEN && job_title && socMatch) {
       try {
         const loc = location ? location.split(',')[0].trim() : 'US';
-        const url = `https://api.careeronestop.org/v1/salaries/${COS_USER_ID}/${encodeURIComponent(job_title)}/${encodeURIComponent(loc)}/25`;
+        // Use socCode for the query instead of job_title
+        const url = `https://api.careeronestop.org/v1/salaries/${COS_USER_ID}/${encodeURIComponent(socMatch.socCode)}/${encodeURIComponent(loc)}/25`;
         const res = await fetchWithTimeout(url, { headers: cosHeaders });
         if (res.ok) {
           const json = await res.json();
