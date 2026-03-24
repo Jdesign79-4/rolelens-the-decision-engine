@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (compData && compData.market_median) {
+    if (compData && compData.market_median && socMatch) {
       let score = null;
       let insight = `CareerOneStop data shows the salary range for this role (${compData.occ_title}) in your area is $${compData.market_low?.toLocaleString() || 'N/A'} (10th percentile) to $${compData.market_high?.toLocaleString() || 'N/A'} (90th percentile), with a median of $${compData.market_median.toLocaleString()}. `;
       let headline = `At market rate. The median salary is $${compData.market_median.toLocaleString()} (BLS OEWS).`;
