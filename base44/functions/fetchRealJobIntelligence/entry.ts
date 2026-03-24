@@ -310,17 +310,9 @@ Deno.serve(async (req) => {
     let projScore = null;
     let outlookData = {};
     
-    if (ONET_KEY && job_title) {
-      try {
-        const searchRes = await fetchWithTimeout(`https://services.onetcenter.org/ws/online/search?keyword=${encodeURIComponent(job_title)}`, { headers: onetHeaders });
-        if (searchRes.ok) {
-          const searchJson = await searchRes.json();
-          if (searchJson.occupation && searchJson.occupation.length > 0) {
-            onetCode = searchJson.occupation[0].code;
-            outlookData.title = searchJson.occupation[0].title;
-          }
-        }
-      } catch (e) { console.warn("ONET search error", e); }
+    if (ONET_KEY && job_title && socMatch) {
+      onetCode = `${socMatch.socCode}.00`;
+      outlookData.title = socMatch.socTitle;
     }
 
     if (onetCode) {
