@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
          message = "Invalid key or unexpected response";
       }
     } else if (provider === "FMP") {
-      const res = await fetch(`https://financialmodelingprep.com/api/v3/profile/AAPL?apikey=${key}`);
+      const res = await fetch(`https://financialmodelingprep.com/stable/profile?symbol=AAPL&apikey=${key}`);
       if (res.status === 200) {
          const data = await res.json();
          if (data.length > 0 && data[0].symbol === "AAPL") success = true;
