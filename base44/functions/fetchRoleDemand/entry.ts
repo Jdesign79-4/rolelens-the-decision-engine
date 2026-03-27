@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
     let supply_demand_display = "Data unavailable";
     let joltsRate = null;
     let blsGrowth = null;
+    let openingsToUnemployedRatio = null;
 
     if (env.FRED_API_KEY) {
       // map sector to JOLTS
@@ -44,25 +45,35 @@ Deno.serve(async (req) => {
       else if (s.includes("health") || s.includes("medical")) { jolts_series_id = "JTS620000000000000JOR"; sectorName = "Healthcare"; }
       else if (s.includes("retail")) { jolts_series_id = "JTS440000000000000JOR"; sectorName = "Retail"; }
 
-      const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${jolts_series_id}&api_key=${env.FRED_API_KEY}&file_type=json&sort_order=desc&limit=1`;
-      try {
-        const res = await fetchWithTimeout(url);
-        if (res.ok) {
-           const data = await res.json();
-           if (data.observations && data.observations.length > 0) {
-              const rateStr = data.observations[0].value;
-              joltsRate = parseFloat(rateStr);
-              if (!isNaN(joltsRate)) {
-                 let level = "moderate demand";
-                 if (joltsRate > 5) level = "High demand";
-                 else if (joltsRate < 3) level = "Low demand";
-                 else level = "Moderate demand";
-
-                 supply_demand_ratio = level.toLowerCase();
-                 const dateLabel = new Date(data.observations[0].date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                 supply_demand_display = `${level} — ${joltsRate}% job openings rate in ${sectorName} (JOLTS, ${dateLabel})`;
+      const fetchFredLatest = async (seriesId) => {
+          const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${env.FRED_API_KEY}&file_type=json&sort_order=desc&limit=1`;
+          const res = await fetchWithTimeout(url);
+          if (res.ok) {
+              const data = await res.json();
+              if (data.observations && data.observations.length > 0) {
+                  return parseFloat(data.observations[0].value);
               }
-           }
+          }
+          return null;
+      };
+
+      try {
+        joltsRate = await fetchFredLatest(jolts_series_id);
+        const joltsLevel = await fetchFredLatest("JTSJOL"); // Openings level in thousands
+        const unemployLevel = await fetchFredLatest("UNEMPLOY"); // Unemployed level in thousands
+
+        if (joltsLevel !== null && unemployLevel !== null && unemployLevel > 0) {
+            openingsToUnemployedRatio = (joltsLevel / unemployLevel);
+        }
+
+        if (joltsRate !== null) {
+            let level = "moderate demand";
+            if (joltsRate > 5) level = "High demand";
+            else if (joltsRate < 3) level = "Low demand";
+            else level = "Moderate demand";
+
+            supply_demand_ratio = level.toLowerCase();
+            supply_demand_display = `${level} — ${joltsRate}% job openings rate in ${sectorName} (JOLTS)`;
         }
       } catch (e) {
         console.warn("FRED API Error", e);
@@ -92,7 +103,13 @@ Deno.serve(async (req) => {
     let negotiation_leverage = null;
     let negotiation_display = "Insufficient data to assess leverage";
 
-    if (joltsRate !== null && blsGrowth !== null) {
+    if (openingsToUnemployedRatio !== null) {
+        if (openingsToUnemployedRatio > 1.2) negotiation_leverage = "high";
+        else if (openingsToUnemployedRatio >= 0.8) negotiation_leverage = "moderate";
+        else negotiation_leverage = "low";
+
+        negotiation_display = `${negotiation_leverage.charAt(0).toUpperCase() + negotiation_leverage.slice(1)} leverage — ${openingsToUnemployedRatio.toFixed(1)} job openings per unemployed worker nationally. Source: FRED JOLTS/BLS`;
+    } else if (joltsRate !== null && blsGrowth !== null) {
         if (joltsRate > 5 && blsGrowth > 5) negotiation_leverage = "high";
         else if (joltsRate > 3 || blsGrowth > 3) negotiation_leverage = "moderate";
         else if (joltsRate < 3 && blsGrowth < 3) negotiation_leverage = "low";

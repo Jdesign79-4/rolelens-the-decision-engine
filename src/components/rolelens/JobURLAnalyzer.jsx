@@ -138,6 +138,20 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
           tickerSymbol = dbResp[0].ticker_symbol;
           parentTicker = dbResp[0].parent_ticker;
           companyHealth = dbResp[0].company_health;
+        } else {
+          // If not in DB, try to find public data via fetchCompanyData
+          const healthRes = await base44.functions.invoke('fetchCompanyData', {
+            company_name: parsedJSON.company_name || companyName,
+            ticker_symbol: undefined
+          });
+          if (healthRes.data?.success) {
+            companyHealth = healthRes.data.data.company_health;
+            parsedJSON.company_health = companyHealth;
+            parsedJSON.opportunity_flags = healthRes.data.data.opportunity_flags;
+            if (healthRes.data.data.news_articles?.length > 0) {
+              parsedJSON.news = healthRes.data.data.news_articles;
+            }
+          }
         }
 
         const realIntelRes = await base44.functions.invoke('fetchRealJobIntelligence', {
@@ -165,8 +179,11 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       if (existingCompanies.length > 0) {
         companyId = existingCompanies[0].id;
         const updateData = {};
-        if (parsedJSON.company_health?.financial_health_score !== undefined) {
-          updateData.financial_health_score = parsedJSON.company_health.financial_health_score;
+        if (parsedJSON.company_health?.financial_health_score !== undefined || parsedJSON.company_health?.stability_score !== undefined) {
+          updateData.company_health = parsedJSON.company_health;
+        }
+        if (parsedJSON.opportunity_flags) {
+          updateData.opportunity_flags = parsedJSON.opportunity_flags;
         }
         if (parsedJSON.news && parsedJSON.news.length > 0) {
           updateData.news_articles = parsedJSON.news;

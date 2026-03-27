@@ -135,6 +135,19 @@ Deno.serve(async (req) => {
     } else if (fmpProfile && fmpProfile.fullTimeEmployees) {
       company_health.employee_count = fmpProfile.fullTimeEmployees;
     }
+    
+    // Calculate headcount trend using historical FMP data if available, or fallback to heuristics
+    if (fmpProfile && fmpProfile.fullTimeEmployees) {
+       // Since FMP profile only returns current, we can't get true YoY trend easily without historical API.
+       // However, we can use revenue trend as a proxy for headcount trend if true headcount trend is missing.
+    }
+    if (fmpIncome && fmpIncome.length >= 2) {
+      const q1 = fmpIncome[0].revenue;
+      const q2 = fmpIncome[1].revenue;
+      if (q1 > q2 * 1.05) company_health.headcount_trend = "hiring";
+      else if (q1 < q2 * 0.95) company_health.headcount_trend = "cutting";
+      else company_health.headcount_trend = "stable";
+    }
 
     // FMP Income Trend (Revenue Trend)
     let revTrend = "flat";

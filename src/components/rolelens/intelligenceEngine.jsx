@@ -210,13 +210,18 @@ Return your analysis as a JSON object matching the intelligence schema provided.
         
         // Fetch real company health
         if (isPublic && (tickerSymbol || parentTicker)) {
-          const healthRes = await base44.functions.invoke('fetchRealCompanyHealth', {
+          const healthRes = await base44.functions.invoke('fetchCompanyData', {
             company_name: companyName,
-            ticker_symbol: tickerSymbol,
-            parent_ticker: parentTicker,
-            is_public: true
+            ticker_symbol: tickerSymbol || parentTicker
           });
-          companyHealth = healthRes.data?.company_health;
+          if (healthRes.data?.success) {
+            companyHealth = healthRes.data.data.company_health;
+            intelligence.company_health = companyHealth;
+            intelligence.opportunity_flags = healthRes.data.data.opportunity_flags;
+            if (healthRes.data.data.news_articles && healthRes.data.data.news_articles.length > 0) {
+              intelligence.news = healthRes.data.data.news_articles;
+            }
+          }
         }
       }
     }

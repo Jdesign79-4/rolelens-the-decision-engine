@@ -61,9 +61,10 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
             companyId = existingCompanies[0].id;
             const updateData = {
               job_seeker_intelligence: analysisResult,
-              financial_health_score: analysisResult.company_health?.financial_health_score,
               last_updated: new Date().toISOString()
             };
+            if (analysisResult.company_health) updateData.company_health = analysisResult.company_health;
+            if (analysisResult.opportunity_flags) updateData.opportunity_flags = analysisResult.opportunity_flags;
             if (analysisResult.news && analysisResult.news.length > 0) {
               updateData.news_articles = analysisResult.news;
             }
@@ -71,11 +72,12 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           } else {
             const createData = {
               company_name: analysisResult.company_name,
-              is_public: analysisResult.company_health?.funding_stage === 'public',
+              is_public: analysisResult.company_health?.funding_stage === 'public' || !!analysisResult.company_health?.stability_score,
               job_seeker_intelligence: analysisResult,
-              financial_health_score: analysisResult.company_health?.financial_health_score,
               last_updated: new Date().toISOString()
             };
+            if (analysisResult.company_health) createData.company_health = analysisResult.company_health;
+            if (analysisResult.opportunity_flags) createData.opportunity_flags = analysisResult.opportunity_flags;
             if (analysisResult.news && analysisResult.news.length > 0) {
               createData.news_articles = analysisResult.news;
             }

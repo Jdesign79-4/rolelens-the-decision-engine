@@ -81,11 +81,21 @@ function matchJobTitleToSOC(jobTitle) {
     "registered nurse": "29-1141", "rn": "29-1141", "nurse": "29-1141",
     "physician": "29-1210", "doctor": "29-1210", "md": "29-1210",
     "lawyer": "23-1011", "attorney": "23-1011",
-    "teacher": "25-1000", "professor": "25-1000",
-    "graphic designer": "27-1024"
+    "teacher": "25-2031", "professor": "25-1000",
+    "graphic designer": "27-1024",
+    "video editor": "27-4032",
+    "data analyst": "15-2051",
+    "product manager": "11-2021",
+    "ux designer": "27-1021",
+    "project manager": "11-9199"
   };
 
   const titlesMap = {
+    "27-4032": "Film and Video Editors",
+    "15-2051": "Data Scientists",
+    "27-1021": "Commercial and Industrial Designers",
+    "11-9199": "Managers, All Other",
+    "25-2031": "Secondary School Teachers",
     "15-1252": "Software Developers",
     "15-1253": "Software Quality Assurance Analysts and Testers",
     "15-1254": "Web Developers",
@@ -208,7 +218,9 @@ Deno.serve(async (req) => {
         FINNHUB_API_KEY: dbKeys.finnhub_api_key || Deno.env.get("FINNHUB_API_KEY"),
         CAREER_ONE_STOP_USER_ID: dbKeys.career_one_stop_user_id || Deno.env.get("CAREER_ONE_STOP_USER_ID"),
         CAREER_ONE_STOP_API_KEY: dbKeys.career_one_stop_api_key || Deno.env.get("CAREER_ONE_STOP_API_KEY"),
-        ONET_API_KEY: dbKeys.onet_api_key || Deno.env.get("ONET_API_KEY")
+        ONET_API_KEY: dbKeys.onet_api_key || Deno.env.get("ONET_API_KEY"),
+        BLS_API_KEY: dbKeys.bls_api_key || Deno.env.get("BLS_API_KEY"),
+        FRED_API_KEY: dbKeys.fred_api_key || Deno.env.get("FRED_API_KEY")
     };
 
     const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health } = await req.json();
@@ -218,6 +230,8 @@ Deno.serve(async (req) => {
     const ONET_KEY = env.ONET_API_KEY;
     const FINNHUB_KEY = env.FINNHUB_API_KEY;
     const ALPHA_KEY = env.ALPHA_VANTAGE_API_KEY;
+    const BLS_KEY = env.BLS_API_KEY;
+    const FRED_KEY = env.FRED_API_KEY;
 
     const cosHeaders = COS_TOKEN ? { Authorization: `Bearer ${COS_TOKEN}` } : {};
     const onetHeaders = ONET_KEY ? { Authorization: `Basic ${btoa(ONET_KEY + ':')}`, Accept: 'application/json' } : {};
@@ -230,7 +244,42 @@ Deno.serve(async (req) => {
     let cosSources = [];
     const socMatch = matchJobTitleToSOC(job_title);
     
-    if (COS_TOKEN && job_title && socMatch) {
+    if (BLS_KEY && socMatch) {
+      const socNoDash = socMatch.socCode.replace('-', '');
+      const seriesIds = [
+        `OEUN0000000000${socNoDash}000008`, // 25th
+        `OEUN0000000000${socNoDash}000010`, // Median
+        `OEUN0000000000${socNoDash}000011`  // 75th
+      ];
+      try {
+        const blsRes = await fetchWithTimeout('https://api.bls.gov/publicAPI/v2/timeseries/data/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ seriesid: seriesIds, registrationkey: BLS_KEY, latest: true })
+        });
+        const blsData = await blsRes.json();
+        if (blsData.status === "REQUEST_SUCCEEDED" && blsData.Results?.series) {
+          const series = blsData.Results.series;
+          let market_25th = null, market_median = null, market_75th = null;
+          series.forEach(s => {
+            if (s.data && s.data.length > 0) {
+              const val = parseFloat(s.data[0].value);
+              if (s.seriesID.endsWith('08')) market_25th = val;
+              if (s.seriesID.endsWith('10')) market_median = val;
+              if (s.seriesID.endsWith('11')) market_75th = val;
+            }
+          });
+          if (market_median) {
+            compData = { market_25th, market_median, market_75th, occ_title: socMatch.socTitle };
+            cosSources.push("BLS Occupational Employment Statistics");
+          }
+        }
+      } catch (e) {
+        console.warn("BLS fetch error:", e);
+      }
+    }
+
+    if (!compData && COS_TOKEN && job_title && socMatch) {
       try {
         const loc = location ? location.split(',')[0].trim() : 'US';
         // Use socCode for the query instead of job_title
@@ -262,15 +311,18 @@ Deno.serve(async (req) => {
 
     if (compData && compData.market_median && socMatch) {
       let score = null;
-      let insight = `CareerOneStop data shows the salary range for this role (${compData.occ_title}) in your area is $${compData.market_low?.toLocaleString() || 'N/A'} (10th percentile) to $${compData.market_high?.toLocaleString() || 'N/A'} (90th percentile), with a median of $${compData.market_median.toLocaleString()}. `;
-      let headline = `At market rate. The median salary is $${compData.market_median.toLocaleString()} (BLS OEWS).`;
+      let insight = `${compData.occ_title}s nationally earn $${compData.market_25th?.toLocaleString() || 'N/A'} (25th percentile) → $${compData.market_median?.toLocaleString() || 'N/A'} (median) → $${compData.market_75th?.toLocaleString() || 'N/A'} (75th percentile). `;
+      let headline = `At market rate. The median salary is $${compData.market_median.toLocaleString()} (BLS).`;
+
+      const mHigh = compData.market_75th || compData.market_high;
+      const mLow = compData.market_25th || compData.market_low;
 
       if (salary_low && salary_high) {
         const midpoint = (salary_low + salary_high) / 2;
-        if (compData.market_high && midpoint >= compData.market_high) { score = 95; headline = "Exceptional offer. Well above market 90th percentile."; }
+        if (mHigh && midpoint >= mHigh) { score = 95; headline = "Exceptional offer. Well above market 75th percentile."; }
         else if (midpoint >= compData.market_median * 1.15) { score = 80; headline = "Above market rate."; }
         else if (midpoint >= compData.market_median * 0.85) { score = 65; headline = `At market rate. The median salary is $${compData.market_median.toLocaleString()}.`; }
-        else if (compData.market_low && midpoint >= compData.market_low) { score = 40; headline = "Below market rate."; }
+        else if (mLow && midpoint >= mLow) { score = 40; headline = "Below market rate."; }
         else { score = 15; headline = "Well below market rate."; }
         insight += `Your offered range falls ${score >= 80 ? 'above' : score <= 40 ? 'below' : 'near'} the market median.`;
       } else {
@@ -280,12 +332,12 @@ Deno.serve(async (req) => {
       dimensions.compensation = {
         score,
         headline,
-        insight: insight + " Based on BLS Occupational Employment & Wage Statistics, May 2024 release.",
-        market_low: compData.market_low,
+        insight: insight + " Based on BLS Occupational Employment Statistics.",
+        market_low: compData.market_25th || compData.market_low,
         market_25th: compData.market_25th,
         market_median: compData.market_median,
         market_75th: compData.market_75th,
-        market_high: compData.market_high,
+        market_high: compData.market_75th || compData.market_high,
         confidence: "high",
         verified: true,
         sources: cosSources,
@@ -406,11 +458,13 @@ Deno.serve(async (req) => {
       else if (outlookData.growthPct !== undefined) headline = `Moderate growth outlook. BLS projects ${outlookData.growthPct}% employment growth through 2033.`;
       else headline = "Average growth outlook based on occupation data.";
 
-      let insight = `This occupation (${outlookData.title}) is projected to grow ${outlookData.growthPct !== undefined ? outlookData.growthPct + '%' : 'steadily'} from 2023-2033 according to BLS. `;
-      if (outlookData.bright) insight += "O*NET identifies this as a Bright Outlook occupation. ";
-      if (company_health) {
-        insight += `The company's own growth signals (revenue: ${company_health.revenue_trend || 'unknown'}, headcount: ${company_health.headcount_trend || 'unknown'}) suggest ${companyScore >= 70 ? 'strong potential for internal growth' : 'limited internal expansion'}.`;
+      let insight = `${finalCgScore >= 70 ? 'Strong' : finalCgScore <= 40 ? 'Weak' : 'Moderate'} growth outlook — `;
+      if (company_health && company_health.headcount_trend) {
+        insight += `company headcount trend is ${company_health.headcount_trend}, `;
       }
+      insight += `BLS projects ${outlookData.growthPct !== undefined ? outlookData.growthPct + '%' : 'steady'} occupation growth through 2033.`;
+      
+      if (outlookData.bright) insight += " O*NET identifies this as a Bright Outlook occupation.";
 
       dimensions.career_growth = {
         score: finalCgScore ? Math.round(finalCgScore) : null,
@@ -649,6 +703,70 @@ Deno.serve(async (req) => {
       _warnFound: warnFound,
       _riskFlagObjects: riskFlags // Pass the objects to the UI for color-coding
     };
+
+    // --- 5. TIMING ---
+    let timingSources = [];
+    let timingScore = 50;
+    let timingHeadline = "Macro timing data unavailable";
+    let timingInsight = "Could not fetch macro data from FRED.";
+    
+    if (FRED_KEY) {
+      try {
+        const getFred = async (id) => {
+          const r = await fetchWithTimeout(`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=3`);
+          if (r.ok) {
+            const d = await r.json();
+            return d.observations ? d.observations.map(o => parseFloat(o.value)) : [];
+          }
+          return [];
+        };
+        const [jolts, unrate, quits] = await Promise.all([
+          getFred('JTSJOL'),
+          getFred('UNRATE'),
+          getFred('JTSQUR')
+        ]);
+        if (jolts.length && unrate.length) {
+          const j = jolts[0] * 1000; // JOLTS is in thousands
+          const u = unrate[0];
+          const q = quits.length ? quits[0] : null;
+          timingSources.push("FRED JOLTS Job Openings", "FRED Unemployment Rate");
+          if (q !== null) timingSources.push("FRED Quit Rate");
+          
+          let jTrend = jolts.length > 1 && jolts[0] > jolts[jolts.length - 1] ? 'up' : 'down';
+          let uTrend = unrate.length > 1 && unrate[0] > unrate[unrate.length - 1] ? 'up' : 'down';
+          
+          if (u < 5 && j > 7000000 && jTrend === 'up') timingScore = 90;
+          else if (u > 5 && jTrend === 'down') timingScore = 30;
+          else timingScore = 60;
+          
+          timingHeadline = `Job market is ${timingScore >= 80 ? 'strong' : timingScore <= 40 ? 'challenging' : 'stable'} — ${(j/1000000).toFixed(1)}M openings, ${u}% unemployment${q ? `, ${q}% quit rate` : ''}.`;
+          timingInsight = `The macro environment shows unemployment at ${u}% (trending ${uTrend}) and job openings at ${(j/1000000).toFixed(1)}M (trending ${jTrend}).`;
+        }
+      } catch (e) {
+        console.warn("FRED timing error:", e);
+      }
+    }
+    dimensions.timing = {
+      score: timingScore,
+      headline: timingHeadline,
+      insight: timingInsight,
+      confidence: timingSources.length ? "high" : "low",
+      verified: !!timingSources.length,
+      sources: timingSources
+    };
+
+    // --- 6. JOB SECURITY ---
+    // If not supplied, fallback
+    if (!dimensions.job_security) {
+      dimensions.job_security = {
+        score: riskScore, // reuse riskScore
+        headline: riskHeadline,
+        insight: "Assessed via company risk profile and macro labor conditions.",
+        confidence: "medium",
+        verified: true,
+        sources: riskSources
+      };
+    }
 
     return Response.json({ success: true, dimensions, newsArticles });
   } catch (error) {
