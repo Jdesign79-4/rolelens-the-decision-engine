@@ -54,15 +54,14 @@ Return ONLY valid JSON with exactly this structure:
       }
     }
 
-    const chRes = await base44.asServiceRole.functions.invoke('fetchRealCompanyHealth', {
+    const chRes = await base44.asServiceRole.functions.invoke('fetchCompanyData', {
       company_name: company.company_name,
-      ticker_symbol: company.ticker_symbol || undefined,
-      parent_ticker: company.parent_ticker || undefined,
-      is_public: company.is_public ?? true
+      ticker_symbol: company.ticker_symbol || company.parent_ticker || undefined,
+      entityId: company.id
     });
     
     return {
-      company_health: chRes?.data?.company_health || null,
+      company_health: chRes?.data?.data?.company_health || null,
       culture_signals: f.culture_signals || null,
       interview_intel: f.interview_intel || null,
       opportunity_flags: f.opportunity_flags || null,

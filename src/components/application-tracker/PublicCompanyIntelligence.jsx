@@ -25,21 +25,12 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
   const triggerLiveRefresh = async (record) => {
     const ticker = record?.ticker_symbol || record?.parent_ticker;
     try {
-      const [resp, healthResp] = await Promise.all([
-        base44.functions.invoke('fetchCompanyData', {
-          company_name: record?.company_name || companyName,
-          ticker_symbol: ticker || undefined,
-          entityId: record?.id
-        }),
-        base44.functions.invoke('fetchRealCompanyHealth', {
-          company_name: record?.company_name || companyName,
-          ticker_symbol: record?.ticker_symbol || undefined,
-          parent_ticker: record?.parent_ticker || undefined,
-          is_public: record?.is_public ?? true,
-          entityId: record?.id
-        })
-      ]);
-      if (resp.data?.success || healthResp.data?.success) {
+      const resp = await base44.functions.invoke('fetchCompanyData', {
+        company_name: record?.company_name || companyName,
+        ticker_symbol: ticker || undefined,
+        entityId: record?.id
+      });
+      if (resp.data?.success) {
         queryClient.invalidateQueries({ queryKey: ['public-company', companyName] });
       }
     } catch (err) {
@@ -78,7 +69,7 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
       // No data at all — do initial LLM lookup to determine if public + get ticker, then fetch live data
       const result = await base44.integrations.Core.InvokeLLM({
         prompt: `Is "${companyName}" publicly traded? If so, what is its ticker symbol? If it's a subsidiary, what is its parent company and parent ticker?
-Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financial_health_score (1-5), health_explanation, opportunity_flags (green/yellow/red arrays of strings), job_security_events (array with date/event/details), competitors (array with name/ticker/comparison), ai_career_insight with job_security, stock_performance_meaning, money_matters, career_growth, and bottom_line (recommendation, key_reason_to_join, key_concern).`,
+Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, job_security_events (array with date/event/details), competitors (array with name/ticker/comparison), ai_career_insight with job_security, stock_performance_meaning, money_matters, career_growth, and bottom_line (recommendation, key_reason_to_join, key_concern).`,
         add_context_from_internet: true,
         response_json_schema: {
           type: "object",
@@ -88,16 +79,6 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financ
             parent_company: { type: "string" },
             parent_ticker: { type: "string" },
             sector: { type: "string" },
-            financial_health_score: { type: "number" },
-            health_explanation: { type: "string" },
-            opportunity_flags: {
-              type: "object",
-              properties: {
-                green: { type: "array", items: { type: "string" } },
-                yellow: { type: "array", items: { type: "string" } },
-                red: { type: "array", items: { type: "string" } }
-              }
-            },
             job_security_events: {
               type: "array",
               items: {
@@ -164,20 +145,11 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, financ
     setIsRefreshing(true);
     try {
       if (companyData?.id) {
-        await Promise.all([
-          base44.functions.invoke('fetchCompanyData', {
-            company_name: companyData?.company_name || companyName,
-            ticker_symbol: companyData?.ticker_symbol || companyData?.parent_ticker || undefined,
-            entityId: companyData.id
-          }),
-          base44.functions.invoke('fetchRealCompanyHealth', {
-            company_name: companyData?.company_name || companyName,
-            ticker_symbol: companyData?.ticker_symbol || undefined,
-            parent_ticker: companyData?.parent_ticker || undefined,
-            is_public: companyData?.is_public ?? true,
-            entityId: companyData.id
-          })
-        ]);
+        await base44.functions.invoke('fetchCompanyData', {
+          company_name: companyData?.company_name || companyName,
+          ticker_symbol: companyData?.ticker_symbol || companyData?.parent_ticker || undefined,
+          entityId: companyData.id
+        });
       }
       await refetch();
     } catch (err) {
