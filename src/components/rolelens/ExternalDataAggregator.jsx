@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, TrendingUp, Users, DollarSign, AlertCircle, CheckCircle, Database, ChevronDown, ChevronUp, ExternalLink, PieChart } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Treemap } from 'recharts';
+import { DataTrustBadge } from './DataTrustBadge';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
@@ -191,13 +192,27 @@ CRITICAL: Include direct URLs to each source used.`,
     return 'text-blue-600 bg-blue-50 border-blue-300';
   };
 
+  const aiEstimateCardStyle = "p-4 rounded-2xl bg-white border border-slate-200";
+  const aiEstimateBorderStyle = { borderLeft: '3px solid #f59e0b' };
+
   return (
     <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-6 shadow-sm border border-blue-200">
+      {/* Prominent AI Estimate Banner */}
+      <div className="mb-5 p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '2px solid #f59e0b' }}>
+        <div className="flex items-start gap-2">
+          <span className="text-lg">⚠</span>
+          <div>
+            <p className="text-sm font-bold text-amber-900">AI-ESTIMATED DATA</p>
+            <p className="text-xs text-amber-800 mt-0.5">The following metrics are synthesized by AI from web searches and may not be accurate. Verify at source links.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-start justify-between mb-6">
         <div>
         <div className="flex items-center gap-2 mb-1">
-          <Database className="w-5 h-5 text-blue-600" />
-          <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">AI-Estimated Data</p>
+          <Database className="w-5 h-5 text-amber-600" />
+          <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">AI-Estimated Data</p>
         </div>
         <h3 className="text-lg font-semibold text-slate-800">External Data Aggregation</h3>
           {lastUpdated && (
@@ -236,21 +251,24 @@ CRITICAL: Include direct URLs to each source used.`,
           >
             {/* Salary Benchmarks */}
             {enrichedData.salary_benchmarks && (
-              <div className="p-4 rounded-2xl bg-white border border-slate-200">
+              <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-5 h-5 text-emerald-600" />
                     <h4 className="text-sm font-semibold text-slate-800">Market Salary Benchmarks</h4>
                   </div>
-                  <a 
-                    href={enrichedData.salary_benchmarks.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                  >
-                    {enrichedData.salary_benchmarks.source}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <DataTrustBadge verified={false} />
+                    <a 
+                      href={enrichedData.salary_benchmarks.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                    >
+                      {enrichedData.salary_benchmarks.source}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="text-center p-3 rounded-xl bg-emerald-50">
@@ -292,21 +310,24 @@ CRITICAL: Include direct URLs to each source used.`,
 
             {/* Funding Data */}
             {enrichedData.funding_data && (
-              <div className="p-4 rounded-2xl bg-white border border-slate-200">
+              <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-violet-600" />
                     <h4 className="text-sm font-semibold text-slate-800">Funding & Valuation</h4>
                   </div>
-                  <a 
-                    href={enrichedData.funding_data.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                  >
-                    {enrichedData.funding_data.source}
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <DataTrustBadge verified={false} />
+                    <a 
+                      href={enrichedData.funding_data.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                    >
+                      {enrichedData.funding_data.source}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
@@ -370,20 +391,23 @@ CRITICAL: Include direct URLs to each source used.`,
 
             {/* Employee Sentiment */}
             {enrichedData.employee_sentiment && (
-              <div className="p-4 rounded-2xl bg-white border border-slate-200">
+              <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-blue-600" />
                     <h4 className="text-sm font-semibold text-slate-800">Employee Reviews</h4>
                   </div>
-                  <a 
-                    href={enrichedData.employee_sentiment.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    {enrichedData.employee_sentiment.source}
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <DataTrustBadge verified={false} />
+                    <a 
+                      href={enrichedData.employee_sentiment.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      {enrichedData.employee_sentiment.source}
+                    </a>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4 mb-3">
                   <div className="flex items-center gap-2">
@@ -433,17 +457,20 @@ CRITICAL: Include direct URLs to each source used.`,
 
             {/* Company Growth */}
             {enrichedData.company_growth && (
-              <div className="p-4 rounded-2xl bg-white border border-slate-200">
+              <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-semibold text-slate-800">Company Growth Metrics</h4>
-                  <a 
-                    href={enrichedData.company_growth.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    {enrichedData.company_growth.source}
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <DataTrustBadge verified={false} />
+                    <a 
+                      href={enrichedData.company_growth.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      {enrichedData.company_growth.source}
+                    </a>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 rounded-xl bg-blue-50">
@@ -632,10 +659,10 @@ CRITICAL: Include direct URLs to each source used.`,
             )}
 
             {/* AI Disclaimer */}
-            <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-300">
-              <p className="text-sm font-semibold text-amber-900 mb-1">⚠️ Important: AI-Estimated Data</p>
+            <div className="p-4 rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '2px solid #f59e0b' }}>
+              <p className="text-sm font-bold text-amber-900 mb-1">⚠ AI-ESTIMATED DATA — Important Disclaimer</p>
               <p className="text-xs text-amber-800">
-                All figures below are <strong>AI estimates</strong> synthesized from web searches — not from direct API connections to Glassdoor, Crunchbase, or LinkedIn. 
+                All figures above are <strong>AI estimates</strong> synthesized from web searches — not from direct API connections to Glassdoor, Crunchbase, or LinkedIn. 
                 Salary numbers, ratings, funding amounts, and growth metrics may be inaccurate or outdated. 
                 <strong>Always verify critical data points directly on the source websites before making decisions.</strong> URLs provided may not always be accurate.
               </p>

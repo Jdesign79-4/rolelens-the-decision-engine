@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import CompensationTiers from './CompensationTiers';
+import { DataTrustBadge, isVerifiedData, getCardBorderStyle } from './DataTrustBadge';
 
 export default function IntelligenceCard({ 
   title, 
@@ -35,6 +36,8 @@ export default function IntelligenceCard({
     );
   };
 
+  const verified = isComplete && isVerifiedData(dimensionData);
+
   return (
     <div 
       className="transition-shadow h-full flex flex-col" 
@@ -44,14 +47,18 @@ export default function IntelligenceCard({
         border: 'none', 
         borderTop: '1px solid rgba(255,255,255,0.70)', 
         boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', 
-        borderRadius: '16px' 
+        borderRadius: '16px',
+        ...(isComplete ? getCardBorderStyle(verified) : {})
       }}
     >
       <div className="flex items-start justify-between mb-4">
-        <div>
-          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>
-            {title}
-          </p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase' }}>
+              {title}
+            </p>
+            {isComplete && <DataTrustBadge verified={verified} />}
+          </div>
           {isComplete && (
             <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>
               {dimensionData.verified ? (
@@ -63,7 +70,7 @@ export default function IntelligenceCard({
             </h3>
           )}
         </div>
-        <div className="p-2 rounded-xl" style={{ background: 'rgba(58,72,104,0.12)' }}>
+        <div className="p-2 rounded-xl ml-2 shrink-0" style={{ background: 'rgba(58,72,104,0.12)' }}>
           <Icon className="w-5 h-5" style={{ color: '#3A4868' }} />
         </div>
       </div>
