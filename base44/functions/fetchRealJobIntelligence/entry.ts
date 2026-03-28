@@ -270,25 +270,21 @@ function matchJobTitleToSOC(jobTitle) {
 }
 
 // Build BLS OEWS series IDs.
-// Format: OEUN + AAAAAAAAAA (10-digit area, 0000000000=national) + SSSSSS (6-digit SOC) + DDDDDDD (7-digit data type)
-// Total: 4 + 10 + 6 + 7 = 27 chars
-// Data type codes (7-digit, zero-padded):
-//   0000008 = 25th percentile annual wage
-//   0000010 = median annual wage
-//   0000011 = 75th percentile annual wage
+// Format: OEUN + 0000000000000 (13 zeros = national, all industries) + SOC6 (6 digits) + DT (2-digit datatype)
+// Total: 4 + 13 + 6 + 2 = 25 characters
+// Datatype codes for ANNUAL wages:
+//   04 = mean annual, 11 = 10th pct, 12 = 25th pct, 13 = 75th pct, 14 = median, 15 = 90th pct
 // Verified examples for SOC 15-1252 (Software Developers):
-//   OEUN00000000001512520000008  (25th pct, 27 chars)
-//   OEUN00000000001512520000010  (median,   27 chars)
-//   OEUN00000000001512520000011  (75th pct, 27 chars)
+//   OEUN000000000000015125212  (25th pct annual, 25 chars)
+//   OEUN000000000000015125214  (median annual,   25 chars)
+//   OEUN000000000000015125213  (75th pct annual, 25 chars)
 function buildBlsSeriesIds(socCode) {
   const soc6 = socCode.replace('-', '');
-  // OEUN (4) + 0000000000 (10 = national) + SOC6 (6) = 20-char prefix
-  // Then 7-char data type code
-  const base = 'OEUN0000000000' + soc6;
+  const base = 'OEUN0000000000000' + soc6;
   return {
-    p25:    base + '0000008',  // 25th percentile annual wage
-    median: base + '0000010',  // median annual wage
-    p75:    base + '0000011'   // 75th percentile annual wage
+    p25:    base + '12',  // 25th percentile annual wage
+    median: base + '14',  // median annual wage
+    p75:    base + '13'   // 75th percentile annual wage
   };
 }
 
@@ -341,12 +337,11 @@ Deno.serve(async (req) => {
       console.log("[BLS] Series ID lengths:", seriesIds.map(s => s.length));
       console.log("[BLS] Using API key:", BLS_KEY ? (BLS_KEY.substring(0, 6) + '...') : 'MISSING');
       try {
-        const currentYear = new Date().getFullYear();
         const blsBody = {
           seriesid: seriesIds,
           registrationkey: BLS_KEY,
-          startyear: String(currentYear - 1),
-          endyear: String(currentYear)
+          startyear: "2024",
+          endyear: "2024"
         };
         console.log("[BLS] Request body:", JSON.stringify(blsBody));
         const blsRes = await fetchWithTimeout('https://api.bls.gov/publicAPI/v2/timeseries/data/', {
