@@ -269,15 +269,26 @@ function matchJobTitleToSOC(jobTitle) {
   return null;
 }
 
-// Build BLS OEWS series IDs.  Format: OEUN0000000000{SOC6}00000{METRIC}
-// SOC6 = SOC code without dash (e.g. "151252")
-// METRIC: 08=25th pct, 10=median, 11=75th pct
+// Build BLS OEWS series IDs.
+// Format: OEUN + AAAAAAAAAA (10-digit area, 0000000000=national) + SSSSSS (6-digit SOC) + DDDDDDD (7-digit data type)
+// Total: 4 + 10 + 6 + 7 = 27 chars
+// Data type codes (7-digit, zero-padded):
+//   0000008 = 25th percentile annual wage
+//   0000010 = median annual wage
+//   0000011 = 75th percentile annual wage
+// Verified examples for SOC 15-1252 (Software Developers):
+//   OEUN00000000001512520000008  (25th pct, 27 chars)
+//   OEUN00000000001512520000010  (median,   27 chars)
+//   OEUN00000000001512520000011  (75th pct, 27 chars)
 function buildBlsSeriesIds(socCode) {
   const soc6 = socCode.replace('-', '');
+  // OEUN (4) + 0000000000 (10 = national) + SOC6 (6) = 20-char prefix
+  // Then 7-char data type code
+  const base = 'OEUN0000000000' + soc6;
   return {
-    p25: `OEUN000000000${soc6}0000008`,
-    median: `OEUN000000000${soc6}0000010`,
-    p75: `OEUN000000000${soc6}0000011`
+    p25:    base + '0000008',  // 25th percentile annual wage
+    median: base + '0000010',  // median annual wage
+    p75:    base + '0000011'   // 75th percentile annual wage
   };
 }
 
@@ -326,39 +337,61 @@ Deno.serve(async (req) => {
     if (BLS_KEY && socMatch) {
       const ids = buildBlsSeriesIds(socMatch.socCode);
       const seriesIds = [ids.p25, ids.median, ids.p75];
-      console.log("BLS series IDs:", JSON.stringify(seriesIds));
+      console.log("[BLS] SOC code:", socMatch.socCode, "series IDs:", JSON.stringify(seriesIds));
+      console.log("[BLS] Series ID lengths:", seriesIds.map(s => s.length));
+      console.log("[BLS] Using API key:", BLS_KEY ? (BLS_KEY.substring(0, 6) + '...') : 'MISSING');
       try {
+        const currentYear = new Date().getFullYear();
+        const blsBody = {
+          seriesid: seriesIds,
+          registrationkey: BLS_KEY,
+          startyear: String(currentYear - 1),
+          endyear: String(currentYear)
+        };
+        console.log("[BLS] Request body:", JSON.stringify(blsBody));
         const blsRes = await fetchWithTimeout('https://api.bls.gov/publicAPI/v2/timeseries/data/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ seriesid: seriesIds, registrationkey: BLS_KEY, latest: true })
+          body: JSON.stringify(blsBody)
         });
-        const blsData = await blsRes.json();
-        console.log("BLS response status:", blsData.status, "series count:", blsData.Results?.series?.length);
+        const blsRawText = await blsRes.text();
+        console.log("[BLS] Raw response (first 500 chars):", blsRawText.substring(0, 500));
+        const blsData = JSON.parse(blsRawText);
+        console.log("[BLS] Response status:", blsData.status, "message:", JSON.stringify(blsData.message));
         if (blsData.status === "REQUEST_SUCCEEDED" && blsData.Results?.series) {
           const series = blsData.Results.series;
+          console.log("[BLS] Series count:", series.length);
           let market_25th = null, market_median = null, market_75th = null;
-          series.forEach(s => {
+          series.forEach((s, i) => {
+            console.log(`[BLS] Series ${i}: ID=${s.seriesID}, dataPoints=${s.data?.length}`);
             if (s.data && s.data.length > 0) {
+              console.log(`[BLS] Series ${i} latest value: ${s.data[0].value} (year=${s.data[0].year}, period=${s.data[0].period})`);
               const val = parseFloat(s.data[0].value);
               if (!isNaN(val)) {
-                // Match by the metric suffix (last 2 digits before any trailing zeros)
-                const sid = s.seriesID;
-                if (sid === ids.p25) market_25th = val;
-                else if (sid === ids.median) market_median = val;
-                else if (sid === ids.p75) market_75th = val;
+                if (s.seriesID === ids.p25) market_25th = val;
+                else if (s.seriesID === ids.median) market_median = val;
+                else if (s.seriesID === ids.p75) market_75th = val;
+                else console.warn(`[BLS] Unexpected seriesID: ${s.seriesID} (expected one of ${ids.p25}, ${ids.median}, ${ids.p75})`);
               }
+            } else {
+              console.warn(`[BLS] Series ${i} (${s.seriesID}) returned no data points`);
             }
           });
-          console.log("BLS parsed wages:", { market_25th, market_median, market_75th });
+          console.log("[BLS] Parsed wages:", { market_25th, market_median, market_75th });
           if (market_median) {
             compData = { market_25th, market_median, market_75th, occ_title: socMatch.socTitle };
             cosSources.push("BLS Occupational Employment Statistics");
+          } else {
+            console.warn("[BLS] median wage was null/0 — data may not exist for this SOC code");
           }
+        } else {
+          console.error("[BLS] API returned non-success status:", blsData.status, "messages:", JSON.stringify(blsData.message));
         }
       } catch (e) {
-        console.warn("BLS fetch error:", e);
+        console.error("[BLS] Fetch error:", e.message || e);
       }
+    } else {
+      console.log("[BLS] Skipped — BLS_KEY:", !!BLS_KEY, "socMatch:", !!socMatch);
     }
 
     // Fallback to CareerOneStop
@@ -394,7 +427,8 @@ Deno.serve(async (req) => {
     if (compData && compData.market_median) {
       const displayTitle = socMatch?.socTitle || job_title || "This role";
       let score = null;
-      let headline = `${displayTitle} nationally earn $${(compData.market_25th || 0).toLocaleString()} (25th) → $${compData.market_median.toLocaleString()} (median) → $${(compData.market_75th || 0).toLocaleString()} (75th)`;
+      const fmt = (v) => v ? '$' + Math.round(v).toLocaleString() : 'N/A';
+      let headline = `${displayTitle} nationally earn ${fmt(compData.market_25th)} (25th) → ${fmt(compData.market_median)} (median) → ${fmt(compData.market_75th)} (75th)`;
 
       const mHigh = compData.market_75th || compData.market_high;
       const mLow = compData.market_25th || compData.market_low;
@@ -405,7 +439,7 @@ Deno.serve(async (req) => {
         const midpoint = (salary_low + salary_high) / 2;
         if (mHigh && midpoint >= mHigh) { score = 95; headline = "Exceptional offer. Well above market 75th percentile."; }
         else if (midpoint >= compData.market_median * 1.15) { score = 80; headline = "Above market rate."; }
-        else if (midpoint >= compData.market_median * 0.85) { score = 65; headline = `At market rate. The median salary is $${compData.market_median.toLocaleString()}.`; }
+        else if (midpoint >= compData.market_median * 0.85) { score = 65; headline = `At market rate. The median salary is ${fmt(compData.market_median)}.`; }
         else if (mLow && midpoint >= mLow) { score = 40; headline = "Below market rate."; }
         else { score = 15; headline = "Well below market rate."; }
         insight += `Your offered range falls ${score >= 80 ? 'above' : score <= 40 ? 'below' : 'near'} the market median.`;
@@ -429,10 +463,16 @@ Deno.serve(async (req) => {
         _salaryHigh: salary_high
       };
     } else {
+      // Build a diagnostic message so we can see WHY it failed
+      let diagReason = '';
+      if (!socMatch) diagReason = `SOC mapping failed for '${job_title || 'empty'}'.`;
+      else if (!BLS_KEY) diagReason = 'BLS API key not found. Configure it in API Keys Settings.';
+      else diagReason = 'BLS API returned no wage data for this occupation.';
+      console.warn("[COMP] Failed:", diagReason);
       dimensions.compensation = {
         score: null,
-        headline: "Could not map this job title to BLS data.",
-        insight: `Could not map '${job_title || "Unknown"}' to BLS data. Try a more standard title like 'Software Engineer' or 'Data Analyst'.`,
+        headline: "Could not retrieve BLS compensation data.",
+        insight: `${diagReason} Try a more standard title like 'Software Engineer' or 'Data Analyst'.`,
         confidence: "low",
         verified: false,
         sources: []
