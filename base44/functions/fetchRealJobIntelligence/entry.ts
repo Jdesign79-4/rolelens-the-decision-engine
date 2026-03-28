@@ -897,15 +897,139 @@ Deno.serve(async (req) => {
       sources: timingSources
     };
 
-    // --- 6. JOB SECURITY ---
-    if (!dimensions.job_security) {
+    // --- 6. JOB SECURITY (unified from real API data) ---
+    {
+      let jsScore = 50; // neutral baseline
+      const jsFactors = [];
+      const jsSources = [];
+      let sourceCount = 0;
+
+      // Factor 1: WARN Act check
+      if (warnFound !== undefined) {
+        sourceCount++;
+        jsSources.push('WARN Act (DOL)');
+        if (warnFound) {
+          jsScore -= 15;
+          jsFactors.push({ label: 'WARN Act layoff notices found', icon: 'negative', delta: -15 });
+        } else {
+          jsScore += 10;
+          jsFactors.push({ label: 'No WARN Act notices', icon: 'positive', delta: +10 });
+        }
+      } else {
+        jsFactors.push({ label: 'WARN Act data', icon: 'unknown', delta: 0 });
+      }
+
+      // Factor 2: Stock performance (from fetchCompanyData via company_health or market_sentiment)
+      if (company_health?.stock_data?.year_change_percent !== undefined && company_health?.stock_data?.year_change_percent !== null) {
+        sourceCount++;
+        jsSources.push('Yahoo Finance');
+        if (company_health.stock_data.year_change_percent > 0) {
+          jsScore += 10;
+          jsFactors.push({ label: `Stock up ${company_health.stock_data.year_change_percent.toFixed(1)}% (1Y)`, icon: 'positive', delta: +10 });
+        } else {
+          jsScore -= 10;
+          jsFactors.push({ label: `Stock down ${Math.abs(company_health.stock_data.year_change_percent).toFixed(1)}% (1Y)`, icon: 'negative', delta: -10 });
+        }
+      } else {
+        jsFactors.push({ label: 'Stock performance', icon: 'unknown', delta: 0 });
+      }
+
+      // Factor 3: Analyst consensus (Finnhub)
+      if (buyRatio !== null && sellRatio !== null) {
+        sourceCount++;
+        if (!jsSources.includes('Finnhub Analysts')) jsSources.push('Finnhub Analysts');
+        if (buyRatio > 0.5) {
+          jsScore += 10;
+          jsFactors.push({ label: `Analyst consensus: Buy (${Math.round(buyRatio * 100)}%)`, icon: 'positive', delta: +10 });
+        } else if (sellRatio > 0.4) {
+          jsScore -= 10;
+          jsFactors.push({ label: `Analyst consensus: Sell (${Math.round(sellRatio * 100)}%)`, icon: 'negative', delta: -10 });
+        } else {
+          jsFactors.push({ label: 'Analyst consensus: Hold', icon: 'positive', delta: 0 });
+        }
+      } else {
+        jsFactors.push({ label: 'Analyst consensus', icon: 'unknown', delta: 0 });
+      }
+
+      // Factor 4: Revenue trend (FMP)
+      if (company_health?.revenue_trend) {
+        sourceCount++;
+        if (!jsSources.includes('FMP Financials')) jsSources.push('FMP Financials');
+        if (company_health.revenue_trend === 'growing') {
+          jsScore += 10;
+          jsFactors.push({ label: 'Revenue growing', icon: 'positive', delta: +10 });
+        } else if (company_health.revenue_trend === 'declining') {
+          jsScore -= 10;
+          jsFactors.push({ label: 'Revenue declining', icon: 'negative', delta: -10 });
+        } else {
+          jsFactors.push({ label: 'Revenue flat', icon: 'positive', delta: 0 });
+        }
+      } else {
+        jsFactors.push({ label: 'Revenue trend', icon: 'unknown', delta: 0 });
+      }
+
+      // Factor 5: News sentiment (Alpha Vantage)
+      if (newsScore !== null) {
+        sourceCount++;
+        if (!jsSources.includes('Alpha Vantage Sentiment')) jsSources.push('Alpha Vantage Sentiment');
+        if (newsScore >= 60) {
+          jsScore += 5;
+          jsFactors.push({ label: 'Positive news sentiment', icon: 'positive', delta: +5 });
+        } else if (newsScore <= 40) {
+          jsScore -= 5;
+          jsFactors.push({ label: 'Negative news sentiment', icon: 'negative', delta: -5 });
+        } else {
+          jsFactors.push({ label: 'Neutral news sentiment', icon: 'positive', delta: 0 });
+        }
+      } else {
+        jsFactors.push({ label: 'News sentiment', icon: 'unknown', delta: 0 });
+      }
+
+      // Factor 6: Layoff signals (from news + headcount trend)
+      const hasLayoffSignals = company_health?.headcount_trend === 'cutting' || riskFlags.some(f => f.text.toLowerCase().includes('layoff') || f.text.toLowerCase().includes('warn act'));
+      if (company_health?.headcount_trend || riskFlags.length > 0) {
+        sourceCount++;
+        if (hasLayoffSignals) {
+          jsScore -= 15;
+          jsFactors.push({ label: 'Layoff signals detected', icon: 'negative', delta: -15 });
+        } else {
+          jsScore += 5;
+          jsFactors.push({ label: 'No layoff signals', icon: 'positive', delta: +5 });
+        }
+      } else {
+        jsFactors.push({ label: 'Layoff signals', icon: 'unknown', delta: 0 });
+      }
+
+      jsScore = Math.max(0, Math.min(100, jsScore));
+
+      let jsConfidence = 'Insufficient Data';
+      if (sourceCount >= 5) jsConfidence = 'High';
+      else if (sourceCount >= 3) jsConfidence = 'Medium';
+      else if (sourceCount >= 1) jsConfidence = 'Low';
+
+      let jsHeadline = '';
+      if (jsScore >= 80) jsHeadline = 'Strong job security. Multiple positive signals across verified data.';
+      else if (jsScore >= 60) jsHeadline = 'Good job security. Most indicators are positive.';
+      else if (jsScore >= 40) jsHeadline = 'Moderate job security. Mixed signals — review factors below.';
+      else if (jsScore >= 20) jsHeadline = 'Elevated risk. Several concerning signals detected.';
+      else jsHeadline = 'High risk. Multiple negative indicators — proceed with caution.';
+
+      let jsInsight = jsFactors
+        .filter(f => f.icon !== 'unknown')
+        .map(f => `${f.icon === 'positive' ? '✅' : '⚠️'} ${f.label} (${f.delta >= 0 ? '+' : ''}${f.delta})`)
+        .join(' | ');
+      if (!jsInsight) jsInsight = 'No verified data sources available for this company.';
+
       dimensions.job_security = {
-        score: riskScore,
-        headline: riskHeadline,
-        insight: "Assessed via company risk profile and macro labor conditions.",
-        confidence: "medium",
-        verified: true,
-        sources: riskSources
+        score: jsScore,
+        headline: jsHeadline,
+        insight: jsInsight,
+        confidence: jsConfidence === 'High' ? 'high' : jsConfidence === 'Medium' ? 'medium' : 'low',
+        verified: sourceCount >= 2,
+        sources: jsSources.length > 0 ? jsSources : ['No verified API data available'],
+        _factors: jsFactors,
+        _sourceCount: sourceCount,
+        _confidenceLabel: `${jsConfidence} (${sourceCount}/6 sources)`
       };
     }
 

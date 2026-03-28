@@ -252,6 +252,35 @@ export default function IntelligenceCard({
               </div>
             )}
 
+            {title === 'Job Security' && dimensionData._factors && (
+              <div className="mb-4 space-y-2">
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Score Breakdown</p>
+                <div className="space-y-1.5">
+                  {dimensionData._factors.map((factor, i) => (
+                    <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
+                      factor.icon === 'positive' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                      factor.icon === 'negative' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
+                      'bg-slate-50 text-slate-500 border border-slate-100'
+                    }`}>
+                      <span className="text-sm">{factor.icon === 'positive' ? '✅' : factor.icon === 'negative' ? '⚠️' : '❓'}</span>
+                      <span className="flex-1">{factor.label}</span>
+                      {factor.delta !== 0 && (
+                        <span className={`font-bold ${factor.delta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {factor.delta > 0 ? '+' : ''}{factor.delta}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {dimensionData._confidenceLabel && (
+                  <div className="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
+                    <span className="font-semibold">Confidence:</span>
+                    <span>{dimensionData._confidenceLabel}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {title === 'Risk Assessment' && (
               <div className="mb-4 space-y-3">
                 {dimensionData._warnFound !== undefined && (

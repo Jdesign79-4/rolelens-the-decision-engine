@@ -7,8 +7,6 @@ import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { formatDistanceToNow } from 'date-fns';
 import JobSeekerIntelligenceReport from './JobSeekerIntelligenceReport';
-import JobSecurityRating from '../rolelens/JobSecurityRating';
-import RealCompanyHealthCard from '../rolelens/RealCompanyHealthCard';
 
 const SENTIMENT_COLORS = {
   positive: '#10b981',
@@ -206,9 +204,6 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, job_se
 
   return (
     <div className="space-y-4">
-      <RealCompanyHealthCard companyName={companyName} companyData={companyData} onRefresh={handleRefresh} />
-      <JobSecurityRating data={companyData} isLoading={isLoading} onRefresh={handleRefresh} />
-
       {/* Public Company Badge & Summary */}
       <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between mb-4">
