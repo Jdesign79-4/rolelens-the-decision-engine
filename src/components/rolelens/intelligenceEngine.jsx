@@ -184,12 +184,15 @@ Return your analysis as a JSON object matching the intelligence schema provided.
     let parentTicker = null;
     let companyHealth = null;
 
+    let stockData = null;
+
     if (companyName) {
       const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: companyName });
       if (dbResp.length > 0) {
         tickerSymbol = dbResp[0].ticker_symbol;
         parentTicker = dbResp[0].parent_ticker;
         companyHealth = dbResp[0].company_health;
+        stockData = dbResp[0].stock_data;
       } else {
         const tickerResp = await base44.integrations.Core.InvokeLLM({
           prompt: `Is "${companyName}" publicly traded? If so, what is its ticker symbol? If it's a subsidiary, what is its parent company and parent ticker? Return JSON.`,
@@ -216,6 +219,7 @@ Return your analysis as a JSON object matching the intelligence schema provided.
           });
           if (healthRes.data?.success) {
             companyHealth = healthRes.data.data.company_health;
+            stockData = healthRes.data.data.stock_data;
             intelligence.company_health = companyHealth;
             intelligence.opportunity_flags = healthRes.data.data.opportunity_flags;
             if (healthRes.data.data.news_articles && healthRes.data.data.news_articles.length > 0) {
@@ -234,7 +238,8 @@ Return your analysis as a JSON object matching the intelligence schema provided.
       location: location,
       salary_low: salaryLow,
       salary_high: salaryHigh,
-      company_health: companyHealth
+      company_health: companyHealth,
+      stock_data: stockData
     });
 
     if (realIntelRes.data?.success && realIntelRes.data?.dimensions) {

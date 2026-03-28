@@ -132,12 +132,14 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         let tickerSymbol = null;
         let parentTicker = null;
         let companyHealth = null;
+        let stockData = null;
 
         const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
         if (dbResp.length > 0) {
           tickerSymbol = dbResp[0].ticker_symbol;
           parentTicker = dbResp[0].parent_ticker;
           companyHealth = dbResp[0].company_health;
+          stockData = dbResp[0].stock_data;
         } else {
           // If not in DB, try to find public data via fetchCompanyData
           const healthRes = await base44.functions.invoke('fetchCompanyData', {
@@ -146,6 +148,7 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
           });
           if (healthRes.data?.success) {
             companyHealth = healthRes.data.data.company_health;
+            stockData = healthRes.data.data.stock_data;
             parsedJSON.company_health = companyHealth;
             parsedJSON.opportunity_flags = healthRes.data.data.opportunity_flags;
             if (healthRes.data.data.news_articles?.length > 0) {
@@ -158,8 +161,9 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
           company_name: parsedJSON.company_name || companyName,
           ticker_symbol: tickerSymbol || parentTicker,
           job_title: parsedJSON.role_analyzed || jobTitle,
-          location: null, // location might be hard to extract from URL cleanly without another step
-          company_health: companyHealth
+          location: null,
+          company_health: companyHealth,
+          stock_data: stockData
         });
 
         if (realIntelRes.data?.success && realIntelRes.data?.dimensions) {

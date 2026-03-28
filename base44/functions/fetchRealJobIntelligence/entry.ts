@@ -308,7 +308,7 @@ Deno.serve(async (req) => {
         FRED_API_KEY: dbKeys.fred_api_key || Deno.env.get("FRED_API_KEY")
     };
 
-    const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health } = await req.json();
+    const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health, stock_data } = await req.json();
 
     const COS_USER_ID = env.CAREER_ONE_STOP_USER_ID;
     const COS_TOKEN = env.CAREER_ONE_STOP_API_KEY;
@@ -730,14 +730,30 @@ Deno.serve(async (req) => {
     }
 
     if (!dimensions.market_sentiment) {
-      dimensions.market_sentiment = {
-        score: null,
-        headline: "Limited sentiment data — company is privately held or thinly covered.",
-        insight: "Analyst recommendations and structured news sentiment not available.",
-        confidence: "low",
-        verified: false,
-        sources: []
-      };
+      // If we have no ticker but have stock_data from the entity, try to build a basic sentiment
+      if (stock_data?.year_change_percent !== undefined) {
+        const yc = stock_data.year_change_percent;
+        const basicScore = yc > 10 ? 70 : yc > 0 ? 60 : yc > -10 ? 40 : 30;
+        dimensions.market_sentiment = {
+          score: basicScore,
+          headline: `Stock has ${yc >= 0 ? 'gained' : 'lost'} ${Math.abs(yc).toFixed(1)}% over the past year.`,
+          insight: 'Based on stock price data. Analyst recommendations and news sentiment APIs did not return data for this ticker.',
+          confidence: 'low',
+          verified: true,
+          sources: ['Yahoo Finance (Stock Price)'],
+          _buyRatio: null,
+          _sellRatio: null
+        };
+      } else {
+        dimensions.market_sentiment = {
+          score: null,
+          headline: "Limited sentiment data — company may be privately held or thinly covered.",
+          insight: "Analyst recommendations and structured news sentiment not available. Ensure Finnhub and Alpha Vantage API keys are configured.",
+          confidence: "low",
+          verified: false,
+          sources: []
+        };
+      }
     }
 
     // --- 4. RISK ASSESSMENT ---
@@ -919,16 +935,17 @@ Deno.serve(async (req) => {
         jsFactors.push({ label: 'WARN Act data', icon: 'unknown', delta: 0 });
       }
 
-      // Factor 2: Stock performance (from fetchCompanyData via company_health or market_sentiment)
-      if (company_health?.stock_data?.year_change_percent !== undefined && company_health?.stock_data?.year_change_percent !== null) {
+      // Factor 2: Stock performance (from stock_data passed by caller)
+      const yearChange = stock_data?.year_change_percent;
+      if (yearChange !== undefined && yearChange !== null) {
         sourceCount++;
         jsSources.push('Yahoo Finance');
-        if (company_health.stock_data.year_change_percent > 0) {
+        if (yearChange > 0) {
           jsScore += 10;
-          jsFactors.push({ label: `Stock up ${company_health.stock_data.year_change_percent.toFixed(1)}% (1Y)`, icon: 'positive', delta: +10 });
+          jsFactors.push({ label: `Stock up ${yearChange.toFixed(1)}% (1Y)`, icon: 'positive', delta: +10 });
         } else {
           jsScore -= 10;
-          jsFactors.push({ label: `Stock down ${Math.abs(company_health.stock_data.year_change_percent).toFixed(1)}% (1Y)`, icon: 'negative', delta: -10 });
+          jsFactors.push({ label: `Stock down ${Math.abs(yearChange).toFixed(1)}% (1Y)`, icon: 'negative', delta: -10 });
         }
       } else {
         jsFactors.push({ label: 'Stock performance', icon: 'unknown', delta: 0 });
