@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { formatDistanceToNow } from 'date-fns';
 import JobSeekerIntelligenceReport from './JobSeekerIntelligenceReport';
+import { findMatchingCompany } from '@/lib/companyUtils';
 
 const SENTIMENT_COLORS = {
   positive: '#10b981',
@@ -39,8 +40,10 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
   const { data: companyData, isLoading, refetch } = useQuery({
     queryKey: ['public-company', companyName],
     queryFn: async () => {
-      // Check if we already have cached data
-      const existing = await base44.entities.PublicCompanyData.filter({ company_name: companyName });
+      // Check if we already have cached data (use fuzzy matching)
+      const allRecords = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+      const match = findMatchingCompany(companyName, allRecords);
+      const existing = match ? [match] : [];
 
       if (existing.length > 0 && existing[0].last_updated) {
         const age = Date.now() - new Date(existing[0].last_updated).getTime();

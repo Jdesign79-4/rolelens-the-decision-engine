@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
 import { generateAlternatives } from './alternativesEngine';
 import { analyzeJobOpportunity } from './intelligenceEngine';
+import { displayCompanyName, upsertPublicCompanyData, upsertJobApplication } from '@/lib/companyUtils';
 
 export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoading, tunerSettings }) {
   const [query, setQuery] = useState('');
@@ -52,38 +53,20 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
         throw new Error('No response from AI');
       }
 
-      // Save to entities
+      // Save to entities using upsert logic
       let companyId = null;
       try {
         if (analysisResult?.company_name) {
-          const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: analysisResult.company_name });
-          if (existingCompanies.length > 0) {
-            companyId = existingCompanies[0].id;
-            const updateData = {
-              job_seeker_intelligence: analysisResult,
-              last_updated: new Date().toISOString()
-            };
-            if (analysisResult.company_health) updateData.company_health = analysisResult.company_health;
-            if (analysisResult.opportunity_flags) updateData.opportunity_flags = analysisResult.opportunity_flags;
-            if (analysisResult.news && analysisResult.news.length > 0) {
-              updateData.news_articles = analysisResult.news;
-            }
-            await base44.entities.PublicCompanyData.update(companyId, updateData);
-          } else {
-            const createData = {
-              company_name: analysisResult.company_name,
-              is_public: analysisResult.company_health?.funding_stage === 'public' || !!analysisResult.company_health?.stability_score,
-              job_seeker_intelligence: analysisResult,
-              last_updated: new Date().toISOString()
-            };
-            if (analysisResult.company_health) createData.company_health = analysisResult.company_health;
-            if (analysisResult.opportunity_flags) createData.opportunity_flags = analysisResult.opportunity_flags;
-            if (analysisResult.news && analysisResult.news.length > 0) {
-              createData.news_articles = analysisResult.news;
-            }
-            const newCompany = await base44.entities.PublicCompanyData.create(createData);
-            companyId = newCompany.id;
+          const companyUpdateData = {
+            is_public: analysisResult.company_health?.funding_stage === 'public' || !!analysisResult.company_health?.stability_score,
+            job_seeker_intelligence: analysisResult,
+          };
+          if (analysisResult.company_health) companyUpdateData.company_health = analysisResult.company_health;
+          if (analysisResult.opportunity_flags) companyUpdateData.opportunity_flags = analysisResult.opportunity_flags;
+          if (analysisResult.news && analysisResult.news.length > 0) {
+            companyUpdateData.news_articles = analysisResult.news;
           }
+          companyId = await upsertPublicCompanyData(base44.entities.PublicCompanyData, analysisResult.company_name, companyUpdateData);
         }
 
         let roleDemand = null;
@@ -99,9 +82,9 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           console.warn("Failed to fetch role demand:", err);
         }
 
-        await base44.entities.JobApplication.create({
-          company_name: analysisResult?.company_name || searchTerm,
-          job_title: analysisResult?.role_analyzed || jobTitle || "Unknown Role",
+        const resolvedJobTitle = analysisResult?.role_analyzed || jobTitle || "Unknown Role";
+        await upsertJobApplication(base44.entities.JobApplication, analysisResult?.company_name || searchTerm, resolvedJobTitle, {
+          job_title: resolvedJobTitle,
           job_url: "",
           applied_date: new Date().toISOString().split('T')[0],
           stage: "Reaching Out",
@@ -112,7 +95,7 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
         console.warn("Failed to save entities:", err);
       }
 
-      const companyName = analysisResult.company_name || searchTerm || 'Unknown Company';
+      const companyName = displayCompanyName(analysisResult.company_name || searchTerm) || 'Unknown Company';
       const jobId = companyName.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
 
       // Build fallback structure for existing components

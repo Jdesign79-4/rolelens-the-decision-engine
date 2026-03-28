@@ -1,4 +1,5 @@
 import { base44 } from '@/api/base44Client';
+import { normalizeCompanyName, findMatchingCompany, displayCompanyName } from '@/lib/companyUtils';
 
 export async function analyzeJobOpportunity(userInput, pageText = '') {
   const prompt = `You are a job seeker intelligence analyst. Research the following company and role to help a job seeker make an informed decision.
@@ -189,10 +190,12 @@ Return your analysis as a JSON object matching the intelligence schema provided.
     let opportunityFlags = null;
 
     if (companyName) {
-      const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: companyName });
-      if (dbResp.length > 0) {
-        tickerSymbol = dbResp[0].ticker_symbol;
-        parentTicker = dbResp[0].parent_ticker;
+      // Use fuzzy matching to find existing company record (prevents duplicates)
+      const allCompanyRecords = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+      const dbMatch = findMatchingCompany(companyName, allCompanyRecords);
+      if (dbMatch) {
+        tickerSymbol = dbMatch.ticker_symbol;
+        parentTicker = dbMatch.parent_ticker;
       }
       
       // If we don't have a ticker yet, ask LLM
@@ -219,7 +222,7 @@ Return your analysis as a JSON object matching the intelligence schema provided.
       // for stock data, analyst data, revenue trends, and news sentiment.
       const effectiveTicker = tickerSymbol || parentTicker;
       if (effectiveTicker) {
-        const entityId = dbResp?.length > 0 ? dbResp[0].id : undefined;
+        const entityId = dbMatch?.id;
         const healthRes = await base44.functions.invoke('fetchCompanyData', {
           company_name: companyName,
           ticker_symbol: effectiveTicker,
@@ -236,12 +239,12 @@ Return your analysis as a JSON object matching the intelligence schema provided.
             intelligence.news = healthRes.data.data.news_articles;
           }
         }
-      } else if (dbResp?.length > 0) {
+      } else if (dbMatch) {
         // Private company — use whatever is in the DB
-        companyHealth = dbResp[0].company_health;
-        stockData = dbResp[0].stock_data;
-        analystData = dbResp[0].analyst_data;
-        opportunityFlags = dbResp[0].opportunity_flags;
+        companyHealth = dbMatch.company_health;
+        stockData = dbMatch.stock_data;
+        analystData = dbMatch.analyst_data;
+        opportunityFlags = dbMatch.opportunity_flags;
       }
     }
 

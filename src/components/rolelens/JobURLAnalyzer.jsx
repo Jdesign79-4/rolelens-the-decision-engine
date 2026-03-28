@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { base44 } from '@/api/base44Client';
 import { generateAlternatives } from './alternativesEngine';
 import { analyzeJobOpportunity } from './intelligenceEngine';
+import { displayCompanyName, normalizeCompanyName, findMatchingCompany, upsertPublicCompanyData, upsertJobApplication } from '@/lib/companyUtils';
 
 const PLATFORMS = [
   { name: 'LinkedIn', pattern: /linkedin\.com\/jobs/i, icon: '💼', color: 'bg-blue-100 text-blue-700' },
@@ -137,15 +138,17 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         let opportunityFlags = null;
 
         const cName = parsedJSON.company_name || companyName;
-        const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: cName });
-        if (dbResp.length > 0) {
-          tickerSymbol = dbResp[0].ticker_symbol;
-          parentTicker = dbResp[0].parent_ticker;
+        // Use fuzzy matching to find existing company record
+        const allCompanyRecords = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+        const existingCompanyRecord = findMatchingCompany(cName, allCompanyRecords);
+        if (existingCompanyRecord) {
+          tickerSymbol = existingCompanyRecord.ticker_symbol;
+          parentTicker = existingCompanyRecord.parent_ticker;
         }
 
         // ALWAYS call fetchCompanyData to get fresh stock/analyst/revenue data
         const effectiveTicker = tickerSymbol || parentTicker;
-        const entityId = dbResp?.length > 0 ? dbResp[0].id : undefined;
+        const entityId = existingCompanyRecord?.id;
         const healthRes = await base44.functions.invoke('fetchCompanyData', {
           company_name: cName,
           ticker_symbol: effectiveTicker || undefined,
@@ -193,24 +196,16 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         console.warn("Failed to fetch real job intelligence in URL analyzer:", e);
       }
 
+      // Upsert PublicCompanyData (fuzzy match prevents duplicates)
       let companyId = null;
-      const existingCompanies = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
-      if (existingCompanies.length > 0) {
-        companyId = existingCompanies[0].id;
-        const updateData = {};
-        if (parsedJSON.company_health?.financial_health_score !== undefined || parsedJSON.company_health?.stability_score !== undefined) {
-          updateData.company_health = parsedJSON.company_health;
-        }
-        if (parsedJSON.opportunity_flags) {
-          updateData.opportunity_flags = parsedJSON.opportunity_flags;
-        }
-        if (parsedJSON.news && parsedJSON.news.length > 0) {
-          updateData.news_articles = parsedJSON.news;
-        }
-        if (Object.keys(updateData).length > 0) {
-          await base44.entities.PublicCompanyData.update(companyId, updateData);
-        }
-      }
+      const companyUpdateData = {};
+      if (parsedJSON.company_health) companyUpdateData.company_health = parsedJSON.company_health;
+      if (parsedJSON.opportunity_flags) companyUpdateData.opportunity_flags = parsedJSON.opportunity_flags;
+      if (parsedJSON.news && parsedJSON.news.length > 0) companyUpdateData.news_articles = parsedJSON.news;
+      if (tickerSymbol) companyUpdateData.ticker_symbol = tickerSymbol;
+      companyUpdateData.is_public = !!tickerSymbol;
+      companyUpdateData.job_seeker_intelligence = parsedJSON;
+      companyId = await upsertPublicCompanyData(base44.entities.PublicCompanyData, parsedJSON.company_name || companyName, companyUpdateData);
 
       let roleDemand = null;
       try {
@@ -225,9 +220,9 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         console.warn("Failed to fetch role demand:", err);
       }
 
-      await base44.entities.JobApplication.create({
-        company_name: parsedJSON.company_name || companyName,
-        job_title: parsedJSON.role_analyzed || jobTitle,
+      const resolvedJobTitle = parsedJSON.role_analyzed || jobTitle;
+      await upsertJobApplication(base44.entities.JobApplication, parsedJSON.company_name || companyName, resolvedJobTitle, {
+        job_title: resolvedJobTitle,
         job_url: url,
         stage: "Reaching Out",
         job_seeker_intelligence: parsedJSON,

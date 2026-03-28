@@ -1,5 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+// Server-side company name normalization (mirrors client-side lib/companyUtils.js)
+function normalizeCompanyName(name) {
+  if (!name) return '';
+  let n = name.trim();
+  n = n.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  const suffixes = [/,?\s*inc\.?$/i, /,?\s*corp\.?$/i, /,?\s*company$/i, /,?\s*llc\.?$/i, /,?\s*ltd\.?$/i, /,?\s*co\.?$/i, /,?\s*plc\.?$/i, /,?\s*gmbh$/i, /,?\s*ag$/i];
+  for (const re of suffixes) { n = n.replace(re, '').trim(); }
+  n = n.replace(/[.,]+$/, '').trim();
+  return n.toLowerCase();
+}
+
+function findMatchingRecord(name, records) {
+  if (!name || !records || records.length === 0) return null;
+  const needle = normalizeCompanyName(name);
+  if (!needle) return null;
+  const matches = records.filter(r => {
+    const stored = normalizeCompanyName(r.company_name);
+    return stored === needle || stored.includes(needle) || needle.includes(stored);
+  });
+  if (matches.length === 0) return null;
+  matches.sort((a, b) => new Date(b.updated_date || b.last_updated || 0) - new Date(a.updated_date || a.last_updated || 0));
+  return matches[0];
+}
+
 async function fetchJSON(url) {
   try {
     const res = await fetch(url);
@@ -365,16 +389,17 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.PublicCompanyData.update(entityId, payload);
       }
     } else if (company_name) {
-      // Find the entity by name and update it
-      const existing = await base44.asServiceRole.entities.PublicCompanyData.filter({ company_name });
-      if (existing.length > 0) {
-        let jsi = existing[0].job_seeker_intelligence || { dimensions: {} };
+      // Find the entity by fuzzy name match and update it
+      const allRecords = await base44.asServiceRole.entities.PublicCompanyData.list('-updated_date', 100);
+      const match = findMatchingRecord(company_name, allRecords);
+      if (match) {
+        let jsi = match.job_seeker_intelligence || { dimensions: {} };
         if (!jsi.dimensions) jsi.dimensions = {};
         jsi.dimensions.market_sentiment = market_sentiment;
         jsi.dimensions.risk_assessment = risk_assessment;
         
         payload.job_seeker_intelligence = jsi;
-        await base44.asServiceRole.entities.PublicCompanyData.update(existing[0].id, payload);
+        await base44.asServiceRole.entities.PublicCompanyData.update(match.id, payload);
       }
     }
 
