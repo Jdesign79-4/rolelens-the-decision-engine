@@ -308,7 +308,8 @@ Deno.serve(async (req) => {
         FRED_API_KEY: dbKeys.fred_api_key || Deno.env.get("FRED_API_KEY")
     };
 
-    const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health, stock_data } = await req.json();
+    const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health, stock_data, analyst_data, opportunity_flags } = await req.json();
+    console.log('[JSI] Received params — ticker:', ticker_symbol, 'stock_data.year_change_percent:', stock_data?.year_change_percent, 'company_health.revenue_trend:', company_health?.revenue_trend, 'analyst_data:', JSON.stringify(analyst_data)?.substring(0, 200));
 
     const COS_USER_ID = env.CAREER_ONE_STOP_USER_ID;
     const COS_TOKEN = env.CAREER_ONE_STOP_API_KEY;
@@ -647,10 +648,10 @@ Deno.serve(async (req) => {
     let buyRatio = null;
     let sellRatio = null;
 
-    if (ticker_symbol) {
+    if (effectiveTicker) {
       if (ALPHA_KEY) {
         try {
-          const avRes = await fetchWithTimeout(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker_symbol}&apikey=${ALPHA_KEY}`);
+          const avRes = await fetchWithTimeout(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${effectiveTicker}&apikey=${ALPHA_KEY}`);
           if (avRes.ok) {
             const avJson = await avRes.json();
             if (avJson.feed && avJson.feed.length > 0) {
@@ -677,7 +678,7 @@ Deno.serve(async (req) => {
 
       if (FINNHUB_KEY) {
         try {
-          const fhRes = await fetchWithTimeout(`https://finnhub.io/api/v1/stock/recommendation?symbol=${ticker_symbol}&token=${FINNHUB_KEY}`);
+          const fhRes = await fetchWithTimeout(`https://finnhub.io/api/v1/stock/recommendation?symbol=${effectiveTicker}&token=${FINNHUB_KEY}`);
           if (fhRes.ok) {
             const fhJson = await fhRes.json();
             if (Array.isArray(fhJson) && fhJson.length > 0) {
@@ -729,27 +730,106 @@ Deno.serve(async (req) => {
       }
     }
 
+    // If direct API calls didn't produce analyst data, try using analyst_data passed from fetchCompanyData
+    if (buyRatio === null && analyst_data?.consensus_rating) {
+      console.log('[JSI] Using analyst_data from fetchCompanyData as fallback:', JSON.stringify(analyst_data));
+      sentimentSources.push('Finnhub Analyst Recommendations (via fetchCompanyData)');
+      const rating = analyst_data.consensus_rating?.toLowerCase();
+      if (rating === 'buy' || rating === 'strong buy') {
+        buyRatio = 0.7;
+        sellRatio = 0.1;
+        analystScore = 70;
+      } else if (rating === 'sell' || rating === 'strong sell') {
+        buyRatio = 0.1;
+        sellRatio = 0.7;
+        analystScore = 30;
+      } else {
+        buyRatio = 0.3;
+        sellRatio = 0.2;
+        analystScore = 50;
+      }
+    }
+
+    // If direct API calls didn't produce news sentiment, try using opportunity_flags from fetchCompanyData
+    if (newsScore === null && opportunity_flags) {
+      const greenFlags = opportunity_flags.green || [];
+      const redFlags = opportunity_flags.red || [];
+      const hasPositiveSentiment = greenFlags.some(f => f.toLowerCase().includes('positive') && f.toLowerCase().includes('sentiment'));
+      const hasNegativeSentiment = redFlags.some(f => f.toLowerCase().includes('negative') && f.toLowerCase().includes('sentiment'));
+      if (hasPositiveSentiment) {
+        newsScore = 70;
+        sentimentSources.push('Alpha Vantage News Sentiment (via fetchCompanyData)');
+        console.log('[JSI] Using positive sentiment from opportunity_flags');
+      } else if (hasNegativeSentiment) {
+        newsScore = 30;
+        sentimentSources.push('Alpha Vantage News Sentiment (via fetchCompanyData)');
+        console.log('[JSI] Using negative sentiment from opportunity_flags');
+      }
+    }
+
+    // Rebuild market_sentiment if we now have data from fallbacks
+    if (!dimensions.market_sentiment?.verified && (analystScore !== null || newsScore !== null)) {
+      let msScore = null;
+      if (newsScore !== null && analystScore !== null) {
+        msScore = (newsScore * 0.4) + (analystScore * 0.6);
+      } else if (newsScore !== null) {
+        msScore = newsScore;
+      } else if (analystScore !== null) {
+        msScore = analystScore;
+      }
+
+      if (msScore !== null) {
+        let headline = '';
+        if (analystScore !== null) {
+          headline = `Analyst consensus is ${buyRatio > 0.6 ? 'Buy' : buyRatio > 0.4 ? 'Hold/Mixed' : 'Sell'}. `;
+        }
+        if (newsScore !== null) {
+          headline += `Recent news sentiment is mostly ${newsScore >= 60 ? 'positive' : newsScore <= 40 ? 'negative' : 'neutral'}.`;
+        }
+
+        dimensions.market_sentiment = {
+          score: Math.round(msScore),
+          headline,
+          insight: 'Based on verified financial and news API data.',
+          confidence: (newsScore !== null && analystScore !== null) ? 'high' : 'medium',
+          verified: true,
+          sources: sentimentSources,
+          _buyRatio: buyRatio,
+          _sellRatio: sellRatio,
+          _negativeNewsRatio: newsScore !== null && newsScore <= 40 ? 0.6 : 0.2
+        };
+      }
+    }
+
     if (!dimensions.market_sentiment) {
-      // If we have no ticker but have stock_data from the entity, try to build a basic sentiment
-      if (stock_data?.year_change_percent !== undefined) {
+      if (isPublicCompany && stock_data?.year_change_percent !== undefined) {
         const yc = stock_data.year_change_percent;
         const basicScore = yc > 10 ? 70 : yc > 0 ? 60 : yc > -10 ? 40 : 30;
         dimensions.market_sentiment = {
           score: basicScore,
           headline: `Stock has ${yc >= 0 ? 'gained' : 'lost'} ${Math.abs(yc).toFixed(1)}% over the past year.`,
-          insight: 'Based on stock price data. Analyst recommendations and news sentiment APIs did not return data for this ticker.',
+          insight: 'Based on stock price data. Analyst and news sentiment APIs did not return data.',
           confidence: 'low',
           verified: true,
           sources: ['Yahoo Finance (Stock Price)'],
           _buyRatio: null,
           _sellRatio: null
         };
+      } else if (isPublicCompany) {
+        dimensions.market_sentiment = {
+          score: null,
+          headline: 'Sentiment data temporarily unavailable for this public company.',
+          insight: 'This is a public company but the API calls for analyst and news data did not return results. Try refreshing or check that Finnhub and Alpha Vantage API keys are configured.',
+          confidence: 'low',
+          verified: false,
+          sources: []
+        };
       } else {
         dimensions.market_sentiment = {
           score: null,
-          headline: "Limited sentiment data — company may be privately held or thinly covered.",
-          insight: "Analyst recommendations and structured news sentiment not available. Ensure Finnhub and Alpha Vantage API keys are configured.",
-          confidence: "low",
+          headline: 'Limited sentiment data — company appears to be privately held.',
+          insight: 'Analyst recommendations and structured news sentiment are not available for private companies.',
+          confidence: 'low',
           verified: false,
           sources: []
         };

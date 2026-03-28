@@ -301,10 +301,21 @@ Deno.serve(async (req) => {
     // BUILD stock_data & fundamentals for backwards compatibility with charts
     const price_history = await fetchYahooHistory(ticker);
     
+    // Compute year_change_percent: prefer FMP, fallback to Yahoo price history
+    let yearChangePct = fmpPriceChange?.["1Y"] || null;
+    if (yearChangePct === null && price_history.length >= 2) {
+      const oldest = price_history[0]?.price;
+      const newest = price_history[price_history.length - 1]?.price;
+      if (oldest && newest && oldest > 0) {
+        yearChangePct = ((newest - oldest) / oldest) * 100;
+        yearChangePct = Math.round(yearChangePct * 10) / 10;
+      }
+    }
+
     const stock_data = {
-      current_price: fhProfile?.c || fmpProfile?.price || null,
+      current_price: fmpProfile?.price || (price_history.length > 0 ? price_history[price_history.length - 1]?.price : null),
       price_change_percent: fmpPriceChange?.["1D"] || null,
-      year_change_percent: fmpPriceChange?.["1Y"] || null,
+      year_change_percent: yearChangePct,
       week_52_high: fhMetric?.metric?.["52WeekHigh"] || null,
       week_52_low: fhMetric?.metric?.["52WeekLow"] || null,
       market_cap: marketCap ? `$${(marketCap / 1e9).toFixed(2)}B` : "N/A",

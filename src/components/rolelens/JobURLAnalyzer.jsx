@@ -133,37 +133,52 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
         let parentTicker = null;
         let companyHealth = null;
         let stockData = null;
+        let analystData = null;
+        let opportunityFlags = null;
 
-        const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: parsedJSON.company_name || companyName });
+        const cName = parsedJSON.company_name || companyName;
+        const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: cName });
         if (dbResp.length > 0) {
           tickerSymbol = dbResp[0].ticker_symbol;
           parentTicker = dbResp[0].parent_ticker;
+        }
+
+        // ALWAYS call fetchCompanyData to get fresh stock/analyst/revenue data
+        const effectiveTicker = tickerSymbol || parentTicker;
+        const entityId = dbResp?.length > 0 ? dbResp[0].id : undefined;
+        const healthRes = await base44.functions.invoke('fetchCompanyData', {
+          company_name: cName,
+          ticker_symbol: effectiveTicker || undefined,
+          entityId: entityId
+        });
+        if (healthRes.data?.success) {
+          companyHealth = healthRes.data.data.company_health;
+          stockData = healthRes.data.data.stock_data;
+          analystData = healthRes.data.data.analyst_data;
+          opportunityFlags = healthRes.data.data.opportunity_flags;
+          tickerSymbol = healthRes.data.data.ticker_symbol || tickerSymbol;
+          parsedJSON.company_health = companyHealth;
+          parsedJSON.opportunity_flags = opportunityFlags;
+          if (healthRes.data.data.news_articles?.length > 0) {
+            parsedJSON.news = healthRes.data.data.news_articles;
+          }
+        } else if (dbResp?.length > 0) {
+          // Fallback to DB data if fetchCompanyData failed
           companyHealth = dbResp[0].company_health;
           stockData = dbResp[0].stock_data;
-        } else {
-          // If not in DB, try to find public data via fetchCompanyData
-          const healthRes = await base44.functions.invoke('fetchCompanyData', {
-            company_name: parsedJSON.company_name || companyName,
-            ticker_symbol: undefined
-          });
-          if (healthRes.data?.success) {
-            companyHealth = healthRes.data.data.company_health;
-            stockData = healthRes.data.data.stock_data;
-            parsedJSON.company_health = companyHealth;
-            parsedJSON.opportunity_flags = healthRes.data.data.opportunity_flags;
-            if (healthRes.data.data.news_articles?.length > 0) {
-              parsedJSON.news = healthRes.data.data.news_articles;
-            }
-          }
+          analystData = dbResp[0].analyst_data;
+          opportunityFlags = dbResp[0].opportunity_flags;
         }
 
         const realIntelRes = await base44.functions.invoke('fetchRealJobIntelligence', {
-          company_name: parsedJSON.company_name || companyName,
+          company_name: cName,
           ticker_symbol: tickerSymbol || parentTicker,
           job_title: parsedJSON.role_analyzed || jobTitle,
           location: null,
           company_health: companyHealth,
-          stock_data: stockData
+          stock_data: stockData,
+          analyst_data: analystData,
+          opportunity_flags: opportunityFlags
         });
 
         if (realIntelRes.data?.success && realIntelRes.data?.dimensions) {

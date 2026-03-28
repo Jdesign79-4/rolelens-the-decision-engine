@@ -185,15 +185,18 @@ Return your analysis as a JSON object matching the intelligence schema provided.
     let companyHealth = null;
 
     let stockData = null;
+    let analystData = null;
+    let opportunityFlags = null;
 
     if (companyName) {
       const dbResp = await base44.entities.PublicCompanyData.filter({ company_name: companyName });
       if (dbResp.length > 0) {
         tickerSymbol = dbResp[0].ticker_symbol;
         parentTicker = dbResp[0].parent_ticker;
-        companyHealth = dbResp[0].company_health;
-        stockData = dbResp[0].stock_data;
-      } else {
+      }
+      
+      // If we don't have a ticker yet, ask LLM
+      if (!tickerSymbol && !parentTicker) {
         const tickerResp = await base44.integrations.Core.InvokeLLM({
           prompt: `Is "${companyName}" publicly traded? If so, what is its ticker symbol? If it's a subsidiary, what is its parent company and parent ticker? Return JSON.`,
           add_context_from_internet: true,
@@ -210,23 +213,35 @@ Return your analysis as a JSON object matching the intelligence schema provided.
         isPublic = parsedTicker?.is_public ?? false;
         tickerSymbol = parsedTicker?.ticker_symbol;
         parentTicker = parsedTicker?.parent_ticker;
-        
-        // Fetch real company health
-        if (isPublic && (tickerSymbol || parentTicker)) {
-          const healthRes = await base44.functions.invoke('fetchCompanyData', {
-            company_name: companyName,
-            ticker_symbol: tickerSymbol || parentTicker
-          });
-          if (healthRes.data?.success) {
-            companyHealth = healthRes.data.data.company_health;
-            stockData = healthRes.data.data.stock_data;
-            intelligence.company_health = companyHealth;
-            intelligence.opportunity_flags = healthRes.data.data.opportunity_flags;
-            if (healthRes.data.data.news_articles && healthRes.data.data.news_articles.length > 0) {
-              intelligence.news = healthRes.data.data.news_articles;
-            }
+      }
+
+      // ALWAYS call fetchCompanyData when we have a ticker — this is the single source of truth
+      // for stock data, analyst data, revenue trends, and news sentiment.
+      const effectiveTicker = tickerSymbol || parentTicker;
+      if (effectiveTicker) {
+        const entityId = dbResp?.length > 0 ? dbResp[0].id : undefined;
+        const healthRes = await base44.functions.invoke('fetchCompanyData', {
+          company_name: companyName,
+          ticker_symbol: effectiveTicker,
+          entityId: entityId
+        });
+        if (healthRes.data?.success) {
+          companyHealth = healthRes.data.data.company_health;
+          stockData = healthRes.data.data.stock_data;
+          analystData = healthRes.data.data.analyst_data;
+          opportunityFlags = healthRes.data.data.opportunity_flags;
+          intelligence.company_health = companyHealth;
+          intelligence.opportunity_flags = opportunityFlags;
+          if (healthRes.data.data.news_articles && healthRes.data.data.news_articles.length > 0) {
+            intelligence.news = healthRes.data.data.news_articles;
           }
         }
+      } else if (dbResp?.length > 0) {
+        // Private company — use whatever is in the DB
+        companyHealth = dbResp[0].company_health;
+        stockData = dbResp[0].stock_data;
+        analystData = dbResp[0].analyst_data;
+        opportunityFlags = dbResp[0].opportunity_flags;
       }
     }
 
@@ -239,7 +254,9 @@ Return your analysis as a JSON object matching the intelligence schema provided.
       salary_low: salaryLow,
       salary_high: salaryHigh,
       company_health: companyHealth,
-      stock_data: stockData
+      stock_data: stockData,
+      analyst_data: analystData,
+      opportunity_flags: opportunityFlags
     });
 
     if (realIntelRes.data?.success && realIntelRes.data?.dimensions) {
