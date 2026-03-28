@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import CompensationTiers from './CompensationTiers';
 
 export default function IntelligenceCard({ 
   title, 
@@ -132,59 +133,48 @@ export default function IntelligenceCard({
             {/* Specialized UI based on card type */}
             {title === 'Compensation' && dimensionData.market_median && (
               <div className="mb-4 space-y-3">
+                {/* Experience-level tiers */}
+                {dimensionData._tiers && dimensionData._tiers.length > 0 && (
+                  <CompensationTiers dimensionData={dimensionData} />
+                )}
+
+                {/* Percentile bar visualization */}
                 <div className="p-4 rounded-xl bg-white/50 border border-slate-200/50">
                   <div className="flex justify-between text-xs text-slate-500 mb-2">
-                    <span>10th: ${dimensionData.market_low?.toLocaleString()}</span>
-                    <span>90th: ${dimensionData.market_high?.toLocaleString()}</span>
+                    <span>10th: {dimensionData._p10 ? '$' + Math.round(dimensionData._p10).toLocaleString() : (dimensionData.market_low ? '$' + Math.round(dimensionData.market_low).toLocaleString() : 'N/A')}</span>
+                    <span>90th: {dimensionData._p90 ? '$' + Math.round(dimensionData._p90).toLocaleString() : (dimensionData.market_high ? '$' + Math.round(dimensionData.market_high).toLocaleString() : 'N/A')}</span>
                   </div>
-                  <div className="relative h-4 bg-slate-200 rounded-full w-full mb-2">
-                    {/* Range 25th to 75th */}
-                    {dimensionData.market_25th && dimensionData.market_75th && (
-                      <div 
-                        className="absolute h-full bg-slate-400 opacity-30" 
-                        style={{ 
-                          left: `${Math.max(0, Math.min(100, ((dimensionData.market_25th - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`,
-                          width: `${Math.max(0, Math.min(100, ((dimensionData.market_75th - dimensionData.market_25th) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`
-                        }}
-                      />
-                    )}
-                    {/* 25th Marker */}
-                    {dimensionData.market_25th && (
-                      <div 
-                        className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" 
-                        style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_25th - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
-                        title={`25th: $${dimensionData.market_25th?.toLocaleString()}`}
-                      />
-                    )}
-                    {/* 75th Marker */}
-                    {dimensionData.market_75th && (
-                      <div 
-                        className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" 
-                        style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_75th - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
-                        title={`75th: $${dimensionData.market_75th?.toLocaleString()}`}
-                      />
-                    )}
-                    {/* User Salary Range Overlay */}
-                    {dimensionData._salaryLow && dimensionData._salaryHigh && (
-                      <div 
-                        className="absolute h-full bg-indigo-500 opacity-60 z-10" 
-                        style={{ 
-                          left: `${Math.max(0, Math.min(100, ((dimensionData._salaryLow - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`,
-                          width: `${Math.max(0, Math.min(100, ((dimensionData._salaryHigh - dimensionData._salaryLow) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%`
-                        }}
-                        title={`Your Offer: $${dimensionData._salaryLow.toLocaleString()} - $${dimensionData._salaryHigh.toLocaleString()}`}
-                      />
-                    )}
-                    {/* Median Marker */}
-                    <div 
-                      className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" 
-                      style={{ left: `${Math.max(0, Math.min(100, ((dimensionData.market_median - (dimensionData.market_low || 0)) / ((dimensionData.market_high || 1) - (dimensionData.market_low || 0))) * 100))}%` }} 
-                      title={`Median: $${dimensionData.market_median?.toLocaleString()}`}
-                    />
-                  </div>
+                  {(() => {
+                    const lo = dimensionData._p10 || dimensionData.market_low || 0;
+                    const hi = dimensionData._p90 || dimensionData.market_high || 1;
+                    const range = hi - lo || 1;
+                    const pct = (v) => Math.max(0, Math.min(100, ((v - lo) / range) * 100));
+                    return (
+                      <div className="relative h-4 bg-slate-200 rounded-full w-full mb-2">
+                        {/* 25th-75th range */}
+                        {dimensionData.market_25th && dimensionData.market_75th && (
+                          <div className="absolute h-full bg-slate-400 opacity-30" style={{ left: `${pct(dimensionData.market_25th)}%`, width: `${pct(dimensionData.market_75th) - pct(dimensionData.market_25th)}%` }} />
+                        )}
+                        {/* 25th Marker */}
+                        {dimensionData.market_25th && (
+                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_25th)}%` }} title={`25th: $${Math.round(dimensionData.market_25th).toLocaleString()}`} />
+                        )}
+                        {/* 75th Marker */}
+                        {dimensionData.market_75th && (
+                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_75th)}%` }} title={`75th: $${Math.round(dimensionData.market_75th).toLocaleString()}`} />
+                        )}
+                        {/* User Salary Range Overlay */}
+                        {dimensionData._salaryLow && dimensionData._salaryHigh && (
+                          <div className="absolute h-full bg-indigo-500 opacity-60 z-10" style={{ left: `${pct(dimensionData._salaryLow)}%`, width: `${pct(dimensionData._salaryHigh) - pct(dimensionData._salaryLow)}%` }} title={`Your Offer: $${dimensionData._salaryLow.toLocaleString()} - $${dimensionData._salaryHigh.toLocaleString()}`} />
+                        )}
+                        {/* Median Marker */}
+                        <div className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" style={{ left: `${pct(dimensionData.market_median)}%` }} title={`Median: $${Math.round(dimensionData.market_median).toLocaleString()}`} />
+                      </div>
+                    );
+                  })()}
                   <div className="flex justify-between text-[10px] text-slate-500 font-medium px-1">
                     {dimensionData.market_25th && <span>25th</span>}
-                    <span>Median: ${dimensionData.market_median?.toLocaleString()}</span>
+                    <span>Median: ${Math.round(dimensionData.market_median).toLocaleString()}</span>
                     {dimensionData.market_75th && <span>75th</span>}
                   </div>
                 </div>

@@ -282,9 +282,11 @@ function buildBlsSeriesIds(socCode) {
   const soc6 = socCode.replace('-', '');
   const base = 'OEUN0000000000000' + soc6;
   return {
+    p10:    base + '11',  // 10th percentile annual wage
     p25:    base + '12',  // 25th percentile annual wage
     median: base + '13',  // median annual wage
-    p75:    base + '14'   // 75th percentile annual wage
+    p75:    base + '14',  // 75th percentile annual wage
+    p90:    base + '15'   // 90th percentile annual wage
   };
 }
 
@@ -332,7 +334,7 @@ Deno.serve(async (req) => {
 
     if (BLS_KEY && socMatch) {
       const ids = buildBlsSeriesIds(socMatch.socCode);
-      const seriesIds = [ids.p25, ids.median, ids.p75];
+      const seriesIds = [ids.p10, ids.p25, ids.median, ids.p75, ids.p90];
       console.log("[BLS] SOC code:", socMatch.socCode, "series IDs:", JSON.stringify(seriesIds));
       console.log("[BLS] Series ID lengths:", seriesIds.map(s => s.length));
       console.log("[BLS] Using API key:", BLS_KEY ? (BLS_KEY.substring(0, 6) + '...') : 'MISSING');
@@ -356,26 +358,28 @@ Deno.serve(async (req) => {
         if (blsData.status === "REQUEST_SUCCEEDED" && blsData.Results?.series) {
           const series = blsData.Results.series;
           console.log("[BLS] Series count:", series.length);
-          let market_25th = null, market_median = null, market_75th = null;
+          let market_10th = null, market_25th = null, market_median = null, market_75th = null, market_90th = null;
           series.forEach((s, i) => {
             console.log(`[BLS] Series ${i}: ID=${s.seriesID}, dataPoints=${s.data?.length}`);
             if (s.data && s.data.length > 0) {
               console.log(`[BLS] Series ${i} latest value: ${s.data[0].value} (year=${s.data[0].year}, period=${s.data[0].period})`);
               const val = parseFloat(s.data[0].value);
               if (!isNaN(val)) {
-                if (s.seriesID === ids.p25) market_25th = val;
+                if (s.seriesID === ids.p10) market_10th = val;
+                else if (s.seriesID === ids.p25) market_25th = val;
                 else if (s.seriesID === ids.median) market_median = val;
                 else if (s.seriesID === ids.p75) market_75th = val;
-                else console.warn(`[BLS] Unexpected seriesID: ${s.seriesID} (expected one of ${ids.p25}, ${ids.median}, ${ids.p75})`);
+                else if (s.seriesID === ids.p90) market_90th = val;
+                else console.warn(`[BLS] Unexpected seriesID: ${s.seriesID}`);
               }
             } else {
               console.warn(`[BLS] Series ${i} (${s.seriesID}) returned no data points`);
             }
           });
-          console.log("[BLS] Parsed wages:", { market_25th, market_median, market_75th });
+          console.log("[BLS] Parsed wages:", { market_10th, market_25th, market_median, market_75th, market_90th });
           if (market_median) {
-            compData = { market_25th, market_median, market_75th, occ_title: socMatch.socTitle };
-            cosSources.push("BLS Occupational Employment Statistics");
+            compData = { market_10th, market_25th, market_median, market_75th, market_90th, occ_title: socMatch.socTitle };
+            cosSources.push("BLS Occupational Employment and Wage Statistics, 2024");
           } else {
             console.warn("[BLS] median wage was null/0 — data may not exist for this SOC code");
           }
@@ -423,29 +427,43 @@ Deno.serve(async (req) => {
       const displayTitle = socMatch?.socTitle || job_title || "This role";
       let score = null;
       const fmt = (v) => v ? '$' + Math.round(v).toLocaleString() : 'N/A';
-      let headline = `${displayTitle} nationally earn ${fmt(compData.market_25th)} (25th) → ${fmt(compData.market_median)} (median) → ${fmt(compData.market_75th)} (75th)`;
+      let headline = `${displayTitle} nationally earn ${fmt(compData.market_25th)} (25th) → ${fmt(compData.market_median)} (median) → ${fmt(compData.market_75th)} (75th) per year`;
 
       const mHigh = compData.market_75th || compData.market_high;
       const mLow = compData.market_25th || compData.market_low;
 
       let insight = headline + ". ";
+      let tierLabel = null;
 
       if (salary_low && salary_high) {
         const midpoint = (salary_low + salary_high) / 2;
-        if (mHigh && midpoint >= mHigh) { score = 95; headline = "Exceptional offer. Well above market 75th percentile."; }
-        else if (midpoint >= compData.market_median * 1.15) { score = 80; headline = "Above market rate."; }
-        else if (midpoint >= compData.market_median * 0.85) { score = 65; headline = `At market rate. The median salary is ${fmt(compData.market_median)}.`; }
-        else if (mLow && midpoint >= mLow) { score = 40; headline = "Below market rate."; }
-        else { score = 15; headline = "Well below market rate."; }
-        insight += `Your offered range falls ${score >= 80 ? 'above' : score <= 40 ? 'below' : 'near'} the market median.`;
+        const p90 = compData.market_90th;
+        if (p90 && midpoint >= p90) { score = 95; headline = "Exceptional offer — above 90th percentile nationally."; tierLabel = "above_90th"; }
+        else if (mHigh && midpoint >= mHigh) { score = 90; headline = "Senior-level compensation. Above 75th percentile."; tierLabel = "senior"; }
+        else if (midpoint >= compData.market_median) { score = 70; headline = `Mid-level compensation. Median is ${fmt(compData.market_median)}.`; tierLabel = "mid"; }
+        else if (mLow && midpoint >= mLow) { score = 50; headline = "Entry/Junior-level compensation range."; tierLabel = "entry"; }
+        else { score = 30; headline = "Below 25th percentile nationally."; tierLabel = "below_entry"; }
+
+        if (tierLabel === 'above_90th') insight += `Your offered range (${fmt(salary_low)} – ${fmt(salary_high)}) exceeds the 90th percentile nationally. Exceptional offer.`;
+        else if (tierLabel === 'senior') insight += `Your offered range (${fmt(salary_low)} – ${fmt(salary_high)}) is at Senior-level compensation.`;
+        else if (tierLabel === 'mid') insight += `Your offered range (${fmt(salary_low)} – ${fmt(salary_high)}) aligns with Mid-Level compensation.`;
+        else if (tierLabel === 'entry') insight += `Your offered range (${fmt(salary_low)} – ${fmt(salary_high)}) falls in the Entry/Junior tier.`;
+        else insight += `Your offered range (${fmt(salary_low)} – ${fmt(salary_high)}) is below the 25th percentile.`;
       } else {
-        insight += "Add a salary range to see how it compares to market data.";
+        insight += "Add a salary range to see which experience tier it falls into.";
       }
+
+      // Build experience tiers from BLS percentile data
+      const tiers = [
+        { label: "Entry / Junior", years: "0–4 years", low: compData.market_10th, high: compData.market_25th },
+        { label: "Mid-Level", years: "5–10 years", low: compData.market_25th, high: compData.market_75th, median: compData.market_median },
+        { label: "Senior", years: "10+ years", low: compData.market_75th, high: compData.market_90th }
+      ];
 
       dimensions.compensation = {
         score,
         headline,
-        insight: insight + " Based on BLS Occupational Employment Statistics.",
+        insight: insight + " Based on BLS Occupational Employment and Wage Statistics, 2024.",
         market_low: compData.market_25th || compData.market_low,
         market_25th: compData.market_25th,
         market_median: compData.market_median,
@@ -455,7 +473,11 @@ Deno.serve(async (req) => {
         verified: true,
         sources: cosSources,
         _salaryLow: salary_low,
-        _salaryHigh: salary_high
+        _salaryHigh: salary_high,
+        _p10: compData.market_10th,
+        _p90: compData.market_90th,
+        _tiers: tiers,
+        _tierLabel: tierLabel
       };
     } else {
       // Build a diagnostic message so we can see WHY it failed
