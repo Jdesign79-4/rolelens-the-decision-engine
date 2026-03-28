@@ -112,18 +112,29 @@ export default function IntelligenceCard({
         {isComplete && (
           <div className="flex-1 flex flex-col">
             <div className="mb-4">
-              <div className="flex justify-between text-xs text-slate-500 mb-1">
-                <span>Score</span>
-                <span>{dimensionData.score}/100</span>
-              </div>
-              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${dimensionData.score}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="h-full bg-indigo-500 rounded-full"
-                />
-              </div>
+              {(() => {
+                // Normalize score: if it looks like a 0-10 scale, multiply by 10
+                const rawScore = dimensionData.score;
+                const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
+                return normalizedScore != null ? (
+                  <>
+                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                      <span>Score</span>
+                      <span>{normalizedScore}/100</span>
+                    </div>
+                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${normalizedScore}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full bg-indigo-500 rounded-full"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-xs text-slate-400 italic">Score not available</div>
+                );
+              })()}
             </div>
 
             <p className="text-sm text-slate-700 leading-relaxed mb-4">

@@ -311,6 +311,10 @@ Deno.serve(async (req) => {
     const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health, stock_data, analyst_data, opportunity_flags } = await req.json();
     console.log('[JSI] Received params — ticker:', ticker_symbol, 'stock_data.year_change_percent:', stock_data?.year_change_percent, 'company_health.revenue_trend:', company_health?.revenue_trend, 'analyst_data:', JSON.stringify(analyst_data)?.substring(0, 200));
 
+    // Derive effectiveTicker and isPublicCompany from the ticker_symbol param
+    const effectiveTicker = ticker_symbol || null;
+    const isPublicCompany = !!effectiveTicker;
+
     const COS_USER_ID = env.CAREER_ONE_STOP_USER_ID;
     const COS_TOKEN = env.CAREER_ONE_STOP_API_KEY;
     const ONET_KEY = env.ONET_API_KEY;
@@ -647,6 +651,8 @@ Deno.serve(async (req) => {
     let sentimentSources = [];
     let buyRatio = null;
     let sellRatio = null;
+
+    console.log('[JSI] effectiveTicker:', effectiveTicker, 'isPublicCompany:', isPublicCompany, 'FINNHUB_KEY:', !!FINNHUB_KEY, 'ALPHA_KEY:', !!ALPHA_KEY);
 
     if (effectiveTicker) {
       if (ALPHA_KEY) {
