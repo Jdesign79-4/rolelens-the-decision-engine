@@ -273,18 +273,18 @@ function matchJobTitleToSOC(jobTitle) {
 // Format: OEUN + 0000000000000 (13 zeros = national, all industries) + SOC6 (6 digits) + DT (2-digit datatype)
 // Total: 4 + 13 + 6 + 2 = 25 characters
 // Datatype codes for ANNUAL wages:
-//   04 = mean annual, 11 = 10th pct, 12 = 25th pct, 13 = 75th pct, 14 = median, 15 = 90th pct
+//   04 = mean annual, 11 = 10th pct, 12 = 25th pct, 13 = median, 14 = 75th pct, 15 = 90th pct
 // Verified examples for SOC 15-1252 (Software Developers):
-//   OEUN000000000000015125212  (25th pct annual, 25 chars)
-//   OEUN000000000000015125214  (median annual,   25 chars)
-//   OEUN000000000000015125213  (75th pct annual, 25 chars)
+//   OEUN000000000000015125212  (25th pct annual = $103,050)
+//   OEUN000000000000015125213  (median annual   = $133,080)
+//   OEUN000000000000015125214  (75th pct annual = $169,000)
 function buildBlsSeriesIds(socCode) {
   const soc6 = socCode.replace('-', '');
   const base = 'OEUN0000000000000' + soc6;
   return {
     p25:    base + '12',  // 25th percentile annual wage
-    median: base + '14',  // median annual wage
-    p75:    base + '13'   // 75th percentile annual wage
+    median: base + '13',  // median annual wage
+    p75:    base + '14'   // 75th percentile annual wage
   };
 }
 
