@@ -69,27 +69,13 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
           companyId = await upsertPublicCompanyData(base44.entities.PublicCompanyData, analysisResult.company_name, companyUpdateData);
         }
 
-        let roleDemand = null;
-        try {
-          const demandRes = await base44.functions.invoke('fetchRoleDemand', {
-            job_title: analysisResult?.role_analyzed || jobTitle || "Unknown Role",
-            sector: analysisResult?.company_health?.sector || "Information"
-          });
-          if (demandRes.data?.success) {
-            roleDemand = demandRes.data.role_demand;
-          }
-        } catch (err) {
-          console.warn("Failed to fetch role demand:", err);
-        }
-
         const resolvedJobTitle = analysisResult?.role_analyzed || jobTitle || "Unknown Role";
         await upsertJobApplication(base44.entities.JobApplication, analysisResult?.company_name || searchTerm, resolvedJobTitle, {
           job_title: resolvedJobTitle,
           job_url: "",
           applied_date: new Date().toISOString().split('T')[0],
           stage: "Reaching Out",
-          company_data_id: companyId,
-          role_demand: roleDemand
+          company_data_id: companyId
         });
       } catch (err) {
         console.warn("Failed to save entities:", err);

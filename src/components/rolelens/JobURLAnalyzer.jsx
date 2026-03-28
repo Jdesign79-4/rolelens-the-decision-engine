@@ -207,27 +207,13 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       companyUpdateData.job_seeker_intelligence = parsedJSON;
       companyId = await upsertPublicCompanyData(base44.entities.PublicCompanyData, parsedJSON.company_name || companyName, companyUpdateData);
 
-      let roleDemand = null;
-      try {
-        const demandRes = await base44.functions.invoke('fetchRoleDemand', {
-          job_title: parsedJSON.role_analyzed || jobTitle,
-          sector: parsedJSON.company_health?.sector || "Information"
-        });
-        if (demandRes.data?.success) {
-          roleDemand = demandRes.data.role_demand;
-        }
-      } catch (err) {
-        console.warn("Failed to fetch role demand:", err);
-      }
-
       const resolvedJobTitle = parsedJSON.role_analyzed || jobTitle;
       await upsertJobApplication(base44.entities.JobApplication, parsedJSON.company_name || companyName, resolvedJobTitle, {
         job_title: resolvedJobTitle,
         job_url: url,
         stage: "Reaching Out",
         job_seeker_intelligence: parsedJSON,
-        company_data_id: companyId,
-        role_demand: roleDemand
+        company_data_id: companyId
       });
 
       setAnalysisStatus('complete');
