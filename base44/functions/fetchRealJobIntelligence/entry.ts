@@ -355,7 +355,7 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(blsBody)
-        });
+        }, 20000);
         const blsRawText = await blsRes.text();
         console.log("[BLS] Raw response (first 500 chars):", blsRawText.substring(0, 500));
         const blsData = JSON.parse(blsRawText);
