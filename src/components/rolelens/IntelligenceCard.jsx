@@ -123,7 +123,9 @@ export default function IntelligenceCard({
                 // Normalize score: if it looks like a 0-10 scale, multiply by 10
                 const rawScore = dimensionData.score;
                 const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
-                return normalizedScore != null ? (
+                // Hide score line entirely for Compensation when BLS data is present but score is null
+              const hasBLSData = title === 'Compensation' && dimensionData.market_median;
+              return normalizedScore != null ? (
                   <>
                     <div className="flex justify-between text-xs text-slate-500 mb-1">
                       <span>Score</span>
@@ -138,7 +140,7 @@ export default function IntelligenceCard({
                       />
                     </div>
                   </>
-                ) : (
+                ) : hasBLSData ? null : (
                   <div className="text-xs text-slate-400 italic">Score not available</div>
                 );
               })()}
