@@ -38,7 +38,7 @@ export default function CompensationSources() {
         <h3 className="font-semibold text-slate-800 dark:text-slate-100">Compensation Data Sources</h3>
       </div>
       
-      <p className="text-xs text-slate-600 mb-4">
+      <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
         Our compensation analysis draws from these vetted academic and industry sources:
       </p>
 
@@ -56,10 +56,10 @@ export default function CompensationSources() {
           >
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-sm font-semibold text-slate-800 group-hover:text-teal-700 transition-colors">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                   {source.name}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">{source.description}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{source.description}</p>
               </div>
               <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-teal-600 flex-shrink-0 mt-0.5" />
             </div>

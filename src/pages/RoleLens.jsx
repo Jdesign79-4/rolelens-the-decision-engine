@@ -32,8 +32,9 @@ import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
+import CollapsibleMobileCard from '@/components/rolelens/CollapsibleMobileCard';
 import PartialDataNotification from '@/components/rolelens/PartialDataNotification';
-import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb, SlidersHorizontal, X } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
   { id: 'dream', name: 'Dream Companies', icon: 'Star', color: 'from-amber-500 to-orange-500' },
@@ -739,7 +740,7 @@ function RoleLensContent() {
   });
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [showMobilePanel, setShowMobilePanel] = useState(false);
+
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem('rolelens-favorites');
     return saved ? JSON.parse(saved) : [];
@@ -765,6 +766,7 @@ function RoleLensContent() {
   const [showMockInterview, setShowMockInterview] = useState(false);
   const [cultureDecoderData, setCultureDecoderData] = useState(null);
   const [searchMode, setSearchMode] = useState('url'); // 'url' or 'manual'
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -905,42 +907,48 @@ function RoleLensContent() {
         {/* Mobile Header */}
         <div className="lg:hidden sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 px-4 py-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-slate-800 dark:text-white tracking-tight">RoleLens</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Executive Decision Engine</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <DarkModeToggle />
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setShowMobilePanel(!showMobilePanel)}
+                onClick={() => setMobileSidebarOpen(true)}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                aria-label="Open profile settings"
               >
-                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
+                <SlidersHorizontal className="w-5 h-5 text-slate-600 dark:text-slate-300" />
               </button>
+              <div>
+                <h1 className="text-lg font-semibold text-slate-800 dark:text-white tracking-tight">RoleLens</h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Executive Decision Engine</p>
               </div>
-              </div>
-              </div>
+            </div>
+            <DarkModeToggle />
+          </div>
+        </div>
 
-              {/* Mobile Panel Overlay */}
+        {/* Mobile Sidebar Drawer */}
         <AnimatePresence>
-          {showMobilePanel && (
+          {mobileSidebarOpen && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
-              onClick={() => setShowMobilePanel(false)}
+              className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+              onClick={() => setMobileSidebarOpen(false)}
             >
               <motion.div
                 initial={{ x: '-100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute left-0 top-0 h-full w-80 bg-white shadow-2xl"
+                className="absolute left-0 top-0 h-full w-80 bg-[#F0EAE1] dark:bg-slate-900 shadow-2xl overflow-y-auto"
                 onClick={e => e.stopPropagation()}
               >
+                <button
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                  aria-label="Close settings"
+                >
+                  <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                </button>
                 <AstrolabePanel
                   settings={tunerSettings}
                   onSettingsChange={setTunerSettings}
@@ -1146,8 +1154,8 @@ function RoleLensContent() {
             </AnimatePresence>
 
             {/* Data Source Disclaimer — always visible */}
-            <div className="mb-[18px] p-4 rounded-[10px]" style={{ background: 'linear-gradient(135deg, rgba(176,117,53,0.05) 0%, rgba(176,117,53,0.10) 100%)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
-              <p className="text-xs text-amber-900">
+            <div className="mb-[18px] p-4 rounded-[10px] dark:bg-amber-950/30 dark:border-amber-700" style={{ background: 'linear-gradient(135deg, rgba(176,117,53,0.05) 0%, rgba(176,117,53,0.10) 100%)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
+              <p className="text-xs text-amber-900 dark:text-amber-200">
                 <span className="font-bold">⚠️ Important — AI-Generated Estimates:</span> All data shown (salary ranges, company metrics, culture scores, health scores, alternatives) 
                 is <strong>estimated by AI</strong> from web searches and public information. These are not verified facts. 
                 Salary figures, Glassdoor ratings, funding amounts, and growth metrics may be inaccurate or outdated. 
@@ -1157,39 +1165,39 @@ function RoleLensContent() {
             </div>
 
             {/* Widget Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-[20px_22px] mb-[18px]" style={{ background: 'linear-gradient(180deg, #F5F1EC 0%, #EDE7DE 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
-              <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-[20px_22px] mb-[18px]" style={{ background: 'linear-gradient(180deg, #F5F1EC 0%, #EDE7DE 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
+              <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <button
                   onClick={() => setShowSavedLists(true)}
-                  className="neumorphic-feature-btn" style={{ color: '#C0706A' }}
+                  className="neumorphic-feature-btn whitespace-nowrap" style={{ color: '#C0706A' }}
                 >
                   Saved Lists
                 </button>
                 <button
                   onClick={() => setShowInterviewPrep(true)}
                   disabled={!currentJob}
-                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#3A4868' }}
+                  className="neumorphic-feature-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#3A4868' }}
                 >
                   Interview Prep
                 </button>
                 <button
                   onClick={() => setShowApplicationStrategy(true)}
                   disabled={!currentJob}
-                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#4A6741' }}
+                  className="neumorphic-feature-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#4A6741' }}
                 >
                   Application Plan
                 </button>
                 <button
                   onClick={() => setShowSalaryNegotiation(true)}
                   disabled={!currentJob}
-                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#B07535' }}
+                  className="neumorphic-feature-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#B07535' }}
                 >
                   Negotiate Salary
                 </button>
                 <button
                   onClick={() => setShowMockInterview(true)}
                   disabled={!currentJob}
-                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#C0706A' }}
+                  className="neumorphic-feature-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#C0706A' }}
                 >
                   🎤 Mock Interview
                 </button>
@@ -1201,7 +1209,7 @@ function RoleLensContent() {
                     }
                   }}
                   disabled={!currentJob}
-                  className="neumorphic-feature-btn disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#3A4868' }}
+                  className="neumorphic-feature-btn whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed" style={{ color: '#3A4868' }}
                 >
                   Compare Companies
                 </button>
@@ -1256,15 +1264,26 @@ function RoleLensContent() {
                 { key: 'career_growth', title: 'Career Growth', icon: TrendingUp },
                 { key: 'risk_assessment', title: 'Risk Assessment', icon: AlertTriangle },
                 { key: 'timing', title: 'Timing', icon: Clock }
-              ].map((card, idx) => (
-                <IntelligenceCard
-                  key={card.key}
-                  title={card.title}
-                  icon={card.icon}
-                  status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
-                  dimensionData={currentJob?.dimensions?.[card.key] || currentJob?.job_seeker_intelligence?.dimensions?.[card.key]}
-                />
-              ))}
+              ].map((card, idx) => {
+                const dimData = currentJob?.dimensions?.[card.key] || currentJob?.job_seeker_intelligence?.dimensions?.[card.key];
+                const rawScore = dimData?.score;
+                const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
+                return (
+                  <CollapsibleMobileCard
+                    key={card.key}
+                    title={card.title}
+                    icon={card.icon}
+                    score={normalizedScore}
+                  >
+                    <IntelligenceCard
+                      title={card.title}
+                      icon={card.icon}
+                      status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
+                      dimensionData={dimData}
+                    />
+                  </CollapsibleMobileCard>
+                );
+              })}
             </div>
 
             {/* Alternatives */}

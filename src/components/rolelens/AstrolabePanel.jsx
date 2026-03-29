@@ -357,6 +357,7 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            aria-label="Risk Appetite"
             trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
             thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4, 0 0 0 2.5px #4A6741', border: 'none', cursor: 'pointer' }}
           />
@@ -383,6 +384,7 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            aria-label="Life Anchors"
             trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
             thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4, 0 0 0 2.5px #C0706A', border: 'none', cursor: 'pointer' }}
           />
@@ -409,6 +411,7 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            aria-label="Career Stage"
             trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
             thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4, 0 0 0 2.5px #3A4868', border: 'none', cursor: 'pointer' }}
           />
@@ -443,6 +446,7 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             max={100}
             step={1}
             className="cursor-pointer"
+            aria-label="Honest Self-Reflection"
             trackStyle={{ height: '6px', borderRadius: '999px', background: '#E1D9CE', boxShadow: 'inset 2px 2px 5px #C2BCB4, inset -1px -1px 3px #FEFAF4', border: 'none', WebkitAppearance: 'none' }}
             thumbStyle={{ width: '22px', height: '22px', borderRadius: '50%', background: '#F0EAE1', boxShadow: '3px 3px 7px #C2BCB4, -2px -2px 5px #FEFAF4', border: 'none', cursor: 'pointer' }}
           />
