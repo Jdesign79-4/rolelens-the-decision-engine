@@ -3,8 +3,10 @@ import { motion } from 'framer-motion';
 import { Slider } from "@/components/ui/slider";
 import { Shield, Sword, Anchor, Compass, TreeDeciduous, Sprout, Target } from 'lucide-react';
 import ProfileAnalysis from './ProfileAnalysis';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function AstrolabePanel({ settings, onSettingsChange, isConnecting }) {
+  const { isDark } = useDarkMode();
   const [wobble, setWobble] = useState({ x: 0, y: 0 });
   const [pulse, setPulse] = useState(0);
 
@@ -339,11 +341,11 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
       {/* Tuner Sliders */}
       <div className="flex-1 mt-4">
         {/* Risk Appetite */}
-        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? '#1e293b' : '#F0EAE1', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-teal-600" />
-              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Risk Appetite</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#786F6A' }}>Risk Appetite</span>
             </div>
             <div className="flex items-center gap-2">
               <Sword className="w-4 h-4" style={{ color: '#E9967A' }} />
@@ -365,11 +367,11 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
         </div>
 
         {/* Life Anchors */}
-        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? '#1e293b' : '#F0EAE1', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-slate-500" />
-              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Life Anchors</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#786F6A' }}>Life Anchors</span>
             </div>
             <div className="flex items-center gap-2">
               <Anchor className="w-4 h-4" style={{ color: '#8FBC8F' }} />
@@ -391,11 +393,11 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
         </div>
 
         {/* Career Stage */}
-        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? '#1e293b' : '#F0EAE1', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Sprout className="w-4 h-4 text-green-500" />
-              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Career Stage</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#786F6A' }}>Career Stage</span>
             </div>
             <div className="flex items-center gap-2">
               <TreeDeciduous className="w-4 h-4 text-green-700" />
@@ -413,10 +415,10 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
           
           {/* Career Stage display */}
           <div className="mt-4 mb-2">
-            <div style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '20px', fontWeight: 500, color: '#3A4868', textAlign: 'center', display: 'block' }}>
+            <div style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: '20px', fontWeight: 500, color: isDark ? '#93a5cf' : '#3A4868', textAlign: 'center', display: 'block' }}>
               {settings.careerStage < 0.2 ? 'Seedling' : settings.careerStage < 0.4 ? 'Sapling' : settings.careerStage < 0.6 ? 'Grove' : settings.careerStage < 0.8 ? 'Oak' : 'Elder'}
             </div>
-            <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#A89E9A', textAlign: 'center' }}>
+            <div style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: isDark ? '#64748b' : '#A89E9A', textAlign: 'center' }}>
               {settings.careerStage < 0.2 ? 'ENTRY LEVEL' : settings.careerStage < 0.4 ? 'EARLY CAREER' : settings.careerStage < 0.6 ? 'MID-LEVEL' : settings.careerStage < 0.8 ? 'SENIOR' : 'EXECUTIVE / LEADERSHIP'}
             </div>
           </div>
@@ -428,11 +430,11 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
         </div>
 
         {/* Honest Self-Reflection */}
-        <div style={{ background: '#F0EAE1', borderRadius: '16px', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? '#1e293b' : '#F0EAE1', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-indigo-500" />
-              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#786F6A' }}>Honest Self-Reflection</span>
+              <span style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#786F6A' }}>Honest Self-Reflection</span>
             </div>
           </div>
           <Slider
@@ -448,7 +450,7 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
             <span>Underqualified</span>
             <span>Exceptional Fit</span>
           </div>
-          <p className="mt-2" style={{ fontSize: '10px', fontStyle: 'italic', color: '#786F6A' }}>
+          <p className="mt-2" style={{ fontSize: '10px', fontStyle: 'italic', color: isDark ? '#94a3b8' : '#786F6A' }}>
             Your honest assessment of skill match and experience level for this role
           </p>
         </div>

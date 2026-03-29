@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link2, Loader2, Sparkles, AlertCircle, CheckCircle2, Globe, X, ChevronDown } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useDarkMode } from '@/components/DarkModeContext';
 import { base44 } from '@/api/base44Client';
 import { generateAlternatives } from './alternativesEngine';
 import { analyzeJobOpportunity } from './intelligenceEngine';
@@ -37,6 +38,7 @@ const STEPS = [
 ];
 
 export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoading, tunerSettings, onFallbackToManual }) {
+  const { isDark } = useDarkMode();
   const [url, setUrl] = useState('');
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(-1);
@@ -554,7 +556,7 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
               onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
               placeholder="Paste job URL from LinkedIn, Indeed, Glassdoor..."
               className="pl-10 pr-4 py-5 outline-none focus:ring-0"
-              style={{ background: 'linear-gradient(135deg, #F0EAE1 0%, #EBEeF2 100%)', borderRadius: '12px', border: 'none', boxShadow: 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4' }}
+              style={{ background: isDark ? '#0f172a' : 'linear-gradient(135deg, #F0EAE1 0%, #EBEeF2 100%)', borderRadius: '12px', border: isDark ? '1px solid #334155' : 'none', boxShadow: isDark ? 'inset 2px 2px 6px rgba(0,0,0,0.4)' : 'inset 4px 4px 10px #C2BCB4, inset -3px -3px 8px #FEFAF4', color: isDark ? '#e2e8f0' : undefined }}
               disabled={isLoading}
             />
             {/* Platform badge */}

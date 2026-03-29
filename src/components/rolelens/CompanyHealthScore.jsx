@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Loader2, RefreshCw, Newspaper, DollarSign } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function CompanyHealthScore({ company }) {
   const [healthData, setHealthData] = useState(null);
@@ -74,6 +75,8 @@ Be specific and cite recent events or data points when possible. Focus on inform
     return { icon: TrendingUp, color: 'text-slate-600' };
   };
 
+  const { isDark } = useDarkMode();
+
   if (!healthData && !loading && !fetchError) return null;
 
   const healthColor = healthData ? getHealthColor(healthData.health_score) : { bg: 'bg-slate-500', text: 'text-slate-600', glow: 'shadow-slate-200' };
@@ -86,12 +89,12 @@ Be specific and cite recent events or data points when possible. Focus on inform
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}
       className="transition-shadow"
-      style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #EBEeF3 0%, #E4EAF0 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
+      style={{ padding: '20px 22px', background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #EBEeF3 0%, #E4EAF0 100%)', border: 'none', borderTop: isDark ? '1px solid rgba(51,65,85,0.3)' : '1px solid rgba(255,255,255,0.70)', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}
     >
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>AI Company Health Monitor</p>
-          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>{company}</h3>
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: isDark ? '#64748b' : '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>AI Company Health Monitor</p>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: isDark ? '#f1f5f9' : '#272320' }}>{company}</h3>
           {lastUpdated && (
             <p className="text-xs text-slate-400 mt-1">
               Updated {lastUpdated.toLocaleTimeString()}

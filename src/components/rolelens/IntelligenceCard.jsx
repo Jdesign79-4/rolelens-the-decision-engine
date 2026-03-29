@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import CompensationTiers from './CompensationTiers';
 import { DataTrustBadge, isVerifiedData, getCardBorderStyle } from './DataTrustBadge';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function IntelligenceCard({ 
   title, 
@@ -37,16 +38,17 @@ export default function IntelligenceCard({
   };
 
   const verified = isComplete && isVerifiedData(dimensionData);
+  const { isDark } = useDarkMode();
 
   return (
     <div 
       className="transition-shadow h-full flex flex-col" 
       style={{ 
         padding: '20px 22px', 
-        background: 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)', 
+        background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)', 
         border: 'none', 
-        borderTop: '1px solid rgba(255,255,255,0.70)', 
-        boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', 
+        borderTop: isDark ? '1px solid rgba(51,65,85,0.3)' : '1px solid rgba(255,255,255,0.70)', 
+        boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', 
         borderRadius: '16px',
         ...(isComplete ? getCardBorderStyle(verified) : {})
       }}
@@ -54,13 +56,13 @@ export default function IntelligenceCard({
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: isDark ? '#64748b' : '#A89E9A', textTransform: 'uppercase' }}>
               {title}
             </p>
             {isComplete && <DataTrustBadge verified={verified} />}
           </div>
           {isComplete && (
-            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>
+            <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: isDark ? '#f1f5f9' : '#272320' }}>
               {dimensionData.verified ? (
                 <span className="inline-flex items-center gap-1 mr-2 text-emerald-600" title="Verified Data">✓</span>
               ) : (
@@ -70,8 +72,8 @@ export default function IntelligenceCard({
             </h3>
           )}
         </div>
-        <div className="p-2 rounded-xl ml-2 shrink-0" style={{ background: 'rgba(58,72,104,0.12)' }}>
-          <Icon className="w-5 h-5" style={{ color: '#3A4868' }} />
+        <div className="p-2 rounded-xl ml-2 shrink-0" style={{ background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(58,72,104,0.12)' }}>
+          <Icon className="w-5 h-5" style={{ color: isDark ? '#93a5cf' : '#3A4868' }} />
         </div>
       </div>
 
@@ -342,7 +344,7 @@ export default function IntelligenceCard({
               <div className="flex items-center justify-between">
                 {renderConfidenceBadge(dimensionData.confidence)}
               </div>
-              <p className="text-[10px]" style={{ color: '#A89E9A' }}>
+              <p className="text-[10px]" style={{ color: isDark ? '#64748b' : '#A89E9A' }}>
                 Source: {dimensionData.sources?.join(', ') || 'Various AI Insights'}
               </p>
             </div>

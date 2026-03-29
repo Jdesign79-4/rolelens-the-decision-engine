@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronUp, Zap, Clock, DollarSign, Heart } from 'lucide-react';
 import { calculateJobMatch, getMatchLabel, getMatchInsights } from './MatchingAlgorithm';
 import SmartAlternativeExpanded from './SmartAlternativeExpanded';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function AlternativesCard({ alternatives, currentJob, onSwap, tunerSettings, favorites = [], onToggleFavorite }) {
+  const { isDark } = useDarkMode();
   const [expandedId, setExpandedId] = useState(null);
 
   // Profile detection
@@ -74,14 +76,14 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
   };
 
   return (
-    <div className="transition-shadow" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)', border: 'none', borderTop: '1px solid rgba(255,255,255,0.70)', boxShadow: '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
+    <div className="transition-shadow" style={{ padding: '20px 22px', background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)', border: 'none', borderTop: isDark ? '1px solid rgba(51,65,85,0.3)' : '1px solid rgba(255,255,255,0.70)', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>Market Alternatives</p>
-          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: '#272320' }}>The Forest</h3>
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', color: isDark ? '#64748b' : '#A89E9A', textTransform: 'uppercase', marginBottom: '4px' }}>Market Alternatives</p>
+          <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', fontWeight: 500, color: isDark ? '#f1f5f9' : '#272320' }}>The Forest</h3>
         </div>
-        <div className="p-2 rounded-xl" style={{ background: 'rgba(58,72,104,0.12)' }}>
-          <Zap className="w-5 h-5" style={{ color: '#3A4868' }} />
+        <div className="p-2 rounded-xl" style={{ background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(58,72,104,0.12)' }}>
+          <Zap className="w-5 h-5" style={{ color: isDark ? '#93a5cf' : '#3A4868' }} />
         </div>
       </div>
 
