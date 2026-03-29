@@ -931,7 +931,7 @@ function RoleLensContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+              className="lg:hidden fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm"
               onClick={() => setMobileSidebarOpen(false)}
             >
               <motion.div
