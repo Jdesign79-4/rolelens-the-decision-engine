@@ -32,6 +32,7 @@ import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
+import PartialDataNotification from '@/components/rolelens/PartialDataNotification';
 import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
@@ -1239,6 +1240,11 @@ function RoleLensContent() {
                   </div>
                 </div>
               </motion.div>
+            )}
+
+            {/* Partial Data Notification */}
+            {currentJob?.data_sources_status && (
+              <PartialDataNotification dataSourcesStatus={currentJob.data_sources_status} />
             )}
 
             {/* Intelligence Cards Grid */}

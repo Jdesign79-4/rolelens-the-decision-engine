@@ -13,6 +13,20 @@ async function fetchWithTimeout(url, options = {}, timeout = 8000) {
   }
 }
 
+async function fetchWithRetry(fn, retries = 2, delayMs = 1000) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) {
+        console.warn(`API call failed after ${retries + 1} attempts:`, err.message);
+        return null;
+      }
+      await new Promise(r => setTimeout(r, delayMs * (attempt + 1)));
+    }
+  }
+}
+
 function clamp(val, min, max) {
   return Math.min(Math.max(val, min), max);
 }
@@ -214,7 +228,6 @@ function matchJobTitleToSOC(jobTitle) {
   if (stripped) return { socCode: stripped[0], socTitle: stripped[1], confidence: "medium" };
 
   // STEP 3 — partial / keyword matching against all keys
-  // Find the longest key that is a substring of the cleaned title
   let bestMatch = null;
   let bestLen = 0;
   for (const key of Object.keys(SOC_TABLE)) {
@@ -329,6 +342,9 @@ Deno.serve(async (req) => {
     const dimensions = {};
     let newsArticles = [];
 
+    // Track data source status
+    const data_sources_status = {};
+
     // --- SOC MATCH (shared across compensation + career growth) ---
     const socMatch = matchJobTitleToSOC(job_title);
     console.log("SOC match for", JSON.stringify(job_title), "→", JSON.stringify(socMatch));
@@ -343,7 +359,8 @@ Deno.serve(async (req) => {
       console.log("[BLS] SOC code:", socMatch.socCode, "series IDs:", JSON.stringify(seriesIds));
       console.log("[BLS] Series ID lengths:", seriesIds.map(s => s.length));
       console.log("[BLS] Using API key:", BLS_KEY ? (BLS_KEY.substring(0, 6) + '...') : 'MISSING');
-      try {
+
+      const blsResult = await fetchWithRetry(async () => {
         const blsBody = {
           seriesid: seriesIds,
           registrationkey: BLS_KEY,
@@ -355,13 +372,16 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(blsBody)
-        }, 20000);
+        }, 25000);
         const blsRawText = await blsRes.text();
         console.log("[BLS] Raw response (first 500 chars):", blsRawText.substring(0, 500));
-        const blsData = JSON.parse(blsRawText);
-        console.log("[BLS] Response status:", blsData.status, "message:", JSON.stringify(blsData.message));
-        if (blsData.status === "REQUEST_SUCCEEDED" && blsData.Results?.series) {
-          const series = blsData.Results.series;
+        return JSON.parse(blsRawText);
+      }, 2, 2000);
+
+      if (blsResult) {
+        console.log("[BLS] Response status:", blsResult.status, "message:", JSON.stringify(blsResult.message));
+        if (blsResult.status === "REQUEST_SUCCEEDED" && blsResult.Results?.series) {
+          const series = blsResult.Results.series;
           console.log("[BLS] Series count:", series.length);
           let market_10th = null, market_25th = null, market_median = null, market_75th = null, market_90th = null;
           series.forEach((s, i) => {
@@ -385,46 +405,49 @@ Deno.serve(async (req) => {
           if (market_median) {
             compData = { market_10th, market_25th, market_median, market_75th, market_90th, occ_title: socMatch.socTitle };
             cosSources.push("BLS Occupational Employment and Wage Statistics, 2024");
+            data_sources_status.bls = 'success';
           } else {
             console.warn("[BLS] median wage was null/0 — data may not exist for this SOC code");
+            data_sources_status.bls = 'failed';
           }
         } else {
-          console.error("[BLS] API returned non-success status:", blsData.status, "messages:", JSON.stringify(blsData.message));
+          console.error("[BLS] API returned non-success status:", blsResult.status, "messages:", JSON.stringify(blsResult.message));
+          data_sources_status.bls = 'failed';
         }
-      } catch (e) {
-        console.error("[BLS] Fetch error:", e.message || e);
+      } else {
+        console.error("[BLS] All retry attempts failed");
+        data_sources_status.bls = 'failed';
       }
     } else {
       console.log("[BLS] Skipped — BLS_KEY:", !!BLS_KEY, "socMatch:", !!socMatch);
+      // Not attempted, don't track
     }
 
     // Fallback to CareerOneStop
     if (!compData && COS_TOKEN && job_title && socMatch) {
-      try {
+      const cosResult = await fetchWithRetry(async () => {
         const loc = location ? location.split(',')[0].trim() : 'US';
         const url = `https://api.careeronestop.org/v1/salaries/${COS_USER_ID}/${encodeURIComponent(socMatch.socCode)}/${encodeURIComponent(loc)}/25`;
         const res = await fetchWithTimeout(url, { headers: cosHeaders });
-        if (res.ok) {
-          const json = await res.json();
-          if (json?.OccupationList?.length > 0) {
-            const occ = json.OccupationList[0];
-            if (occ.WageInfo?.length > 0) {
-              const wage = occ.WageInfo[0];
-              compData = {
-                market_low: wage.Pct10AnnualWage,
-                market_25th: wage.Pct25AnnualWage,
-                market_median: wage.MedianAnnualWage,
-                market_75th: wage.Pct75AnnualWage,
-                market_high: wage.Pct90AnnualWage,
-                occ_title: occ.OnetTitle
-              };
-              cosSources.push("CareerOneStop Salary Data (U.S. Department of Labor)");
-              cosSources.push("BLS Occupational Employment & Wage Statistics (OEWS)");
-            }
-          }
+        if (!res.ok) throw new Error(`COS returned ${res.status}`);
+        return await res.json();
+      });
+      if (cosResult?.OccupationList?.length > 0) {
+        const occ = cosResult.OccupationList[0];
+        if (occ.WageInfo?.length > 0) {
+          const wage = occ.WageInfo[0];
+          compData = {
+            market_low: wage.Pct10AnnualWage,
+            market_25th: wage.Pct25AnnualWage,
+            market_median: wage.MedianAnnualWage,
+            market_75th: wage.Pct75AnnualWage,
+            market_high: wage.Pct90AnnualWage,
+            occ_title: occ.OnetTitle
+          };
+          cosSources.push("CareerOneStop Salary Data (U.S. Department of Labor)");
+          cosSources.push("BLS Occupational Employment & Wage Statistics (OEWS)");
+          if (!data_sources_status.bls) data_sources_status.bls = 'success';
         }
-      } catch (e) {
-        console.warn("Compensation fetch error:", e);
       }
     }
 
@@ -485,7 +508,6 @@ Deno.serve(async (req) => {
         _tierLabel: tierLabel
       };
     } else {
-      // Build a diagnostic message so we can see WHY it failed
       let diagReason = '';
       if (!socMatch) diagReason = `SOC mapping failed for '${job_title || 'empty'}'.`;
       else if (!BLS_KEY) diagReason = 'BLS API key not found. Configure it in API Keys Settings.';
@@ -507,32 +529,31 @@ Deno.serve(async (req) => {
     let projScore = null;
     let outlookData = {};
 
-    // Use SOC match for career growth regardless of O*NET key
     if (socMatch) {
       outlookData.title = socMatch.socTitle;
       const onetCode = `${socMatch.socCode}.00`;
 
-      // Try O*NET if key available
       if (ONET_KEY) {
-        try {
+        const outResult = await fetchWithRetry(async () => {
           const outRes = await fetchWithTimeout(`https://services.onetcenter.org/ws/online/occupations/${onetCode}/summary/outlook`, { headers: onetHeaders });
-          if (outRes.ok) {
-            const outJson = await outRes.json();
-            growthSources.push("O*NET OnLine (U.S. Department of Labor)");
-            if (outJson.bright_outlook) {
-              outlookScore = 85;
-              if (outJson.bright_outlook_category === "Rapid Growth") outlookScore = 95;
-              if (outJson.bright_outlook_category === "New & Emerging") outlookScore = 90;
-              if (outJson.bright_outlook_category === "Numerous Job Openings") outlookScore = 80;
-              outlookData.bright = true;
-              outlookData.category = outJson.bright_outlook_category;
-            } else {
-              outlookScore = 50;
-            }
+          if (!outRes.ok) throw new Error(`O*NET returned ${outRes.status}`);
+          return await outRes.json();
+        });
+        if (outResult) {
+          growthSources.push("O*NET OnLine (U.S. Department of Labor)");
+          if (outResult.bright_outlook) {
+            outlookScore = 85;
+            if (outResult.bright_outlook_category === "Rapid Growth") outlookScore = 95;
+            if (outResult.bright_outlook_category === "New & Emerging") outlookScore = 90;
+            if (outResult.bright_outlook_category === "Numerous Job Openings") outlookScore = 80;
+            outlookData.bright = true;
+            outlookData.category = outResult.bright_outlook_category;
+          } else {
+            outlookScore = 50;
           }
-        } catch (e) { console.warn("ONET outlook error", e); }
+        }
 
-        // Tech skills and related occs
+        // Tech skills and related occs (non-critical, no retry needed)
         try {
           const skillsRes = await fetchWithTimeout(`https://services.onetcenter.org/ws/online/occupations/${onetCode}/summary/technology_skills`, { headers: onetHeaders });
           if (skillsRes.ok) {
@@ -553,29 +574,28 @@ Deno.serve(async (req) => {
 
       // BLS projections via CareerOneStop
       if (COS_TOKEN) {
-        try {
+        const projResult = await fetchWithRetry(async () => {
           const pRes = await fetchWithTimeout(`https://api.careeronestop.org/v1/occupation/${COS_USER_ID}/${onetCode}/US`, { headers: cosHeaders });
-          if (pRes.ok) {
-            const pJson = await pRes.json();
-            if (pJson.OccupationDetail?.length > 0) {
-              const details = pJson.OccupationDetail[0];
-              if (details.Projections?.Projections?.length > 0) {
-                const proj = details.Projections.Projections[0];
-                const growthStr = proj.ProjectedGrowth;
-                if (growthStr) {
-                  const growthPct = parseFloat(growthStr);
-                  outlookData.growthPct = growthPct;
-                  growthSources.push("BLS Employment Projections, 2023-2033");
-                  if (growthPct > 10) projScore = 90;
-                  else if (growthPct >= 5) projScore = 75;
-                  else if (growthPct >= 2) projScore = 60;
-                  else if (growthPct >= 0) projScore = 45;
-                  else projScore = 20;
-                }
-              }
+          if (!pRes.ok) throw new Error(`COS projection returned ${pRes.status}`);
+          return await pRes.json();
+        });
+        if (projResult?.OccupationDetail?.length > 0) {
+          const details = projResult.OccupationDetail[0];
+          if (details.Projections?.Projections?.length > 0) {
+            const proj = details.Projections.Projections[0];
+            const growthStr = proj.ProjectedGrowth;
+            if (growthStr) {
+              const growthPct = parseFloat(growthStr);
+              outlookData.growthPct = growthPct;
+              growthSources.push("BLS Employment Projections, 2023-2033");
+              if (growthPct > 10) projScore = 90;
+              else if (growthPct >= 5) projScore = 75;
+              else if (growthPct >= 2) projScore = 60;
+              else if (growthPct >= 0) projScore = 45;
+              else projScore = 20;
             }
           }
-        } catch(e) { console.warn("BLS projections error", e); }
+        }
       }
     }
 
@@ -617,7 +637,6 @@ Deno.serve(async (req) => {
       insight += `BLS projects ${outlookData.growthPct !== undefined ? outlookData.growthPct + '%' : 'steady'} occupation growth through 2033.`;
       if (outlookData.bright) insight += " O*NET identifies this as a Bright Outlook occupation.";
 
-      // Determine confidence based on what sources we actually used
       let cgConfidence = "low";
       if (cgScores.length >= 2) cgConfidence = "high";
       else if (cgScores.length === 1) cgConfidence = "medium";
@@ -656,52 +675,56 @@ Deno.serve(async (req) => {
 
     if (effectiveTicker) {
       if (ALPHA_KEY) {
-        try {
+        const avResult = await fetchWithRetry(async () => {
           const avRes = await fetchWithTimeout(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${effectiveTicker}&apikey=${ALPHA_KEY}`);
-          if (avRes.ok) {
-            const avJson = await avRes.json();
-            if (avJson.feed && avJson.feed.length > 0) {
-              sentimentSources.push("Alpha Vantage News Sentiment");
-              const articles = avJson.feed.slice(0, 10);
-              let totalScore = 0;
-              articles.forEach(a => {
-                newsArticles.push({
-                  headline: a.title,
-                  source: a.source,
-                  date: a.time_published ? new Date(a.time_published.substring(0, 4) + '-' + a.time_published.substring(4, 6) + '-' + a.time_published.substring(6, 8)).toLocaleDateString() : '',
-                  url: a.url,
-                  excerpt: a.summary,
-                  category: 'News',
-                  sentiment: a.overall_sentiment_score >= 0.15 ? 'positive' : (a.overall_sentiment_score <= -0.15 ? 'negative' : 'neutral')
-                });
-                totalScore += ((a.overall_sentiment_score + 1) / 2) * 100;
-              });
-              newsScore = totalScore / articles.length;
-            }
-          }
-        } catch(e) { console.warn("AV News error", e); }
+          if (!avRes.ok) throw new Error(`AV returned ${avRes.status}`);
+          return await avRes.json();
+        });
+        if (avResult?.feed && avResult.feed.length > 0) {
+          sentimentSources.push("Alpha Vantage News Sentiment");
+          data_sources_status.alpha_vantage = 'success';
+          const articles = avResult.feed.slice(0, 10);
+          let totalScore = 0;
+          articles.forEach(a => {
+            newsArticles.push({
+              headline: a.title,
+              source: a.source,
+              date: a.time_published ? new Date(a.time_published.substring(0, 4) + '-' + a.time_published.substring(4, 6) + '-' + a.time_published.substring(6, 8)).toLocaleDateString() : '',
+              url: a.url,
+              excerpt: a.summary,
+              category: 'News',
+              sentiment: a.overall_sentiment_score >= 0.15 ? 'positive' : (a.overall_sentiment_score <= -0.15 ? 'negative' : 'neutral')
+            });
+            totalScore += ((a.overall_sentiment_score + 1) / 2) * 100;
+          });
+          newsScore = totalScore / articles.length;
+        } else {
+          data_sources_status.alpha_vantage = avResult ? 'success' : 'failed';
+        }
       }
 
       if (FINNHUB_KEY) {
-        try {
+        const fhResult = await fetchWithRetry(async () => {
           const fhRes = await fetchWithTimeout(`https://finnhub.io/api/v1/stock/recommendation?symbol=${effectiveTicker}&token=${FINNHUB_KEY}`);
-          if (fhRes.ok) {
-            const fhJson = await fhRes.json();
-            if (Array.isArray(fhJson) && fhJson.length > 0) {
-              const latest = fhJson[0];
-              sentimentSources.push("Finnhub Analyst Recommendations");
-              const total = latest.buy + latest.hold + latest.sell + latest.strongBuy + latest.strongSell;
-              if (total > 0) {
-                buyRatio = (latest.buy + latest.strongBuy) / total;
-                sellRatio = (latest.sell + latest.strongSell) / total;
-                analystScore = buyRatio * 100;
-                dimensions.market_sentiment = dimensions.market_sentiment || {};
-                dimensions.market_sentiment._analystData = latest;
-                dimensions.market_sentiment._analystTrend = fhJson.slice(0, 3);
-              }
-            }
+          if (!fhRes.ok) throw new Error(`Finnhub returned ${fhRes.status}`);
+          return await fhRes.json();
+        });
+        if (Array.isArray(fhResult) && fhResult.length > 0) {
+          const latest = fhResult[0];
+          sentimentSources.push("Finnhub Analyst Recommendations");
+          data_sources_status.finnhub = 'success';
+          const total = latest.buy + latest.hold + latest.sell + latest.strongBuy + latest.strongSell;
+          if (total > 0) {
+            buyRatio = (latest.buy + latest.strongBuy) / total;
+            sellRatio = (latest.sell + latest.strongSell) / total;
+            analystScore = buyRatio * 100;
+            dimensions.market_sentiment = dimensions.market_sentiment || {};
+            dimensions.market_sentiment._analystData = latest;
+            dimensions.market_sentiment._analystTrend = fhResult.slice(0, 3);
           }
-        } catch(e) { console.warn("Finnhub Analyst error", e); }
+        } else {
+          data_sources_status.finnhub = fhResult ? 'success' : 'failed';
+        }
       }
 
       let msScore = null;
@@ -848,32 +871,33 @@ Deno.serve(async (req) => {
     let riskSources = [];
 
     let warnFound = false;
-    try {
+    const warnResult = await fetchWithRetry(async () => {
       const warnRes = await fetchWithTimeout(`https://api.warnfirehose.com/notices?company=${encodeURIComponent(company_name)}`);
-      if (warnRes.ok) {
-        const warnJson = await warnRes.json();
-        riskSources.push("WARN Firehose (State Labor Department WARN Act Notices)");
-        if (warnJson?.data?.length > 0) {
-          const oneYearAgo = new Date();
-          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-          const recentNotices = warnJson.data.filter(n => new Date(n.notice_date || n.effective_date) > oneYearAgo);
-          if (recentNotices.length > 0) {
-            warnFound = true;
-            riskScore -= 25;
-            recentNotices.slice(0, 3).forEach(n => {
-              riskFlags.push({
-                text: `WARN Act notice filed: ${n.number_affected || 'Unknown'} employees affected in ${n.city || 'Unknown'}, ${n.state || ''} on ${n.notice_date || n.effective_date} (Source: WARN Firehose)`,
-                severity: 'high'
-              });
+      if (!warnRes.ok) throw new Error(`WARN returned ${warnRes.status}`);
+      return await warnRes.json();
+    });
+    if (warnResult) {
+      riskSources.push("WARN Firehose (State Labor Department WARN Act Notices)");
+      if (warnResult?.data?.length > 0) {
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const recentNotices = warnResult.data.filter(n => new Date(n.notice_date || n.effective_date) > oneYearAgo);
+        if (recentNotices.length > 0) {
+          warnFound = true;
+          riskScore -= 25;
+          recentNotices.slice(0, 3).forEach(n => {
+            riskFlags.push({
+              text: `WARN Act notice filed: ${n.number_affected || 'Unknown'} employees affected in ${n.city || 'Unknown'}, ${n.state || ''} on ${n.notice_date || n.effective_date} (Source: WARN Firehose)`,
+              severity: 'high'
             });
-          } else {
-            riskScore += 5;
-          }
+          });
         } else {
           riskScore += 5;
         }
+      } else {
+        riskScore += 5;
       }
-    } catch(e) { console.warn("WARN API error", e); }
+    }
 
     if (company_health) {
       if (company_health.revenue_trend === 'declining') {
@@ -955,39 +979,41 @@ Deno.serve(async (req) => {
     let timingInsight = "Could not fetch macro data from FRED.";
 
     if (FRED_KEY) {
-      try {
+      const fredResult = await fetchWithRetry(async () => {
         const getFred = async (id) => {
           const r = await fetchWithTimeout(`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=3`);
-          if (r.ok) {
-            const d = await r.json();
-            return d.observations ? d.observations.map(o => parseFloat(o.value)) : [];
-          }
-          return [];
+          if (!r.ok) throw new Error(`FRED ${id} returned ${r.status}`);
+          const d = await r.json();
+          return d.observations ? d.observations.map(o => parseFloat(o.value)) : [];
         };
         const [jolts, unrate, quits] = await Promise.all([
           getFred('JTSJOL'),
           getFred('UNRATE'),
           getFred('JTSQUR')
         ]);
-        if (jolts.length && unrate.length) {
-          const j = jolts[0] * 1000;
-          const u = unrate[0];
-          const q = quits.length ? quits[0] : null;
-          timingSources.push("FRED JOLTS Job Openings", "FRED Unemployment Rate");
-          if (q !== null) timingSources.push("FRED Quit Rate");
+        return { jolts, unrate, quits };
+      }, 2, 1500);
 
-          let jTrend = jolts.length > 1 && jolts[0] > jolts[jolts.length - 1] ? 'up' : 'down';
-          let uTrend = unrate.length > 1 && unrate[0] > unrate[unrate.length - 1] ? 'up' : 'down';
+      if (fredResult && fredResult.jolts?.length && fredResult.unrate?.length) {
+        const { jolts, unrate, quits } = fredResult;
+        const j = jolts[0] * 1000;
+        const u = unrate[0];
+        const q = quits?.length ? quits[0] : null;
+        timingSources.push("FRED JOLTS Job Openings", "FRED Unemployment Rate");
+        if (q !== null) timingSources.push("FRED Quit Rate");
+        data_sources_status.fred = 'success';
 
-          if (u < 5 && j > 7000000 && jTrend === 'up') timingScore = 90;
-          else if (u > 5 && jTrend === 'down') timingScore = 30;
-          else timingScore = 60;
+        let jTrend = jolts.length > 1 && jolts[0] > jolts[jolts.length - 1] ? 'up' : 'down';
+        let uTrend = unrate.length > 1 && unrate[0] > unrate[unrate.length - 1] ? 'up' : 'down';
 
-          timingHeadline = `Job market is ${timingScore >= 80 ? 'strong' : timingScore <= 40 ? 'challenging' : 'stable'} — ${(j/1000000).toFixed(1)}M openings, ${u}% unemployment${q ? `, ${q}% quit rate` : ''}.`;
-          timingInsight = `The macro environment shows unemployment at ${u}% (trending ${uTrend}) and job openings at ${(j/1000000).toFixed(1)}M (trending ${jTrend}).`;
-        }
-      } catch (e) {
-        console.warn("FRED timing error:", e);
+        if (u < 5 && j > 7000000 && jTrend === 'up') timingScore = 90;
+        else if (u > 5 && jTrend === 'down') timingScore = 30;
+        else timingScore = 60;
+
+        timingHeadline = `Job market is ${timingScore >= 80 ? 'strong' : timingScore <= 40 ? 'challenging' : 'stable'} — ${(j/1000000).toFixed(1)}M openings, ${u}% unemployment${q ? `, ${q}% quit rate` : ''}.`;
+        timingInsight = `The macro environment shows unemployment at ${u}% (trending ${uTrend}) and job openings at ${(j/1000000).toFixed(1)}M (trending ${jTrend}).`;
+      } else {
+        data_sources_status.fred = 'failed';
       }
     }
     dimensions.timing = {
@@ -1001,12 +1027,11 @@ Deno.serve(async (req) => {
 
     // --- 6. JOB SECURITY (unified from real API data) ---
     {
-      let jsScore = 50; // neutral baseline
+      let jsScore = 50;
       const jsFactors = [];
       const jsSources = [];
       let sourceCount = 0;
 
-      // Factor 1: WARN Act check
       if (warnFound !== undefined) {
         sourceCount++;
         jsSources.push('WARN Act (DOL)');
@@ -1021,7 +1046,6 @@ Deno.serve(async (req) => {
         jsFactors.push({ label: 'WARN Act data', icon: 'unknown', delta: 0 });
       }
 
-      // Factor 2: Stock performance (from stock_data passed by caller)
       const yearChange = stock_data?.year_change_percent;
       if (yearChange !== undefined && yearChange !== null) {
         sourceCount++;
@@ -1037,7 +1061,6 @@ Deno.serve(async (req) => {
         jsFactors.push({ label: 'Stock performance', icon: 'unknown', delta: 0 });
       }
 
-      // Factor 3: Analyst consensus (Finnhub)
       if (buyRatio !== null && sellRatio !== null) {
         sourceCount++;
         if (!jsSources.includes('Finnhub Analysts')) jsSources.push('Finnhub Analysts');
@@ -1054,7 +1077,6 @@ Deno.serve(async (req) => {
         jsFactors.push({ label: 'Analyst consensus', icon: 'unknown', delta: 0 });
       }
 
-      // Factor 4: Revenue trend (FMP)
       if (company_health?.revenue_trend) {
         sourceCount++;
         if (!jsSources.includes('FMP Financials')) jsSources.push('FMP Financials');
@@ -1071,7 +1093,6 @@ Deno.serve(async (req) => {
         jsFactors.push({ label: 'Revenue trend', icon: 'unknown', delta: 0 });
       }
 
-      // Factor 5: News sentiment (Alpha Vantage)
       if (newsScore !== null) {
         sourceCount++;
         if (!jsSources.includes('Alpha Vantage Sentiment')) jsSources.push('Alpha Vantage Sentiment');
@@ -1088,7 +1109,6 @@ Deno.serve(async (req) => {
         jsFactors.push({ label: 'News sentiment', icon: 'unknown', delta: 0 });
       }
 
-      // Factor 6: Layoff signals (from news + headcount trend)
       const hasLayoffSignals = company_health?.headcount_trend === 'cutting' || riskFlags.some(f => f.text.toLowerCase().includes('layoff') || f.text.toLowerCase().includes('warn act'));
       if (company_health?.headcount_trend || riskFlags.length > 0) {
         sourceCount++;
@@ -1136,7 +1156,7 @@ Deno.serve(async (req) => {
       };
     }
 
-    return Response.json({ success: true, dimensions, newsArticles });
+    return Response.json({ success: true, dimensions, newsArticles, data_sources_status });
   } catch (error) {
     console.error("fetchRealJobIntelligence error:", error);
     return Response.json({ error: error.message }, { status: 500 });

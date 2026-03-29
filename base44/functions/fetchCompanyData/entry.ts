@@ -34,6 +34,20 @@ async function fetchJSON(url) {
   }
 }
 
+async function fetchWithRetry(fn, retries = 2, delayMs = 1000) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) {
+        console.warn(`API call failed after ${retries + 1} attempts:`, err.message);
+        return null;
+      }
+      await new Promise(r => setTimeout(r, delayMs * (attempt + 1)));
+    }
+  }
+}
+
 // Keep Yahoo Finance for price history because charts need it
 async function fetchYahooHistory(ticker) {
   try {
@@ -77,9 +91,12 @@ Deno.serve(async (req) => {
     const { company_name, ticker_symbol, entityId } = await req.json();
     
     let ticker = ticker_symbol;
+
+    // Track data source status
+    const data_sources_status = {};
     
     if (!ticker && company_name && FINNHUB_KEY) {
-      const searchRes = await fetchJSON(`https://finnhub.io/api/v1/search?q=${encodeURIComponent(company_name)}&token=${FINNHUB_KEY}`);
+      const searchRes = await fetchWithRetry(() => fetchJSON(`https://finnhub.io/api/v1/search?q=${encodeURIComponent(company_name)}&token=${FINNHUB_KEY}`));
       if (searchRes && searchRes.result && searchRes.result.length > 0) {
         ticker = searchRes.result[0].symbol;
       }
@@ -113,30 +130,70 @@ Deno.serve(async (req) => {
     let fhProfile, fhMetric, fhRec, fhEarnings, fhInsider;
     let avNews, avOverview;
 
-    // Fetch Finnhub
+    // Fetch Finnhub (with retry)
     if (FINNHUB_KEY) {
-      fhProfile = await fetchJSON(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${FINNHUB_KEY}`);
-      fhMetric = await fetchJSON(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${FINNHUB_KEY}`);
-      fhRec = await fetchJSON(`https://finnhub.io/api/v1/stock/recommendation?symbol=${ticker}&token=${FINNHUB_KEY}`);
-      fhEarnings = await fetchJSON(`https://finnhub.io/api/v1/stock/earnings?symbol=${ticker}&limit=4&token=${FINNHUB_KEY}`);
-      fhInsider = await fetchJSON(`https://finnhub.io/api/v1/stock/insider-transactions?symbol=${ticker}&token=${FINNHUB_KEY}`);
+      const fhResults = await fetchWithRetry(async () => {
+        const [p, m, r, e, ins] = await Promise.all([
+          fetchJSON(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${FINNHUB_KEY}`),
+          fetchJSON(`https://finnhub.io/api/v1/stock/metric?symbol=${ticker}&metric=all&token=${FINNHUB_KEY}`),
+          fetchJSON(`https://finnhub.io/api/v1/stock/recommendation?symbol=${ticker}&token=${FINNHUB_KEY}`),
+          fetchJSON(`https://finnhub.io/api/v1/stock/earnings?symbol=${ticker}&limit=4&token=${FINNHUB_KEY}`),
+          fetchJSON(`https://finnhub.io/api/v1/stock/insider-transactions?symbol=${ticker}&token=${FINNHUB_KEY}`)
+        ]);
+        // At least one must succeed for the batch to count
+        if (!p && !m && !r && !e && !ins) throw new Error('All Finnhub calls returned null');
+        return { p, m, r, e, ins };
+      });
+      if (fhResults) {
+        fhProfile = fhResults.p;
+        fhMetric = fhResults.m;
+        fhRec = fhResults.r;
+        fhEarnings = fhResults.e;
+        fhInsider = fhResults.ins;
+        data_sources_status.finnhub = 'success';
+      } else {
+        data_sources_status.finnhub = 'failed';
+      }
     }
 
-    // Fetch FMP
+    // Fetch FMP (with retry)
     if (FMP_KEY) {
-      const fmpProfileArr = await fetchJSON(`https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${FMP_KEY}`);
-      if (fmpProfileArr && fmpProfileArr.length > 0) fmpProfile = fmpProfileArr[0];
-      
-      const fmpPriceArr = await fetchJSON(`https://financialmodelingprep.com/stable/stock-price-change?symbol=${ticker}&apikey=${FMP_KEY}`);
-      if (fmpPriceArr && fmpPriceArr.length > 0) fmpPriceChange = fmpPriceArr[0];
-      
-      fmpIncome = await fetchJSON(`https://financialmodelingprep.com/stable/income-statement?symbol=${ticker}&period=quarter&limit=4&apikey=${FMP_KEY}`);
+      const fmpResults = await fetchWithRetry(async () => {
+        const [profileArr, priceArr, income] = await Promise.all([
+          fetchJSON(`https://financialmodelingprep.com/stable/profile?symbol=${ticker}&apikey=${FMP_KEY}`),
+          fetchJSON(`https://financialmodelingprep.com/stable/stock-price-change?symbol=${ticker}&apikey=${FMP_KEY}`),
+          fetchJSON(`https://financialmodelingprep.com/stable/income-statement?symbol=${ticker}&period=quarter&limit=4&apikey=${FMP_KEY}`)
+        ]);
+        if (!profileArr && !priceArr && !income) throw new Error('All FMP calls returned null');
+        return { profileArr, priceArr, income };
+      });
+      if (fmpResults) {
+        if (fmpResults.profileArr && fmpResults.profileArr.length > 0) fmpProfile = fmpResults.profileArr[0];
+        if (fmpResults.priceArr && fmpResults.priceArr.length > 0) fmpPriceChange = fmpResults.priceArr[0];
+        fmpIncome = fmpResults.income;
+        data_sources_status.fmp = 'success';
+      } else {
+        data_sources_status.fmp = 'failed';
+      }
     }
 
-    // Fetch Alpha Vantage
+    // Fetch Alpha Vantage (with retry)
     if (AV_KEY) {
-      avNews = await fetchJSON(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&limit=20&apikey=${AV_KEY}`);
-      avOverview = await fetchJSON(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${AV_KEY}`);
+      const avResults = await fetchWithRetry(async () => {
+        const [news, overview] = await Promise.all([
+          fetchJSON(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&limit=20&apikey=${AV_KEY}`),
+          fetchJSON(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${AV_KEY}`)
+        ]);
+        if (!news && !overview) throw new Error('All AV calls returned null');
+        return { news, overview };
+      });
+      if (avResults) {
+        avNews = avResults.news;
+        avOverview = avResults.overview;
+        data_sources_status.alpha_vantage = 'success';
+      } else {
+        data_sources_status.alpha_vantage = 'failed';
+      }
     }
 
     // Map Finnhub Profile / FMP Profile
@@ -160,10 +217,8 @@ Deno.serve(async (req) => {
       company_health.employee_count = fmpProfile.fullTimeEmployees;
     }
     
-    // Calculate headcount trend using historical FMP data if available, or fallback to heuristics
     if (fmpProfile && fmpProfile.fullTimeEmployees) {
        // Since FMP profile only returns current, we can't get true YoY trend easily without historical API.
-       // However, we can use revenue trend as a proxy for headcount trend if true headcount trend is missing.
     }
     if (fmpIncome && fmpIncome.length >= 2) {
       const q1 = fmpIncome[0].revenue;
@@ -210,9 +265,8 @@ Deno.serve(async (req) => {
         fScore += 10;
       }
       
-      // debt to equity
       const debtEq = m["totalDebt/totalEquityQuarterly"] || m["totalDebt/totalEquityAnnual"];
-      if (debtEq && debtEq > 2) { // the user said flag if debt/equity > 2
+      if (debtEq && debtEq > 2) {
         fScore -= 20;
         risk_assessment.risk_flags.push(`High debt-to-equity ratio (${debtEq.toFixed(1)})`);
         opportunity_flags.red.push("High debt-to-equity ratio");
@@ -224,7 +278,6 @@ Deno.serve(async (req) => {
       company_health._meta.used_sources.push("Finnhub (Financial Metrics)");
     }
 
-    // Weight: financial health 40%, revenue trend 30%, earnings 30%
     if (fhMetric || fmpIncome || fhEarnings) {
       company_health.stability_score = Math.round((financialScore * 0.4) + (revScore * 0.3) + (earnScore * 0.3));
 
@@ -254,7 +307,7 @@ Deno.serve(async (req) => {
     let sentimentScore = 50;
     let analystLabel = "Hold";
     if (fhRec && fhRec.length > 0) {
-      const rec = fhRec[0]; // latest month
+      const rec = fhRec[0];
       const total = rec.strongBuy + rec.buy + rec.hold + rec.sell + rec.strongSell;
       if (total > 0) {
         const buyRatio = (rec.strongBuy + rec.buy) / total;
@@ -322,8 +375,13 @@ Deno.serve(async (req) => {
     risk_assessment.verified = true;
     if(risk_assessment.sources.length === 0) risk_assessment.sources.push("Finnhub (Financials)");
 
-    // BUILD stock_data & fundamentals for backwards compatibility with charts
-    const price_history = await fetchYahooHistory(ticker);
+    // BUILD stock_data & fundamentals — Yahoo Finance with retry
+    const price_history = await fetchWithRetry(async () => {
+      const hist = await fetchYahooHistory(ticker);
+      if (!hist || hist.length === 0) throw new Error('Yahoo returned no data');
+      return hist;
+    }) || [];
+    data_sources_status.yahoo_finance = price_history.length > 0 ? 'success' : 'failed';
     
     // Compute year_change_percent: prefer FMP, fallback to Yahoo price history
     let yearChangePct = fmpPriceChange?.["1Y"] || null;
@@ -389,7 +447,6 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.PublicCompanyData.update(entityId, payload);
       }
     } else if (company_name) {
-      // Find the entity by fuzzy name match and update it
       const allRecords = await base44.asServiceRole.entities.PublicCompanyData.list('-updated_date', 100);
       const match = findMatchingRecord(company_name, allRecords);
       if (match) {
@@ -403,7 +460,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ success: true, data: payload, market_sentiment, risk_assessment });
+    return Response.json({ success: true, data: payload, market_sentiment, risk_assessment, data_sources_status });
   } catch (err) {
     console.error(err);
     return Response.json({ error: err.message }, { status: 500 });

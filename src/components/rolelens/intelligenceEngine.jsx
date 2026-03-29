@@ -238,6 +238,11 @@ Return your analysis as a JSON object matching the intelligence schema provided.
           if (healthRes.data.data.news_articles && healthRes.data.data.news_articles.length > 0) {
             intelligence.news = healthRes.data.data.news_articles;
           }
+          // Merge data_sources_status from fetchCompanyData
+          if (healthRes.data.data_sources_status) {
+            if (!intelligence.data_sources_status) intelligence.data_sources_status = {};
+            Object.assign(intelligence.data_sources_status, healthRes.data.data_sources_status);
+          }
         }
       } else if (dbMatch) {
         // Private company — use whatever is in the DB
@@ -270,6 +275,12 @@ Return your analysis as a JSON object matching the intelligence schema provided.
       
       if (realIntelRes.data.newsArticles && realIntelRes.data.newsArticles.length > 0) {
         intelligence.news = realIntelRes.data.newsArticles;
+      }
+
+      // Merge data_sources_status from both calls
+      if (!intelligence.data_sources_status) intelligence.data_sources_status = {};
+      if (realIntelRes.data.data_sources_status) {
+        Object.assign(intelligence.data_sources_status, realIntelRes.data.data_sources_status);
       }
     }
   } catch (err) {
