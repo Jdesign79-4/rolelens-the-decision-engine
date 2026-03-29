@@ -138,13 +138,6 @@ export default function JobSearchInput({ onJobDataLoaded, isLoading, setIsLoadin
       });
 
       onJobDataLoaded(processedJob, jobPostingText);
-      setQuery('');
-      setJobTitle('');
-      setCity('');
-      setSalaryMin('');
-      setSalaryMax('');
-      setJobPostingText('');
-      setShowDetails(false);
     } catch (err) {
       console.error('Search failed:', err);
       const errorMsg = err?.message || err?.toString() || 'Unknown error';

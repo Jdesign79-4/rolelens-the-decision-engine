@@ -229,6 +229,7 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       console.error('URL analysis failed:', err);
       setError(err?.message || 'Failed to analyze job posting.');
       setAnalysisStatus('error');
+      setTimeout(() => setAnalysisStatus('idle'), 3000);
     }
   };
 
