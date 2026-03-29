@@ -46,11 +46,12 @@ export default function IntelligenceCard({
       style={{ 
         padding: '20px 22px', 
         background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)', 
-        border: 'none', 
         borderTop: isDark ? '1px solid rgba(51,65,85,0.3)' : '1px solid rgba(255,255,255,0.70)', 
+        borderRight: 'none',
+        borderBottom: 'none',
+        borderLeft: isComplete ? (verified ? '3px solid #22c55e' : '3px solid #f59e0b') : 'none',
         boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', 
-        borderRadius: '16px',
-        ...(isComplete ? getCardBorderStyle(verified) : {})
+        borderRadius: '16px'
       }}
     >
       <div className="flex items-start justify-between mb-4">

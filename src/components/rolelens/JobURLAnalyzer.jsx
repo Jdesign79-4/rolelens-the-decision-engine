@@ -225,9 +225,6 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       const extractedData = { company: parsedJSON.company_name, title: parsedJSON.role_analyzed, location: "Remote" };
       const jobObject = buildJobObject(parsedJSON, extractedData);
       onJobDataLoaded(jobObject, '', parsedJSON);
-      
-      setUrl('');
-      setDetectedPlatform(null);
     } catch (err) {
       console.error('URL analysis failed:', err);
       setError(err?.message || 'Failed to analyze job posting.');
