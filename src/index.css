@@ -89,7 +89,7 @@
 
 /* ============================================
    ROLELENS DARK MODE OVERRIDES
-   Uses html.dark to override inline styles
+   Nuclear approach: override ALL inline styles
    ============================================ */
 
 /* Global page background */
@@ -97,47 +97,75 @@ html.dark body {
   background-color: #0f172a !important;
 }
 
-/* Main content area background */
 html.dark .min-h-screen {
   background-color: #0f172a !important;
 }
 
-/* Neumorphic cards — override all inline background/box-shadow/border */
-html.dark [style*="linear-gradient(135deg, #F0EAE1"],
-html.dark [style*="linear-gradient(135deg, #F5F0EB"],
-html.dark [style*="linear-gradient(135deg, #EBEeF3"],
-html.dark [style*="linear-gradient(180deg, #F5F1EC"],
-html.dark [style*="linear-gradient(135deg, #F5F1EB"] {
+/*
+ * NUCLEAR INLINE STYLE OVERRIDES
+ * Browsers serialize inline styles to rgb() format.
+ * We target common light-background rgb values.
+ */
+
+/* Override ALL elements with light gradient backgrounds (neumorphic cards) */
+html.dark [style*="linear-gradient"] {
   background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%) !important;
   box-shadow: 2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3) !important;
-  border-top-color: rgba(51,65,85,0.3) !important;
 }
 
-/* Secondary neumorphic cards (e.g. widget bar) */
-html.dark [style*="linear-gradient(180deg, #F5F1EC 0%, #EDE7DE"] {
-  background: linear-gradient(180deg, #1e293b 0%, #172032 100%) !important;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3) !important;
+/* Preserve intentionally-dark gradients (analyze button, LinkedIn CTA, True Fit Score) */
+html.dark [style*="linear-gradient"].bg-gradient-to-r.from-blue-600,
+html.dark .bg-gradient-to-r.from-blue-600,
+html.dark .bg-gradient-to-r.from-slate-800,
+html.dark .bg-gradient-to-r.from-violet-50 {
+  /* let tailwind handle these */
 }
 
-/* Job header card */
-html.dark [style*="linear-gradient(135deg, #F5F0EB 0%, #F2E8E7"] {
-  background: linear-gradient(135deg, #1e293b 0%, #1c2638 100%) !important;
-  box-shadow: 2px 2px 10px rgba(0,0,0,0.4), -2px -2px 6px rgba(30,41,59,0.3) !important;
+/* Override inset shadow inputs (search bars) */
+html.dark [style*="inset"] {
+  background: #0f172a !important;
+  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.4), inset -1px -1px 4px rgba(30,41,59,0.3) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #334155 !important;
 }
 
-/* Sidebar */
-html.dark [style*="linear-gradient(180deg, #F5F1EB 0%, #EDE7DE"] {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+/* Override inline color styles for headings */
+html.dark [style*="color: rgb(39, 35, 32)"],
+html.dark [style*="color: rgb(39,35,32)"] {
+  color: #f1f5f9 !important;
+}
+html.dark [style*="color: rgb(120, 111, 106)"],
+html.dark [style*="color: rgb(120,111,106)"] {
+  color: #94a3b8 !important;
+}
+html.dark [style*="color: rgb(168, 158, 154)"],
+html.dark [style*="color: rgb(168,158,154)"] {
+  color: #64748b !important;
+}
+html.dark [style*="color: rgb(58, 72, 104)"],
+html.dark [style*="color: rgb(58,72,104)"] {
+  color: #93a5cf !important;
+}
+html.dark [style*="color: rgb(74, 103, 65)"],
+html.dark [style*="color: rgb(74,103,65)"] {
+  color: #86c07a !important;
+}
+html.dark [style*="color: rgb(192, 112, 106)"],
+html.dark [style*="color: rgb(192,112,106)"] {
+  color: #e8938d !important;
+}
+html.dark [style*="color: rgb(176, 117, 53)"],
+html.dark [style*="color: rgb(176,117,53)"] {
+  color: #d4a04a !important;
 }
 
-/* Slider cards in sidebar */
-html.dark [style*="background: rgb(240, 234, 225)"],
-html.dark [style*='background: #F0EAE1'] {
-  background: #1e293b !important;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3) !important;
+/* Override inline background colors for icon containers */
+html.dark [style*="background: rgba(58"],
+html.dark [style*="background: rgba(74"] {
+  background: rgba(148,163,184,0.15) !important;
 }
 
-/* Neumorphic feature buttons */
+/* Override inline background for neumorphic feature buttons */
 html.dark .neumorphic-feature-btn {
   background: #1e293b !important;
   box-shadow: 2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3) !important;
@@ -148,241 +176,167 @@ html.dark .neumorphic-feature-btn:hover {
 }
 html.dark .neumorphic-feature-btn:active {
   box-shadow: inset 2px 2px 6px rgba(0,0,0,0.3), inset -1px -1px 4px rgba(30,41,59,0.3) !important;
-}
-
-/* Neumorphic input fields */
-html.dark [style*="inset 4px 4px 10px #C2BCB4"] {
-  background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%) !important;
-  box-shadow: inset 2px 2px 6px rgba(0,0,0,0.4), inset -1px -1px 4px rgba(30,41,59,0.3) !important;
-  color: #e2e8f0 !important;
-}
-
-/* Analyze button stays as-is (dark by design) */
-
-/* Search mode toggle buttons */
-html.dark [style*="background: rgb(240, 234, 225)"][style*="border-radius: 999px"] {
   background: #1e293b !important;
-  box-shadow: 2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3) !important;
+  border: none !important;
 }
 
-/* Slider track */
-html.dark [style*="background: rgb(225, 217, 206)"],
-html.dark [style*='background: #E1D9CE'] {
-  background: #334155 !important;
-  box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3) !important;
-}
-
-/* Slider thumb */
-html.dark [style*="background: rgb(240, 234, 225)"][style*="border-radius: 50%"] {
-  background: #334155 !important;
-  box-shadow: 2px 2px 4px rgba(0,0,0,0.3), -1px -1px 3px rgba(30,41,59,0.3) !important;
-}
-
-/* Dark mode text overrides for inline-styled headings */
-html.dark [style*="color: rgb(39, 35, 32)"],
-html.dark [style*="color: #272320"] {
-  color: #f1f5f9 !important;
-}
-
-html.dark [style*="color: rgb(120, 111, 106)"],
-html.dark [style*="color: #786F6A"] {
-  color: #94a3b8 !important;
-}
-
-html.dark [style*="color: rgb(168, 158, 154)"],
-html.dark [style*="color: #A89E9A"] {
+/* Fix placeholder text */
+html.dark input::placeholder,
+html.dark textarea::placeholder {
   color: #64748b !important;
 }
 
-html.dark [style*="color: rgb(58, 72, 104)"],
-html.dark [style*="color: #3A4868"] {
-  color: #93a5cf !important;
+/* ============================================
+   TAILWIND CLASS OVERRIDES FOR DARK MODE
+   These use !important to beat specificity
+   ============================================ */
+
+/* White backgrounds → dark slate */
+html.dark .bg-white {
+  background-color: #1e293b !important;
+}
+html.dark .bg-white\/80 {
+  background-color: rgba(30,41,59,0.8) !important;
+}
+html.dark .bg-white\/50 {
+  background-color: rgba(30,41,59,0.5) !important;
 }
 
-html.dark [style*="color: rgb(74, 103, 65)"],
-html.dark [style*="color: #4A6741"] {
-  color: #86c07a !important;
-}
-
-html.dark [style*="color: rgb(192, 112, 106)"],
-html.dark [style*="color: #C0706A"] {
-  color: #e8938d !important;
-}
-
-html.dark [style*="color: rgb(176, 117, 53)"],
-html.dark [style*="color: #B07535"] {
-  color: #d4a04a !important;
-}
-
-/* Icon containers with light backgrounds */
-html.dark [style*="background: rgba(58,72,104,0.12)"],
-html.dark [style*="background: rgba(74,103,65,0.12)"] {
-  background: rgba(148,163,184,0.15) !important;
-}
-
-/* Career stage label */
-html.dark [style*="font-family: \"Cormorant Garamond\""][style*="color: #3A4868"] {
-  color: #93a5cf !important;
-}
-
-/* AI disclaimer inline-styled section */
-html.dark [style*="background: rgba(176, 117, 53, 0.08)"] {
-  background: rgba(176, 117, 53, 0.15) !important;
-}
-html.dark [style*="background: rgba(176, 117, 53, 0.05)"] {
-  background: rgba(176, 117, 53, 0.12) !important;
-}
-
-/* Score bars light backgrounds */
-html.dark .bg-slate-200 {
-  background-color: #334155;
+/* Slate light backgrounds */
+html.dark .bg-slate-50 {
+  background-color: #1a2332 !important;
 }
 html.dark .bg-slate-100 {
-  background-color: #1e293b;
+  background-color: #1e293b !important;
 }
-html.dark .bg-slate-50 {
-  background-color: #1a2332;
+html.dark .bg-slate-200 {
+  background-color: #334155 !important;
+}
+html.dark .bg-slate-300 {
+  background-color: #475569 !important;
 }
 
-/* Text color overrides */
-html.dark .text-slate-800,
-html.dark .text-slate-900 {
-  color: #f1f5f9;
+/* Gray light backgrounds */
+html.dark .bg-gray-50 {
+  background-color: #1a2332 !important;
+}
+html.dark .bg-gray-100 {
+  background-color: #1e293b !important;
+}
+
+/* Text overrides */
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f1f5f9 !important;
 }
 html.dark .text-slate-700 {
-  color: #e2e8f0;
+  color: #e2e8f0 !important;
 }
 html.dark .text-slate-600 {
-  color: #cbd5e1;
+  color: #cbd5e1 !important;
 }
 html.dark .text-slate-500 {
-  color: #94a3b8;
+  color: #94a3b8 !important;
 }
 html.dark .text-slate-400 {
-  color: #64748b;
+  color: #64748b !important;
+}
+html.dark .text-gray-900,
+html.dark .text-gray-800 {
+  color: #f1f5f9 !important;
+}
+html.dark .text-gray-700 {
+  color: #e2e8f0 !important;
+}
+html.dark .text-gray-600 {
+  color: #cbd5e1 !important;
+}
+html.dark .text-gray-500 {
+  color: #94a3b8 !important;
 }
 
 /* Border overrides */
-html.dark .border-slate-200,
-html.dark .border-slate-100 {
-  border-color: #334155;
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: #334155 !important;
 }
 html.dark .border-slate-300 {
-  border-color: #475569;
+  border-color: #475569 !important;
+}
+html.dark .border-gray-200 {
+  border-color: #334155 !important;
 }
 
-/* White bg cards and containers */
-html.dark .bg-white {
-  background-color: #1e293b;
-}
-html.dark .bg-white\/80 {
-  background-color: rgba(30,41,59,0.8);
-}
-html.dark .bg-white\/50 {
-  background-color: rgba(30,41,59,0.5);
+/* Shadow overrides */
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
 }
 
-/* Gradient from-white backgrounds */
+/* Hover states */
+html.dark .hover\:bg-slate-50:hover {
+  background-color: #253344 !important;
+}
+html.dark .hover\:bg-slate-100:hover {
+  background-color: #253344 !important;
+}
+html.dark .hover\:bg-slate-200:hover {
+  background-color: #334155 !important;
+}
+
+/* Risk/opportunity colored cards */
+html.dark .bg-red-50 { background-color: rgba(127, 29, 29, 0.2) !important; }
+html.dark .bg-emerald-50 { background-color: rgba(6, 78, 59, 0.2) !important; }
+html.dark .bg-amber-50 { background-color: rgba(120, 53, 15, 0.2) !important; }
+html.dark .bg-blue-50 { background-color: rgba(30, 58, 138, 0.2) !important; }
+html.dark .bg-violet-50 { background-color: rgba(91, 33, 182, 0.2) !important; }
+html.dark .bg-teal-50 { background-color: rgba(19, 78, 74, 0.2) !important; }
+html.dark .bg-indigo-50 { background-color: rgba(49, 46, 129, 0.2) !important; }
+html.dark .bg-purple-50 { background-color: rgba(88, 28, 135, 0.2) !important; }
+html.dark .bg-rose-50 { background-color: rgba(136, 19, 55, 0.2) !important; }
+html.dark .bg-green-50 { background-color: rgba(20, 83, 45, 0.2) !important; }
+html.dark .bg-orange-50 { background-color: rgba(124, 45, 18, 0.2) !important; }
+html.dark .bg-cyan-50 { background-color: rgba(21, 94, 117, 0.2) !important; }
+
+/* Colored borders */
+html.dark .border-red-100,
+html.dark .border-red-200 { border-color: rgba(127, 29, 29, 0.4) !important; }
+html.dark .border-emerald-100,
+html.dark .border-emerald-200 { border-color: rgba(6, 78, 59, 0.4) !important; }
+html.dark .border-amber-100,
+html.dark .border-amber-200 { border-color: rgba(120, 53, 15, 0.4) !important; }
+html.dark .border-blue-100,
+html.dark .border-blue-200 { border-color: rgba(30, 58, 138, 0.4) !important; }
+html.dark .border-teal-100,
+html.dark .border-teal-200,
+html.dark .border-teal-300 { border-color: rgba(19, 78, 74, 0.4) !important; }
+html.dark .border-violet-200 { border-color: rgba(91, 33, 182, 0.4) !important; }
+html.dark .border-indigo-200 { border-color: rgba(49, 46, 129, 0.4) !important; }
+
+/* Colored text for readability */
+html.dark .text-red-900 { color: #fca5a5 !important; }
+html.dark .text-emerald-900 { color: #6ee7b7 !important; }
+html.dark .text-amber-900,
+html.dark .text-amber-800 { color: #fcd34d !important; }
+html.dark .text-amber-700 { color: #fbbf24 !important; }
+html.dark .text-amber-600 { color: #f59e0b !important; }
+html.dark .text-blue-900 { color: #93c5fd !important; }
+html.dark .text-indigo-900 { color: #a5b4fc !important; }
+html.dark .text-indigo-800 { color: #a5b4fc !important; }
+
+/* Colored badge backgrounds */
+html.dark .bg-amber-100 { background-color: rgba(120,53,15,0.3) !important; }
+html.dark .bg-blue-100 { background-color: rgba(30,58,138,0.3) !important; }
+html.dark .bg-emerald-100 { background-color: rgba(6,78,59,0.3) !important; }
+html.dark .bg-violet-100 { background-color: rgba(91,33,182,0.3) !important; }
+html.dark .bg-rose-100 { background-color: rgba(136,19,55,0.3) !important; }
+
+/* Gradient sections */
 html.dark .bg-gradient-to-br.from-slate-50,
 html.dark .bg-gradient-to-br.from-teal-50 {
   background: linear-gradient(135deg, #1e293b, #1a2332) !important;
 }
-
-/* Risk/opportunity colored cards in dark mode — softer backgrounds */
-html.dark .bg-red-50 {
-  background-color: rgba(127, 29, 29, 0.2);
-}
-html.dark .bg-emerald-50 {
-  background-color: rgba(6, 78, 59, 0.2);
-}
-html.dark .bg-amber-50 {
-  background-color: rgba(120, 53, 15, 0.2);
-}
-html.dark .bg-blue-50 {
-  background-color: rgba(30, 58, 138, 0.2);
-}
-html.dark .bg-violet-50 {
-  background-color: rgba(91, 33, 182, 0.2);
-}
-html.dark .bg-teal-50 {
-  background-color: rgba(19, 78, 74, 0.2);
-}
-html.dark .bg-indigo-50 {
-  background-color: rgba(49, 46, 129, 0.2);
-}
-html.dark .bg-purple-50 {
-  background-color: rgba(88, 28, 135, 0.2);
-}
-html.dark .bg-rose-50 {
-  background-color: rgba(136, 19, 55, 0.2);
-}
-html.dark .bg-green-50 {
-  background-color: rgba(20, 83, 45, 0.2);
-}
-html.dark .bg-orange-50 {
-  background-color: rgba(124, 45, 18, 0.2);
-}
-html.dark .bg-cyan-50 {
-  background-color: rgba(21, 94, 117, 0.2);
-}
-
-/* Colored borders in dark mode */
-html.dark .border-red-100,
-html.dark .border-red-200 {
-  border-color: rgba(127, 29, 29, 0.4);
-}
-html.dark .border-emerald-100,
-html.dark .border-emerald-200 {
-  border-color: rgba(6, 78, 59, 0.4);
-}
-html.dark .border-amber-100,
-html.dark .border-amber-200 {
-  border-color: rgba(120, 53, 15, 0.4);
-}
-html.dark .border-blue-100,
-html.dark .border-blue-200 {
-  border-color: rgba(30, 58, 138, 0.4);
-}
-html.dark .border-teal-100,
-html.dark .border-teal-200,
-html.dark .border-teal-300 {
-  border-color: rgba(19, 78, 74, 0.4);
-}
-html.dark .border-violet-200 {
-  border-color: rgba(91, 33, 182, 0.4);
-}
-html.dark .border-indigo-200 {
-  border-color: rgba(49, 46, 129, 0.4);
-}
-
-/* Colored text adjustments for readability in dark */
-html.dark .text-red-900 {
-  color: #fca5a5;
-}
-html.dark .text-emerald-900 {
-  color: #6ee7b7;
-}
-html.dark .text-amber-900,
-html.dark .text-amber-800 {
-  color: #fcd34d;
-}
-html.dark .text-amber-700 {
-  color: #fbbf24;
-}
-html.dark .text-amber-600 {
-  color: #f59e0b;
-}
-html.dark .text-blue-900 {
-  color: #93c5fd;
-}
-html.dark .text-indigo-900 {
-  color: #a5b4fc;
-}
-html.dark .text-indigo-800 {
-  color: #a5b4fc;
-}
-
-/* Gradient overlay sections */
 html.dark .bg-gradient-to-r.from-blue-50,
 html.dark .bg-gradient-to-r.from-blue-50.to-indigo-50 {
   background: linear-gradient(to right, rgba(30,58,138,0.15), rgba(49,46,129,0.15)) !important;
@@ -390,91 +344,32 @@ html.dark .bg-gradient-to-r.from-blue-50.to-indigo-50 {
 html.dark .bg-gradient-to-r.from-violet-50.to-purple-50 {
   background: linear-gradient(to right, rgba(91,33,182,0.15), rgba(88,28,135,0.15)) !important;
 }
-
-/* External data aggregator */
 html.dark .bg-gradient-to-br.from-slate-50.to-blue-50 {
   background: linear-gradient(135deg, #1e293b 0%, #172032 100%) !important;
   border-color: #334155 !important;
 }
-
-/* Amber AI-estimated card border */
-html.dark [style*="border-left: 3px solid rgb(245, 158, 11)"] {
-  border-left-color: #f59e0b !important;
-}
-html.dark [style*="border-left: 3px solid #f59e0b"] {
-  border-left-color: #f59e0b !important;
-}
-
-/* AI estimated banner */
-html.dark [style*="background: linear-gradient(135deg, #fffbeb"] {
-  background: linear-gradient(135deg, rgba(120,53,15,0.25) 0%, rgba(120,53,15,0.35) 100%) !important;
-  border-color: #b45309 !important;
-}
-
-/* Fix placeholder text in dark inputs */
-html.dark input::placeholder,
-html.dark textarea::placeholder {
-  color: #64748b !important;
-}
-
-/* Keep the green/amber verified badges visible */
-html.dark [style*="background: rgb(234, 240, 231)"],
-html.dark [style*='background: #EAF0E7'] {
-  background: rgba(74,103,65,0.2) !important;
-}
-html.dark [style*="background: rgb(245, 241, 235)"],
-html.dark [style*='background: #F5F1EB'] {
-  background: rgba(176,117,53,0.2) !important;
-}
-html.dark [style*="background: rgb(242, 234, 233)"],
-html.dark [style*='background: #F2EAE9'] {
-  background: rgba(192,112,106,0.2) !important;
-}
-
-/* Culture decoder and other gradient cards */
 html.dark .bg-gradient-to-br.from-indigo-50.to-purple-50 {
   background: linear-gradient(135deg, rgba(49,46,129,0.15), rgba(88,28,135,0.15)) !important;
 }
 
-/* Fix hover states */
-html.dark .hover\:bg-slate-50:hover {
-  background-color: #253344 !important;
-}
-html.dark .hover\:bg-slate-200:hover {
-  background-color: #334155 !important;
-}
-html.dark .hover\:bg-slate-100:hover {
-  background-color: #253344 !important;
-}
-
-/* Partial data notification */
+/* Partial data notification (inline amber bg) */
 html.dark [style*="background: rgb(254, 243, 199)"],
-html.dark [style*='background: #fef3c7'] {
+html.dark [style*="background: rgb(254,243,199)"] {
   background: rgba(120,53,15,0.25) !important;
   border-color: #b45309 !important;
 }
 html.dark [style*="color: rgb(146, 64, 14)"],
-html.dark [style*='color: #92400e'] {
+html.dark [style*="color: rgb(146,64,14)"] {
   color: #fbbf24 !important;
 }
 
-/* Amber colored badges */
-html.dark .bg-amber-100 {
-  background-color: rgba(120,53,15,0.3);
-}
-html.dark .bg-blue-100 {
-  background-color: rgba(30,58,138,0.3);
-}
-html.dark .bg-emerald-100 {
-  background-color: rgba(6,78,59,0.3);
-}
-html.dark .bg-violet-100 {
-  background-color: rgba(91,33,182,0.3);
+/* AI estimated banner (inline gradient) */
+html.dark [style*="background: linear-gradient(135deg, rgb(255, 251, 235)"] {
+  background: linear-gradient(135deg, rgba(120,53,15,0.25) 0%, rgba(120,53,15,0.35) 100%) !important;
+  border-color: #b45309 !important;
 }
 
-/* Fix the LinkedIn networking CTA — keep dark */
-
-/* Fix scrollbar for dark mode */
+/* Scrollbar */
 html.dark ::-webkit-scrollbar {
   width: 8px;
 }
