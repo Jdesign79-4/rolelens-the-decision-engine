@@ -101,7 +101,7 @@ Be specific and cite recent events or data points when possible. Focus on inform
         <button
           onClick={fetchHealthScore}
           disabled={loading}
-          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors disabled:opacity-50"
+          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 text-slate-600 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -163,7 +163,7 @@ Be specific and cite recent events or data points when possible. Focus on inform
             </div>
 
             {/* Summary */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-700">
               <p className="text-sm text-slate-700 leading-relaxed">
                 {healthData.summary}
               </p>
@@ -171,10 +171,10 @@ Be specific and cite recent events or data points when possible. Focus on inform
 
             {/* News Sentiment & Financial Stability */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-slate-50">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-700">
                 <div className="flex items-center gap-2 mb-1">
-                  <Newspaper className="w-4 h-4 text-slate-500" />
-                  <p className="text-xs font-medium text-slate-500">News Sentiment</p>
+                  <Newspaper className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">News Sentiment</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <SentimentIcon className={`w-5 h-5 ${sentimentIcon.color}`} />
@@ -183,9 +183,9 @@ Be specific and cite recent events or data points when possible. Focus on inform
                   </p>
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-700">
                 <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-4 h-4 text-slate-500" />
+                  <DollarSign className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <p className="text-xs font-medium text-slate-500">Financial Health</p>
                 </div>
                 <p className="text-xs text-slate-700 line-clamp-2">

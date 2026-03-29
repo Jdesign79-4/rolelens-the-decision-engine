@@ -895,7 +895,7 @@ function RoleLensContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0EAE1] dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 dark:bg-gradient-to-br">
+    <div className="min-h-screen bg-[#F0EAE1] dark:bg-[#0f172a]">
       {/* Texture Overlay */}
       <div className="fixed inset-0 opacity-[0.015] pointer-events-none"
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}
@@ -952,7 +952,7 @@ function RoleLensContent() {
         </AnimatePresence>
 
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50 dark:bg-slate-900/50" style={{ background: 'linear-gradient(180deg, #F5F1EB 0%, #EDE7DE 100%)' }}>
+        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50" style={{ background: 'linear-gradient(180deg, #F5F1EB 0%, #EDE7DE 100%)' }}>
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.04) 100%)', boxShadow: 'inset 0 0 60px rgba(255,255,255,0.08)' }} />
           <div className="absolute top-4 right-4">
             <DarkModeToggle />
@@ -968,7 +968,7 @@ function RoleLensContent() {
         <ConnectionVines isActive={isConnecting} settings={tunerSettings} />
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8 xl:p-12 bg-[#F0EAE1] dark:bg-transparent">
+        <main className="flex-1 p-4 lg:p-8 xl:p-12 bg-[#F0EAE1] dark:bg-[#0f172a]">
           <div className="max-w-5xl mx-auto">
 
             {/* Search Mode Toggle */}

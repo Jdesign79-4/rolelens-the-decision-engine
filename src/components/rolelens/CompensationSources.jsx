@@ -31,11 +31,11 @@ export default function CompensationSources() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.35 }}
-      className="mt-6 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-5 border border-teal-200"
+      className="mt-6 bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-slate-800 dark:to-slate-800 rounded-2xl p-5 border border-teal-200 dark:border-slate-700"
     >
       <div className="flex items-center gap-2 mb-4">
-        <BookOpen className="w-5 h-5 text-teal-600" />
-        <h3 className="font-semibold text-slate-800">Compensation Data Sources</h3>
+        <BookOpen className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+        <h3 className="font-semibold text-slate-800 dark:text-slate-100">Compensation Data Sources</h3>
       </div>
       
       <p className="text-xs text-slate-600 mb-4">
@@ -52,7 +52,7 @@ export default function CompensationSources() {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 + index * 0.05 }}
-            className="group p-3 rounded-xl bg-white border border-teal-100 hover:border-teal-300 hover:bg-teal-50/50 transition-all"
+            className="group p-3 rounded-xl bg-white dark:bg-slate-800 border border-teal-100 dark:border-slate-700 hover:border-teal-300 dark:hover:border-slate-600 hover:bg-teal-50/50 dark:hover:bg-slate-700/50 transition-all"
           >
             <div className="flex items-start justify-between gap-2">
               <div>

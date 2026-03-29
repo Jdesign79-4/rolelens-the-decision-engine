@@ -112,10 +112,10 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
               <div
                 className={`relative p-4 rounded-2xl border-2 transition-all cursor-pointer ${
                   isExpanded 
-                    ? 'border-slate-300 bg-slate-50' 
+                    ? 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800' 
                     : isTopMatch
-                      ? 'border-violet-200 bg-white hover:border-violet-300'
-                      : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50/50'
+                      ? 'border-violet-200 dark:border-violet-800 bg-white dark:bg-slate-800 hover:border-violet-300 dark:hover:border-violet-700'
+                      : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-600 hover:bg-slate-50/50 dark:hover:bg-slate-700/50'
                 }`}
                 onClick={() => setExpandedId(isExpanded ? null : alt.id)}
               >
@@ -138,7 +138,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-semibold text-slate-800">{alt.meta.company}</h4>
+                        <h4 className="font-semibold text-slate-800 dark:text-slate-100">{alt.meta.company}</h4>
                         {isTopMatch && (
                           <span className="text-[9px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">
                             TOP MATCH

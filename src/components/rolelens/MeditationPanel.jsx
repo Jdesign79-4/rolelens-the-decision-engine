@@ -30,7 +30,7 @@ export default function MeditationPanel({ sources }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="mt-8 bg-white rounded-3xl p-6 shadow-sm border border-slate-100"
+      className="mt-8 bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700"
     >
       <button
         onClick={() => setExpanded(!expanded)}
@@ -42,7 +42,7 @@ export default function MeditationPanel({ sources }) {
           </div>
           <div className="text-left">
             <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Vetted Intelligence</p>
-            <h3 className="text-lg font-semibold text-slate-800">Meditation</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Meditation</h3>
           </div>
         </div>
         <motion.div
@@ -71,7 +71,7 @@ export default function MeditationPanel({ sources }) {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 * index }}
-                className="block p-4 rounded-2xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all group"
+                className="block p-4 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group"
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-lg bg-gradient-to-br ${getSourceColor(source.type)}`}>

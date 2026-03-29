@@ -82,11 +82,11 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
   const innerColors = getInnerRingColor();
 
   return (
-    <div className="h-full flex flex-col p-6 lg:p-8 ">
+    <div className="h-full flex flex-col p-6 lg:p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-xl font-semibold text-slate-800 tracking-tight">RoleLens</h1>
-        <p className="text-sm text-slate-500 mt-1">Executive Decision Engine</p>
+        <h1 className="text-xl font-semibold text-slate-800 dark:text-slate-100 tracking-tight">RoleLens</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Executive Decision Engine</p>
       </div>
 
       {/* Astrolabe Visualization */}
@@ -458,10 +458,10 @@ export default function AstrolabePanel({ settings, onSettingsChange, isConnectin
       <ProfileAnalysis settings={settings} />
 
       {/* Status Indicator */}
-      <div className="mt-8 pt-6 border-t border-slate-200/50">
+      <div className="mt-8 pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
         <div className="flex items-center gap-3">
           <div className={`w-2 h-2 rounded-full ${isConnecting ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
             {isConnecting ? 'Recalibrating analysis...' : 'Profile active'}
           </span>
         </div>

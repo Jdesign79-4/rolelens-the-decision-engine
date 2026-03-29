@@ -192,11 +192,11 @@ CRITICAL: Include direct URLs to each source used.`,
     return 'text-blue-600 bg-blue-50 border-blue-300';
   };
 
-  const aiEstimateCardStyle = "p-4 rounded-2xl bg-white border border-slate-200";
+  const aiEstimateCardStyle = "p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700";
   const aiEstimateBorderStyle = { borderLeft: '3px solid #f59e0b' };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-3xl p-6 shadow-sm border border-blue-200">
+    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-800 rounded-3xl p-6 shadow-sm border border-blue-200 dark:border-slate-700">
       {/* Prominent AI Estimate Banner */}
       <div className="mb-5 p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '2px solid #f59e0b' }}>
         <div className="flex items-start gap-2">
