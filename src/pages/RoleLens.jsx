@@ -939,21 +939,25 @@ function RoleLensContent() {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute left-0 top-0 h-full w-80 bg-[#F0EAE1] dark:bg-slate-900 shadow-2xl overflow-y-auto"
+                className="absolute left-0 top-0 h-full w-80 bg-[#F0EAE1] dark:bg-slate-900 shadow-2xl flex flex-col"
                 onClick={e => e.stopPropagation()}
               >
-                <button
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-                  aria-label="Close settings"
-                >
-                  <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                </button>
-                <AstrolabePanel
-                  settings={tunerSettings}
-                  onSettingsChange={setTunerSettings}
-                  isConnecting={isConnecting || isSearching}
-                />
+                <div className="flex-shrink-0 flex justify-end p-3">
+                  <button
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="p-2 rounded-xl bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                    aria-label="Close settings"
+                  >
+                    <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  <AstrolabePanel
+                    settings={tunerSettings}
+                    onSettingsChange={setTunerSettings}
+                    isConnecting={isConnecting || isSearching}
+                  />
+                </div>
               </motion.div>
             </motion.div>
           )}
