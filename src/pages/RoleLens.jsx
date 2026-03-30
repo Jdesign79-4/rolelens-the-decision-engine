@@ -1157,16 +1157,7 @@ function RoleLensContent() {
               </motion.div>
             </AnimatePresence>
 
-            {/* Data Source Disclaimer — always visible */}
-            <div className="mb-[18px] p-4 rounded-[10px] dark:bg-amber-950/30 dark:border-amber-700" style={{ background: 'linear-gradient(135deg, rgba(176,117,53,0.05) 0%, rgba(176,117,53,0.10) 100%)', borderLeft: '3px solid #B07535', boxShadow: 'none' }}>
-              <p className="text-xs text-amber-900 dark:text-amber-200">
-                <span className="font-bold">⚠️ Important — AI-Generated Estimates:</span> All data shown (salary ranges, company metrics, culture scores, health scores, alternatives) 
-                is <strong>estimated by AI</strong> from web searches and public information. These are not verified facts. 
-                Salary figures, Glassdoor ratings, funding amounts, and growth metrics may be inaccurate or outdated. 
-                <strong>Always verify critical data directly on source websites (Glassdoor, Levels.fyi, Crunchbase, company career pages) before making career or financial decisions.</strong> 
-                Tax calculations use 2024 US federal & state brackets and are more reliable than other estimates. This tool is for research assistance only — not financial or career advice.
-              </p>
-            </div>
+
 
             {/* Widget Controls */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-[20px_22px] mb-[18px]" style={{ background: 'linear-gradient(180deg, #F5F1EC 0%, #EDE7DE 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
