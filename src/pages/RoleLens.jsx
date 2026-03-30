@@ -924,45 +924,6 @@ function RoleLensContent() {
           </div>
         </div>
 
-        {/* Mobile Sidebar Drawer */}
-        <AnimatePresence>
-          {mobileSidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 z-[60] bg-black/30 backdrop-blur-sm"
-              onClick={() => setMobileSidebarOpen(false)}
-            >
-              <motion.div
-                initial={{ x: '-100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '-100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="absolute left-0 top-0 h-full w-80 bg-[#F0EAE1] dark:bg-slate-900 shadow-2xl flex flex-col"
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="flex-shrink-0 flex justify-end p-3">
-                  <button
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className="p-2 rounded-xl bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-                    aria-label="Close settings"
-                  >
-                    <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                  <AstrolabePanel
-                    settings={tunerSettings}
-                    onSettingsChange={setTunerSettings}
-                    isConnecting={isConnecting || isSearching}
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Desktop Sidebar */}
         <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50" style={{ background: 'linear-gradient(180deg, #F5F1EB 0%, #EDE7DE 100%)' }}>
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.04) 100%)', boxShadow: 'inset 0 0 60px rgba(255,255,255,0.08)' }} />
