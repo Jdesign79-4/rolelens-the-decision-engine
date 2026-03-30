@@ -903,6 +903,45 @@ function RoleLensContent() {
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}
       />
 
+      {/* Mobile Sidebar Drawer — outside relative z-10 to avoid stacking context trap */}
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="lg:hidden fixed inset-0 z-[60] bg-black/50"
+            onClick={() => setMobileSidebarOpen(false)}
+          >
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute left-0 top-0 h-full w-80 bg-[#F0EAE1] dark:bg-slate-900 shadow-2xl flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex-shrink-0 flex justify-end p-3">
+                <button
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-2 rounded-xl bg-slate-200/80 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                  aria-label="Close settings"
+                >
+                  <X className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <AstrolabePanel
+                  settings={tunerSettings}
+                  onSettingsChange={setTunerSettings}
+                  isConnecting={isConnecting || isSearching}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
         {/* Mobile Header */}
         <div className="lg:hidden sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 px-4 py-3">
