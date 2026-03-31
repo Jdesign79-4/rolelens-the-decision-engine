@@ -6,7 +6,7 @@ import { DataTrustBadge } from './DataTrustBadge';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-export default function ExternalDataAggregator({ company, jobTitle, onDataLoaded }) {
+export default function ExternalDataAggregator({ company, jobTitle, onDataLoaded, hideSalaryBenchmarks = false }) {
   const [enrichedData, setEnrichedData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -249,8 +249,8 @@ CRITICAL: Include direct URLs to each source used.`,
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            {/* Salary Benchmarks */}
-            {enrichedData.salary_benchmarks && (
+            {/* Salary Benchmarks — hidden when absorbed into Compensation card */}
+            {!hideSalaryBenchmarks && enrichedData.salary_benchmarks && (
               <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -273,24 +273,17 @@ CRITICAL: Include direct URLs to each source used.`,
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="text-center p-3 rounded-xl bg-emerald-50">
                     <p className="text-xs text-emerald-700 font-medium">Min</p>
-                    <p className="text-lg font-bold text-emerald-800">
-                      {formatCurrency(enrichedData.salary_benchmarks.min)}
-                    </p>
+                    <p className="text-lg font-bold text-emerald-800">{formatCurrency(enrichedData.salary_benchmarks.min)}</p>
                   </div>
                   <div className="text-center p-3 rounded-xl bg-emerald-100">
                     <p className="text-xs text-emerald-700 font-medium">Median</p>
-                    <p className="text-lg font-bold text-emerald-900">
-                      {formatCurrency(enrichedData.salary_benchmarks.median)}
-                    </p>
+                    <p className="text-lg font-bold text-emerald-900">{formatCurrency(enrichedData.salary_benchmarks.median)}</p>
                   </div>
                   <div className="text-center p-3 rounded-xl bg-emerald-50">
                     <p className="text-xs text-emerald-700 font-medium">Max</p>
-                    <p className="text-lg font-bold text-emerald-800">
-                      {formatCurrency(enrichedData.salary_benchmarks.max)}
-                    </p>
+                    <p className="text-lg font-bold text-emerald-800">{formatCurrency(enrichedData.salary_benchmarks.max)}</p>
                   </div>
                 </div>
-                {/* Salary Trend Chart */}
                 {enrichedData.salary_benchmarks.trend_data && enrichedData.salary_benchmarks.trend_data.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-slate-200">
                     <p className="text-xs font-medium text-slate-600 mb-2">6-Month Trend</p>
@@ -308,7 +301,7 @@ CRITICAL: Include direct URLs to each source used.`,
               </div>
             )}
 
-            {/* Funding Data */}
+            {/* Funding Data */
             {enrichedData.funding_data && (
               <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">

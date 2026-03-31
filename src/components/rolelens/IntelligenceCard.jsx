@@ -8,7 +8,8 @@ export default function IntelligenceCard({
   title, 
   icon: Icon, 
   dimensionData, 
-  status 
+  status,
+  enrichedSalaryData
 }) {
   const isPending = status === 'pending';
   const isLoading = status === 'loading';
@@ -174,24 +175,19 @@ export default function IntelligenceCard({
                     const pct = (v) => Math.max(0, Math.min(100, ((v - lo) / range) * 100));
                     return (
                       <div className="relative h-4 bg-slate-200 rounded-full w-full mb-2">
-                        {/* 25th-75th range */}
                         {dimensionData.market_25th && dimensionData.market_75th && (
                           <div className="absolute h-full bg-slate-400 opacity-30" style={{ left: `${pct(dimensionData.market_25th)}%`, width: `${pct(dimensionData.market_75th) - pct(dimensionData.market_25th)}%` }} />
                         )}
-                        {/* 25th Marker */}
                         {dimensionData.market_25th && (
-                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_25th)}%` }} title={`25th: $${Math.round(dimensionData.market_25th).toLocaleString()}`} />
+                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_25th)}%` }} />
                         )}
-                        {/* 75th Marker */}
                         {dimensionData.market_75th && (
-                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_75th)}%` }} title={`75th: $${Math.round(dimensionData.market_75th).toLocaleString()}`} />
+                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_75th)}%` }} />
                         )}
-                        {/* User Salary Range Overlay */}
                         {dimensionData._salaryLow && dimensionData._salaryHigh && (
-                          <div className="absolute h-full bg-indigo-500 opacity-60 z-10" style={{ left: `${pct(dimensionData._salaryLow)}%`, width: `${pct(dimensionData._salaryHigh) - pct(dimensionData._salaryLow)}%` }} title={`Your Offer: $${dimensionData._salaryLow.toLocaleString()} - $${dimensionData._salaryHigh.toLocaleString()}`} />
+                          <div className="absolute h-full bg-indigo-500 opacity-60 z-10" style={{ left: `${pct(dimensionData._salaryLow)}%`, width: `${pct(dimensionData._salaryHigh) - pct(dimensionData._salaryLow)}%` }} />
                         )}
-                        {/* Median Marker */}
-                        <div className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" style={{ left: `${pct(dimensionData.market_median)}%` }} title={`Median: $${Math.round(dimensionData.market_median).toLocaleString()}`} />
+                        <div className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" style={{ left: `${pct(dimensionData.market_median)}%` }} />
                       </div>
                     );
                   })()}
@@ -201,6 +197,61 @@ export default function IntelligenceCard({
                     {dimensionData.market_75th && <span>75th</span>}
                   </div>
                 </div>
+
+                {/* Market Comparison from External Data (AI Estimate) */}
+                {enrichedSalaryData && (
+                  <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="flex-1 h-px bg-slate-200" />
+                      <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[9px] px-1.5 py-0.5" style={{ color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '6px' }}>⚠ AI ESTIMATE</span>
+                      <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.12em', color: isDark ? '#64748b' : '#A89E9A', textTransform: 'uppercase' }}>MARKET COMPARISON</p>
+                      <div className="flex-1 h-px bg-slate-200" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                      <div className="text-center p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Min</p>
+                        <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">${enrichedSalaryData.min != null ? (enrichedSalaryData.min >= 1000000 ? (enrichedSalaryData.min / 1000000).toFixed(1) + 'M' : enrichedSalaryData.min >= 1000 ? Math.round(enrichedSalaryData.min / 1000) + 'K' : enrichedSalaryData.min.toLocaleString()) : 'N/A'}</p>
+                      </div>
+                      <div className="text-center p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700">
+                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Median</p>
+                        <p className="text-sm font-bold text-emerald-900 dark:text-emerald-200">${enrichedSalaryData.median != null ? (enrichedSalaryData.median >= 1000000 ? (enrichedSalaryData.median / 1000000).toFixed(1) + 'M' : enrichedSalaryData.median >= 1000 ? Math.round(enrichedSalaryData.median / 1000) + 'K' : enrichedSalaryData.median.toLocaleString()) : 'N/A'}</p>
+                      </div>
+                      <div className="text-center p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Max</p>
+                        <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">${enrichedSalaryData.max != null ? (enrichedSalaryData.max >= 1000000 ? (enrichedSalaryData.max / 1000000).toFixed(1) + 'M' : enrichedSalaryData.max >= 1000 ? Math.round(enrichedSalaryData.max / 1000) + 'K' : enrichedSalaryData.max.toLocaleString()) : 'N/A'}</p>
+                      </div>
+                    </div>
+                    {/* Discrepancy insight */}
+                    {dimensionData.market_median && enrichedSalaryData.median && Math.abs(dimensionData.market_median - enrichedSalaryData.median) > 10000 && (
+                      <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                        <p className="text-xs text-blue-800 dark:text-blue-300">
+                          💡 BLS national data shows ${Math.round(dimensionData.market_median).toLocaleString()} median. Market estimate shows ${Math.round(enrichedSalaryData.median).toLocaleString()}. {enrichedSalaryData.median > dimensionData.market_median ? 'The gap likely reflects above-market total compensation including stock and bonuses at top-tier companies.' : 'The gap may reflect regional or industry-specific differences.'}
+                        </p>
+                      </div>
+                    )}
+                    {/* Trend chart data */}
+                    {enrichedSalaryData.trend_data?.length > 0 && (
+                      <div className="mt-3 p-3 rounded-xl bg-white/50 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50">
+                        <p className="text-[10px] text-slate-500 mb-2">6-Month Salary Trend</p>
+                        <div className="flex items-end gap-1 h-16">
+                          {enrichedSalaryData.trend_data.map((d, i) => {
+                            const vals = enrichedSalaryData.trend_data.map(t => t.value);
+                            const min = Math.min(...vals);
+                            const max = Math.max(...vals);
+                            const pctH = max > min ? ((d.value - min) / (max - min)) * 100 : 50;
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                                <div className="w-full bg-indigo-400 rounded-t" style={{ height: `${Math.max(8, pctH)}%` }} title={`$${d.value?.toLocaleString()}`} />
+                                <span className="text-[8px] text-slate-400 truncate w-full text-center">{d.period}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-[10px] mt-2" style={{ color: isDark ? '#64748b' : '#A89E9A' }}>Source: {enrichedSalaryData.source || 'AI Web Search'}</p>
+                  </div>
+                )}
               </div>
             )}
 
