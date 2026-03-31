@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import CompensationTiers from './CompensationTiers';
 import { DataTrustBadge, isVerifiedData, getCardBorderStyle } from './DataTrustBadge';
 import { useDarkMode } from '@/components/DarkModeContext';
+import { LiquidGlassOverlay } from '@/components/ui/LiquidGlassCard';
 
 export default function IntelligenceCard({ 
   title, 
@@ -43,7 +44,7 @@ export default function IntelligenceCard({
 
   return (
     <div 
-      className="transition-shadow h-full flex flex-col" 
+      className="transition-shadow h-full flex flex-col relative overflow-hidden" 
       style={{ 
         padding: '20px 22px', 
         background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)', 
@@ -55,6 +56,7 @@ export default function IntelligenceCard({
         borderRadius: '16px'
       }}
     >
+      <LiquidGlassOverlay intensity="subtle" />
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">

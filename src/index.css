@@ -392,3 +392,148 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ============================================
+   LIQUID GLASS CARD EFFECTS
+   Subtle glass morphism that blends with warm neumorphic design
+   ============================================ */
+
+.liquid-glass-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.liquid-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Reflection layer - subtle top highlight */
+.liquid-glass-reflection {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.35) 20%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.35) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Intensity: Subtle */
+.liquid-glass-subtle::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.04) 0%, 
+    transparent 40%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+}
+
+.liquid-glass-subtle:hover::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.06) 0%, 
+    transparent 40%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+}
+
+/* Intensity: Medium */
+.liquid-glass-medium::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%, 
+    transparent 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.03),
+    0 0 20px rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(0.5px);
+}
+
+/* Intensity: Strong */
+.liquid-glass-strong::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.12) 0%, 
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  box-shadow: 
+    inset 0 2px 2px rgba(255, 255, 255, 0.2),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.05),
+    0 0 30px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(1px);
+}
+
+/* Glow variants - subtle accent colors */
+.liquid-glass-glow-success::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.05);
+  pointer-events: none;
+}
+
+.liquid-glass-glow-warning::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.05);
+  pointer-events: none;
+}
+
+.liquid-glass-glow-info::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.05);
+  pointer-events: none;
+}
+
+/* Dark mode adjustments */
+.liquid-glass-dark::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.03) 0%, 
+    transparent 40%,
+    rgba(255, 255, 255, 0.015) 100%
+  );
+}
+
+.liquid-glass-dark .liquid-glass-reflection {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.1) 20%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.1) 80%,
+    transparent 100%
+  );
+}
+
+html.dark .liquid-glass-card::before {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.025) 0%, 
+    transparent 40%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+}
+
+html.dark .liquid-glass-reflection {
+  opacity: 0.5;
+}

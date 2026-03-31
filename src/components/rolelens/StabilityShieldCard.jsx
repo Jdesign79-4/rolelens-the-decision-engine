@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
 import { DataTrustBadge, isVerifiedData } from './DataTrustBadge';
 import { useDarkMode } from '@/components/DarkModeContext';
+import { LiquidGlassOverlay } from '@/components/ui/LiquidGlassCard';
 
 function normalizeScore(raw) {
   if (raw == null) return null;
@@ -56,9 +57,11 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
 
   const cardBg = isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F0EAE1 0%, #E8ECF2 100%)';
 
+  const glowType = isComplete ? (verified ? 'success' : 'warning') : 'neutral';
+
   return (
     <div
-      className="transition-shadow"
+      className="transition-shadow relative overflow-hidden"
       style={{
         padding: '20px 22px',
         background: cardBg,
@@ -68,6 +71,7 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
         borderRadius: '16px'
       }}
     >
+      <LiquidGlassOverlay intensity="subtle" />
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">

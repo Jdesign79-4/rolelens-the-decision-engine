@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp } from 'lucide-react';
 import { DataTrustBadge, isVerifiedData } from './DataTrustBadge';
 import { useDarkMode } from '@/components/DarkModeContext';
+import { LiquidGlassOverlay } from '@/components/ui/LiquidGlassCard';
 
 function normalizeScore(raw) {
   if (raw == null) return null;
@@ -45,7 +46,7 @@ export default function GrowthTimingCard({ careerData, timingData, status }) {
 
   return (
     <div
-      className="transition-shadow h-full flex flex-col"
+      className="transition-shadow h-full flex flex-col relative overflow-hidden"
       style={{
         padding: '20px 22px',
         background: cardBg,
@@ -55,6 +56,7 @@ export default function GrowthTimingCard({ careerData, timingData, status }) {
         borderRadius: '16px'
       }}
     >
+      <LiquidGlassOverlay intensity="subtle" />
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
