@@ -32,9 +32,10 @@ import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
-import StabilityShieldCard from '@/components/rolelens/StabilityShieldCard';
 import CollapsibleMobileCard from '@/components/rolelens/CollapsibleMobileCard';
 import PartialDataNotification from '@/components/rolelens/PartialDataNotification';
+import StabilityShieldCard from '@/components/rolelens/StabilityShieldCard';
+import GrowthTimingCard from '@/components/rolelens/GrowthTimingCard';
 import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb, SlidersHorizontal, X } from 'lucide-react';
 
 const DEFAULT_CATEGORIES = [
@@ -1252,61 +1253,69 @@ function RoleLensContent() {
             )}
 
             {/* Intelligence Cards Grid */}
-            <div className="space-y-[14px] mb-6">
-              {/* Stability Shield — full width merged card */}
+            <div className="grid grid-cols-1 gap-[14px] mb-6">
+              {/* Stability Shield — full width */}
               <CollapsibleMobileCard
                 title="Stability Shield"
                 icon={Shield}
                 score={(() => {
-                  const dims = currentJob?.dimensions || currentJob?.job_seeker_intelligence?.dimensions;
-                  if (!dims) return null;
-                  const ns = (r) => r == null ? null : (r > 0 && r <= 10 ? Math.round(r * 10) : Math.round(r));
-                  const js = ns(dims.job_security?.score);
-                  const ra = ns(dims.risk_assessment?.score);
-                  const ms = ns(dims.market_sentiment?.score);
-                  const parts = [];
-                  if (js != null) parts.push({ s: js, w: 0.4 });
-                  if (ra != null) parts.push({ s: ra, w: 0.35 });
-                  if (ms != null) parts.push({ s: ms, w: 0.25 });
-                  if (!parts.length) return null;
-                  const tw = parts.reduce((a, p) => a + p.w, 0);
-                  return Math.round(parts.reduce((a, p) => a + p.s * (p.w / tw), 0));
+                  const js = currentJob?.dimensions?.job_security || currentJob?.job_seeker_intelligence?.dimensions?.job_security;
+                  const ra = currentJob?.dimensions?.risk_assessment || currentJob?.job_seeker_intelligence?.dimensions?.risk_assessment;
+                  const ms = currentJob?.dimensions?.market_sentiment || currentJob?.job_seeker_intelligence?.dimensions?.market_sentiment;
+                  const n = (r) => { if (r == null) return null; if (r > 0 && r <= 10) return Math.round(r * 10); return Math.round(r); };
+                  const s1 = n(js?.score), s2 = n(ra?.score), s3 = n(ms?.score);
+                  let tw = 0, ws = 0;
+                  if (s1 != null) { ws += s1 * 0.4; tw += 0.4; }
+                  if (s2 != null) { ws += s2 * 0.35; tw += 0.35; }
+                  if (s3 != null) { ws += s3 * 0.25; tw += 0.25; }
+                  return tw > 0 ? Math.round(ws / tw) : null;
                 })()}
               >
                 <StabilityShieldCard
-                  jobSecurity={currentJob?.dimensions?.job_security || currentJob?.job_seeker_intelligence?.dimensions?.job_security}
-                  riskAssessment={currentJob?.dimensions?.risk_assessment || currentJob?.job_seeker_intelligence?.dimensions?.risk_assessment}
-                  marketSentiment={currentJob?.dimensions?.market_sentiment || currentJob?.job_seeker_intelligence?.dimensions?.market_sentiment}
+                  jobSecurityData={currentJob?.dimensions?.job_security || currentJob?.job_seeker_intelligence?.dimensions?.job_security}
+                  riskData={currentJob?.dimensions?.risk_assessment || currentJob?.job_seeker_intelligence?.dimensions?.risk_assessment}
+                  sentimentData={currentJob?.dimensions?.market_sentiment || currentJob?.job_seeker_intelligence?.dimensions?.market_sentiment}
                   status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
                 />
               </CollapsibleMobileCard>
 
-              {/* Remaining cards in 2-col grid */}
+              {/* Compensation + Growth & Timing — side by side */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px]">
-                {[
-                  { key: 'compensation', title: 'Compensation', icon: DollarSign },
-                  { key: 'career_growth', title: 'Career Growth', icon: TrendingUp },
-                  { key: 'timing', title: 'Timing', icon: Clock }
-                ].map((card) => {
-                  const dimData = currentJob?.dimensions?.[card.key] || currentJob?.job_seeker_intelligence?.dimensions?.[card.key];
-                  const rawScore = dimData?.score;
-                  const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
-                  return (
-                    <CollapsibleMobileCard
-                      key={card.key}
-                      title={card.title}
-                      icon={card.icon}
-                      score={normalizedScore}
-                    >
-                      <IntelligenceCard
-                        title={card.title}
-                        icon={card.icon}
-                        status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
-                        dimensionData={dimData}
-                      />
-                    </CollapsibleMobileCard>
-                  );
-                })}
+                <CollapsibleMobileCard
+                  title="Compensation"
+                  icon={DollarSign}
+                  score={(() => {
+                    const d = currentJob?.dimensions?.compensation || currentJob?.job_seeker_intelligence?.dimensions?.compensation;
+                    const r = d?.score;
+                    return r != null ? (r > 0 && r <= 10 ? Math.round(r * 10) : Math.round(r)) : null;
+                  })()}
+                >
+                  <IntelligenceCard
+                    title="Compensation"
+                    icon={DollarSign}
+                    status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
+                    dimensionData={currentJob?.dimensions?.compensation || currentJob?.job_seeker_intelligence?.dimensions?.compensation}
+                  />
+                </CollapsibleMobileCard>
+
+                <CollapsibleMobileCard
+                  title="Growth & Timing"
+                  icon={TrendingUp}
+                  score={(() => {
+                    const cg = currentJob?.dimensions?.career_growth || currentJob?.job_seeker_intelligence?.dimensions?.career_growth;
+                    const tm = currentJob?.dimensions?.timing || currentJob?.job_seeker_intelligence?.dimensions?.timing;
+                    const n = (r) => { if (r == null) return null; if (r > 0 && r <= 10) return Math.round(r * 10); return Math.round(r); };
+                    const s1 = n(cg?.score), s2 = n(tm?.score);
+                    if (s1 != null && s2 != null) return Math.round((s1 + s2) / 2);
+                    return s1 ?? s2;
+                  })()}
+                >
+                  <GrowthTimingCard
+                    careerGrowthData={currentJob?.dimensions?.career_growth || currentJob?.job_seeker_intelligence?.dimensions?.career_growth}
+                    timingData={currentJob?.dimensions?.timing || currentJob?.job_seeker_intelligence?.dimensions?.timing}
+                    status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
+                  />
+                </CollapsibleMobileCard>
               </div>
             </div>
 
