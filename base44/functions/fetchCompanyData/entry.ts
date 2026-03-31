@@ -77,6 +77,94 @@ async function fetchYahooHistory(ticker) {
   }
 }
 
+// Google Finance fallback for current price data when Yahoo fails
+async function fetchGoogleFinance(ticker) {
+  const exchanges = ['NASDAQ', 'NYSE'];
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Accept': 'text/html'
+  };
+
+  for (const exchange of exchanges) {
+    try {
+      const url = `https://www.google.com/finance/quote/${encodeURIComponent(ticker)}:${exchange}`;
+      const res = await fetch(url, { headers });
+      if (!res.ok) continue;
+      const html = await res.text();
+
+      // Check if page has valid data (Google returns 200 even for invalid tickers)
+      if (html.includes('We couldn') || html.includes('not found')) continue;
+
+      const extract = (pattern) => {
+        const m = html.match(pattern);
+        return m ? m[1] : null;
+      };
+
+      // Current price — Google embeds it in data-last-price attribute or in specific divs
+      let currentPrice = null;
+      const priceAttr = extract(/data-last-price="([\d.]+)"/);
+      if (priceAttr) currentPrice = parseFloat(priceAttr);
+
+      // If no data-last-price, try the prominent price display
+      if (!currentPrice) {
+        const priceFallback = extract(/class="YMlKec fxKbKc">\$([\d,.]+)</);
+        if (priceFallback) currentPrice = parseFloat(priceFallback.replace(/,/g, ''));
+      }
+
+      // No price found = page didn't have valid data for this exchange
+      if (!currentPrice) continue;
+
+      // Price change percent
+      let changePercent = null;
+      const changePctMatch = extract(/data-last-normal-market-change-percent="([\-\d.]+)"/);
+      if (changePctMatch) changePercent = parseFloat(changePctMatch);
+
+      // 52-week high/low — look for "52-week" section
+      let week52High = null;
+      let week52Low = null;
+      const rangeMatch = html.match(/52[\s-]*week range[\s\S]{0,300}?([\d,.]+)\s*[-–—]\s*([\d,.]+)/i);
+      if (rangeMatch) {
+        week52Low = parseFloat(rangeMatch[1].replace(/,/g, ''));
+        week52High = parseFloat(rangeMatch[2].replace(/,/g, ''));
+      }
+      // Also try data attributes
+      if (!week52High) {
+        const h = extract(/data-52-week-high="([\d.]+)"/);
+        if (h) week52High = parseFloat(h);
+      }
+      if (!week52Low) {
+        const l = extract(/data-52-week-low="([\d.]+)"/);
+        if (l) week52Low = parseFloat(l);
+      }
+
+      // Market cap
+      let marketCapStr = null;
+      const mcMatch = html.match(/Market cap[\s\S]{0,200}?([\d,.]+[BMTK])/i);
+      if (mcMatch) marketCapStr = mcMatch[1];
+
+      // P/E ratio
+      let peRatio = null;
+      const peMatch = html.match(/P\/E ratio[\s\S]{0,200}?([\d,.]+)/i);
+      if (peMatch) peRatio = parseFloat(peMatch[1].replace(/,/g, ''));
+
+      console.log(`Google Finance (${exchange}) succeeded for ${ticker}: price=${currentPrice}`);
+
+      return {
+        current_price: currentPrice,
+        price_change_percent: changePercent,
+        week_52_high: week52High,
+        week_52_low: week52Low,
+        market_cap_str: marketCapStr,
+        pe_ratio: peRatio
+      };
+    } catch (err) {
+      console.warn(`Google Finance ${exchange} failed for ${ticker}:`, err.message);
+      continue;
+    }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -378,15 +466,24 @@ Deno.serve(async (req) => {
     if(risk_assessment.sources.length === 0) risk_assessment.sources.push("Finnhub (Financials)");
 
     // BUILD stock_data & fundamentals — Yahoo Finance with retry
-    const price_history = await fetchWithRetry(async () => {
+    let price_history = await fetchWithRetry(async () => {
       const hist = await fetchYahooHistory(ticker);
       if (!hist || hist.length === 0) throw new Error('Yahoo returned no data');
       return hist;
     }) || [];
-    // Only include yahoo_finance in status if it succeeded — it's nice-to-have, not essential
-    if (price_history.length > 0) {
+
+    // Google Finance fallback if Yahoo failed
+    let googleData = null;
+    if (price_history.length === 0) {
+      console.log(`Yahoo Finance failed for ${ticker}, trying Google Finance fallback...`);
+      googleData = await fetchGoogleFinance(ticker);
+    }
+
+    // Update data_sources_status based on what succeeded
+    if (price_history.length > 0 || googleData) {
       data_sources_status.yahoo_finance = 'success';
     }
+    // If both failed, omit yahoo_finance from status entirely (nice-to-have)
     
     // Compute year_change_percent: prefer FMP, fallback to Yahoo price history
     let yearChangePct = fmpPriceChange?.["1Y"] || null;
@@ -400,13 +497,13 @@ Deno.serve(async (req) => {
     }
 
     const stock_data = {
-      current_price: fmpProfile?.price || (price_history.length > 0 ? price_history[price_history.length - 1]?.price : null),
-      price_change_percent: fmpPriceChange?.["1D"] || null,
+      current_price: fmpProfile?.price || googleData?.current_price || (price_history.length > 0 ? price_history[price_history.length - 1]?.price : null),
+      price_change_percent: fmpPriceChange?.["1D"] || googleData?.price_change_percent || null,
       year_change_percent: yearChangePct,
-      week_52_high: fhMetric?.metric?.["52WeekHigh"] || null,
-      week_52_low: fhMetric?.metric?.["52WeekLow"] || null,
-      market_cap: marketCap ? `$${(marketCap / 1e9).toFixed(2)}B` : "N/A",
-      pe_ratio: fhMetric?.metric?.peNormalizedAnnual || null,
+      week_52_high: fhMetric?.metric?.["52WeekHigh"] || googleData?.week_52_high || null,
+      week_52_low: fhMetric?.metric?.["52WeekLow"] || googleData?.week_52_low || null,
+      market_cap: marketCap ? `$${(marketCap / 1e9).toFixed(2)}B` : (googleData?.market_cap_str ? `$${googleData.market_cap_str}` : "N/A"),
+      pe_ratio: fhMetric?.metric?.peNormalizedAnnual || googleData?.pe_ratio || null,
       volume: null,
       price_history
     };
