@@ -60,34 +60,36 @@ export default function LiquidGlassCard({
  */
 export function LiquidGlassOverlay({ intensity = 'subtle' }) {
   const config = {
-    subtle: { gradient: 0.08, highlight: 0.5, blur: '0.5px' },
-    medium: { gradient: 0.12, highlight: 0.6, blur: '1px' },
-    strong: { gradient: 0.18, highlight: 0.7, blur: '1.5px' }
+    subtle: { gradient: 0.15, highlight: 0.8, glow: 0.12 },
+    medium: { gradient: 0.22, highlight: 0.9, glow: 0.18 },
+    strong: { gradient: 0.30, highlight: 1, glow: 0.25 }
   };
-  const { gradient, highlight, blur } = config[intensity] || config.subtle;
+  const { gradient, highlight, glow } = config[intensity] || config.subtle;
 
   return (
     <>
-      {/* Subtle gradient overlay */}
+      {/* Gradient overlay - top-left bright corner */}
       <div 
-        className="absolute inset-0 rounded-[inherit] pointer-events-none z-0"
+        className="absolute inset-0 rounded-[inherit] pointer-events-none"
         style={{
-          background: `linear-gradient(135deg, rgba(255,255,255,${gradient}) 0%, transparent 40%, rgba(255,255,255,${gradient * 0.4}) 100%)`,
-          backdropFilter: `blur(${blur})`,
+          background: `linear-gradient(135deg, rgba(255,255,255,${gradient}) 0%, rgba(255,255,255,${gradient * 0.3}) 30%, transparent 60%)`,
+          zIndex: 1
         }}
       />
-      {/* Top highlight line - the "glass edge" */}
+      {/* Top edge highlight - prominent "glass shine" */}
       <div 
-        className="absolute top-0 left-[8%] right-[8%] h-[1px] pointer-events-none z-[1]"
+        className="absolute top-0 left-[5%] right-[5%] h-[2px] pointer-events-none"
         style={{
-          background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,${highlight}) 30%, rgba(255,255,255,${highlight * 1.2}) 50%, rgba(255,255,255,${highlight}) 70%, transparent 100%)`
+          background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,${highlight}) 25%, rgba(255,255,255,1) 50%, rgba(255,255,255,${highlight}) 75%, transparent 100%)`,
+          zIndex: 2
         }}
       />
-      {/* Inner soft glow */}
+      {/* Inner edge glow */}
       <div 
-        className="absolute inset-[1px] rounded-[inherit] pointer-events-none z-0"
+        className="absolute inset-0 rounded-[inherit] pointer-events-none"
         style={{
-          boxShadow: `inset 0 1px 2px rgba(255,255,255,${highlight * 0.4}), inset 0 -1px 1px rgba(0,0,0,0.03)`
+          boxShadow: `inset 0 2px 4px rgba(255,255,255,${glow}), inset 0 0 20px rgba(255,255,255,${glow * 0.5})`,
+          zIndex: 1
         }}
       />
     </>
