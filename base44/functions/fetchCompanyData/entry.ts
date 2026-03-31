@@ -51,7 +51,9 @@ async function fetchWithRetry(fn, retries = 2, delayMs = 1000) {
 // Keep Yahoo Finance for price history because charts need it
 async function fetchYahooHistory(ticker) {
   try {
-    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1mo&range=1y`);
+    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1mo&range=1y`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
     if (!res.ok) return [];
     const data = await res.json();
     const chartResult = data?.chart?.result?.[0];
@@ -381,7 +383,10 @@ Deno.serve(async (req) => {
       if (!hist || hist.length === 0) throw new Error('Yahoo returned no data');
       return hist;
     }) || [];
-    data_sources_status.yahoo_finance = price_history.length > 0 ? 'success' : 'failed';
+    // Only include yahoo_finance in status if it succeeded — it's nice-to-have, not essential
+    if (price_history.length > 0) {
+      data_sources_status.yahoo_finance = 'success';
+    }
     
     // Compute year_change_percent: prefer FMP, fallback to Yahoo price history
     let yearChangePct = fmpPriceChange?.["1Y"] || null;
