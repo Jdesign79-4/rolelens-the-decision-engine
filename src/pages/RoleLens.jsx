@@ -25,7 +25,7 @@ import InterviewPrepGenerator from '@/components/rolelens/InterviewPrepGenerator
 import ApplicationStrategyPlanner from '@/components/rolelens/ApplicationStrategyPlanner';
 import SalaryNegotiationPlanner from '@/components/rolelens/SalaryNegotiationPlanner';
 import MockInterviewModal from '@/components/rolelens/mock-interview/MockInterviewModal';
-import JobFeedback from '@/components/rolelens/JobFeedback';
+
 import ExternalDataAggregator from '@/components/rolelens/ExternalDataAggregator';
 import PublicCompanyIntelligence from '@/components/application-tracker/PublicCompanyIntelligence';
 import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
@@ -1375,21 +1375,6 @@ function RoleLensContent() {
                   ))}
                 </div>
               </motion.div>
-            )}
-
-            {/* Job Feedback Widget */}
-            {currentJob && (
-              <div className="mt-6">
-                <JobFeedback 
-                  job={currentJob} 
-                  tunerSettings={tunerSettings}
-                  onFeedbackSubmitted={() => {
-                    // Force re-render of alternatives to show updated matches
-                    setIsConnecting(true);
-                    setTimeout(() => setIsConnecting(false), 400);
-                  }}
-                />
-              </div>
             )}
 
             {/* AI Collaboration Opportunity Widget */}
