@@ -301,7 +301,7 @@ CRITICAL: Include direct URLs to each source used.`,
               </div>
             )}
 
-            {/* Funding Data */
+            {/* Funding Data */}
             {enrichedData.funding_data && (
               <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
