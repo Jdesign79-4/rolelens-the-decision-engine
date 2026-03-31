@@ -50,19 +50,49 @@ export default function PublicCompanyIntelligence({ companyName, onDataLoaded })
         const isStale = age > 86400000; // 24 hours
 
         if (!isStale) {
+          // Fresh but missing stock_data — await refresh
+          if (existing[0].is_public && !existing[0].stock_data) {
+            await triggerLiveRefresh(existing[0]);
+            const refreshed = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+            const refreshedMatch = findMatchingCompany(companyName, refreshed);
+            if (refreshedMatch) {
+              if (onDataLoaded) onDataLoaded(refreshedMatch);
+              return refreshedMatch;
+            }
+          }
           if (onDataLoaded) onDataLoaded(existing[0]);
           return existing[0];
         }
 
-        // Data exists but is stale — return cached immediately, refresh in background
-        triggerLiveRefresh(existing[0]);
+        // Data exists but is stale
+        if (existing[0].is_public && !existing[0].stock_data) {
+          await triggerLiveRefresh(existing[0]);
+          const refreshed = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+          const refreshedMatch = findMatchingCompany(companyName, refreshed);
+          if (refreshedMatch) {
+            if (onDataLoaded) onDataLoaded(refreshedMatch);
+            return refreshedMatch;
+          }
+        } else {
+          triggerLiveRefresh(existing[0]);
+        }
         if (onDataLoaded) onDataLoaded(existing[0]);
         return existing[0];
       }
 
-      // Data exists but no last_updated — trigger background refresh
+      // Data exists but no last_updated
       if (existing.length > 0) {
-        triggerLiveRefresh(existing[0]);
+        if (existing[0].is_public && !existing[0].stock_data) {
+          await triggerLiveRefresh(existing[0]);
+          const refreshed = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+          const refreshedMatch = findMatchingCompany(companyName, refreshed);
+          if (refreshedMatch) {
+            if (onDataLoaded) onDataLoaded(refreshedMatch);
+            return refreshedMatch;
+          }
+        } else {
+          triggerLiveRefresh(existing[0]);
+        }
         if (onDataLoaded) onDataLoaded(existing[0]);
         return existing[0];
       }
@@ -130,9 +160,15 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, job_se
         savedRecord = await base44.entities.PublicCompanyData.create(dataToSave);
       }
 
-      // If public, immediately fetch live Yahoo Finance data in background
+      // If public, await live data fetch so stock_data is available on first load
       if (result.is_public && (result.ticker_symbol || result.parent_ticker)) {
-        triggerLiveRefresh(savedRecord);
+        await triggerLiveRefresh(savedRecord);
+        const refreshedRecords = await base44.entities.PublicCompanyData.list('-updated_date', 100);
+        const refreshedMatch = findMatchingCompany(companyName, refreshedRecords);
+        if (refreshedMatch) {
+          if (onDataLoaded) onDataLoaded(refreshedMatch);
+          return refreshedMatch;
+        }
       }
 
       if (onDataLoaded) onDataLoaded(savedRecord);
