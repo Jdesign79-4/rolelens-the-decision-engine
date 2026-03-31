@@ -32,6 +32,7 @@ import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
+import StabilityShieldCard from '@/components/rolelens/StabilityShieldCard';
 import CollapsibleMobileCard from '@/components/rolelens/CollapsibleMobileCard';
 import PartialDataNotification from '@/components/rolelens/PartialDataNotification';
 import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb, SlidersHorizontal, X } from 'lucide-react';
@@ -1251,34 +1252,62 @@ function RoleLensContent() {
             )}
 
             {/* Intelligence Cards Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px] mb-6">
-              {[
-                { key: 'job_security', title: 'Job Security', icon: Shield },
-                { key: 'compensation', title: 'Compensation', icon: DollarSign },
-                { key: 'market_sentiment', title: 'Market Sentiment', icon: TrendingUp },
-                { key: 'career_growth', title: 'Career Growth', icon: TrendingUp },
-                { key: 'risk_assessment', title: 'Risk Assessment', icon: AlertTriangle },
-                { key: 'timing', title: 'Timing', icon: Clock }
-              ].map((card, idx) => {
-                const dimData = currentJob?.dimensions?.[card.key] || currentJob?.job_seeker_intelligence?.dimensions?.[card.key];
-                const rawScore = dimData?.score;
-                const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
-                return (
-                  <CollapsibleMobileCard
-                    key={card.key}
-                    title={card.title}
-                    icon={card.icon}
-                    score={normalizedScore}
-                  >
-                    <IntelligenceCard
+            <div className="space-y-[14px] mb-6">
+              {/* Stability Shield — full width merged card */}
+              <CollapsibleMobileCard
+                title="Stability Shield"
+                icon={Shield}
+                score={(() => {
+                  const dims = currentJob?.dimensions || currentJob?.job_seeker_intelligence?.dimensions;
+                  if (!dims) return null;
+                  const ns = (r) => r == null ? null : (r > 0 && r <= 10 ? Math.round(r * 10) : Math.round(r));
+                  const js = ns(dims.job_security?.score);
+                  const ra = ns(dims.risk_assessment?.score);
+                  const ms = ns(dims.market_sentiment?.score);
+                  const parts = [];
+                  if (js != null) parts.push({ s: js, w: 0.4 });
+                  if (ra != null) parts.push({ s: ra, w: 0.35 });
+                  if (ms != null) parts.push({ s: ms, w: 0.25 });
+                  if (!parts.length) return null;
+                  const tw = parts.reduce((a, p) => a + p.w, 0);
+                  return Math.round(parts.reduce((a, p) => a + p.s * (p.w / tw), 0));
+                })()}
+              >
+                <StabilityShieldCard
+                  jobSecurity={currentJob?.dimensions?.job_security || currentJob?.job_seeker_intelligence?.dimensions?.job_security}
+                  riskAssessment={currentJob?.dimensions?.risk_assessment || currentJob?.job_seeker_intelligence?.dimensions?.risk_assessment}
+                  marketSentiment={currentJob?.dimensions?.market_sentiment || currentJob?.job_seeker_intelligence?.dimensions?.market_sentiment}
+                  status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
+                />
+              </CollapsibleMobileCard>
+
+              {/* Remaining cards in 2-col grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-[14px]">
+                {[
+                  { key: 'compensation', title: 'Compensation', icon: DollarSign },
+                  { key: 'career_growth', title: 'Career Growth', icon: TrendingUp },
+                  { key: 'timing', title: 'Timing', icon: Clock }
+                ].map((card) => {
+                  const dimData = currentJob?.dimensions?.[card.key] || currentJob?.job_seeker_intelligence?.dimensions?.[card.key];
+                  const rawScore = dimData?.score;
+                  const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
+                  return (
+                    <CollapsibleMobileCard
+                      key={card.key}
                       title={card.title}
                       icon={card.icon}
-                      status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
-                      dimensionData={dimData}
-                    />
-                  </CollapsibleMobileCard>
-                );
-              })}
+                      score={normalizedScore}
+                    >
+                      <IntelligenceCard
+                        title={card.title}
+                        icon={card.icon}
+                        status={isSearching ? 'loading' : currentJob ? (currentJob.analysis_status || 'complete') : 'pending'}
+                        dimensionData={dimData}
+                      />
+                    </CollapsibleMobileCard>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Alternatives */}
