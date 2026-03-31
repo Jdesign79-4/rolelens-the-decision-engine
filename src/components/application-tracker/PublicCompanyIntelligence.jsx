@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { TrendingUp, TrendingDown, RefreshCw, Building2, AlertTriangle, CheckCircle2, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { formatDistanceToNow } from 'date-fns';
 import JobSeekerIntelligenceReport from './JobSeekerIntelligenceReport';
 import { findMatchingCompany } from '@/lib/companyUtils';
@@ -403,82 +403,6 @@ Provide: is_public, ticker_symbol, parent_company, parent_ticker, sector, job_se
           )}
         </div>
       )}
-
-      {/* Stock Performance */}
-      <ExpandableSection title="Stock Performance" isExpanded={expandedSections.includes('stock')} onToggle={() => toggleSection('stock')}>
-        {companyData.stock_data?.price_history?.length > 0 ? (
-          <div className="mb-4">
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={companyData.stock_data.price_history}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="price" stroke="#6366f1" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : companyData.stock_data?.current_price ? (
-          <div className="mb-4 p-4 bg-gradient-to-br from-indigo-50 to-slate-50 rounded-xl border border-indigo-100">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-indigo-100">
-                <TrendingUp className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-800">Stock Summary</p>
-                <p className="text-xs text-slate-500">Chart data unavailable — showing available metrics</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-white rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-500">Current Price</p>
-                <p className="text-xl font-bold text-slate-800">${typeof companyData.stock_data.current_price === 'number' ? companyData.stock_data.current_price.toFixed(2) : companyData.stock_data.current_price}</p>
-              </div>
-              {companyData.stock_data.year_change_percent != null && (
-                <div className="p-3 bg-white rounded-lg border border-slate-200">
-                  <p className="text-xs text-slate-500">1-Year Change</p>
-                  <p className={`text-xl font-bold ${companyData.stock_data.year_change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                    {companyData.stock_data.year_change_percent >= 0 ? '+' : ''}{companyData.stock_data.year_change_percent.toFixed(1)}%
-                  </p>
-                </div>
-              )}
-              {companyData.stock_data.price_change_percent != null && (
-                <div className="p-3 bg-white rounded-lg border border-slate-200">
-                  <p className="text-xs text-slate-500">Today's Change</p>
-                  <p className={`text-xl font-bold ${companyData.stock_data.price_change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                    {companyData.stock_data.price_change_percent >= 0 ? '+' : ''}{companyData.stock_data.price_change_percent.toFixed(2)}%
-                  </p>
-                </div>
-              )}
-              {companyData.stock_data.market_cap && companyData.stock_data.market_cap !== 'N/A' && (
-                <div className="p-3 bg-white rounded-lg border border-slate-200">
-                  <p className="text-xs text-slate-500">Market Cap</p>
-                  <p className="text-xl font-bold text-slate-800">{companyData.stock_data.market_cap}</p>
-                </div>
-              )}
-            </div>
-            {companyData.analyst_data?.consensus_rating && (
-              <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200 flex items-center gap-2">
-                <span className="text-xs text-slate-500">Analyst Consensus:</span>
-                <span className={`text-sm font-bold ${companyData.analyst_data.consensus_rating === 'Buy' ? 'text-emerald-600' : companyData.analyst_data.consensus_rating === 'Sell' ? 'text-red-600' : 'text-amber-600'}`}>
-                  {companyData.analyst_data.consensus_rating}
-                </span>
-                {companyData.analyst_data.analyst_count && (
-                  <span className="text-xs text-slate-400">({companyData.analyst_data.analyst_count} analysts)</span>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="mb-4 p-4 bg-slate-50 rounded-lg text-center text-sm text-slate-500">No stock data available for this company</div>
-        )}
-        <div className="grid grid-cols-2 gap-4">
-          <MetricCard label="52-Week High" value={companyData.stock_data?.week_52_high ? `$${Number(companyData.stock_data.week_52_high).toFixed(2)}` : (companyData.stock_data?.current_price ? `~$${Number(companyData.stock_data.current_price).toFixed(2)} (current)` : null)} />
-          <MetricCard label="52-Week Low" value={companyData.stock_data?.week_52_low ? `$${Number(companyData.stock_data.week_52_low).toFixed(2)}` : (companyData.stock_data?.current_price ? 'Not available' : null)} />
-          <MetricCard label="P/E Ratio" value={companyData.stock_data?.pe_ratio ? Number(companyData.stock_data.pe_ratio).toFixed(2) : (companyData.stock_data?.current_price ? 'Not in API tier' : null)} />
-          <MetricCard label="Market Cap" value={companyData.stock_data?.market_cap && companyData.stock_data.market_cap !== 'N/A' ? companyData.stock_data.market_cap : null} />
-        </div>
-      </ExpandableSection>
 
       {/* News & Sentiment */}
       <ExpandableSection title="Recent News & Sentiment" isExpanded={expandedSections.includes('news')} onToggle={() => toggleSection('news')}>
