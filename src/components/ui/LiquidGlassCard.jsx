@@ -59,25 +59,35 @@ export default function LiquidGlassCard({
  * Inline wrapper for existing cards - applies glass overlay without restructuring
  */
 export function LiquidGlassOverlay({ intensity = 'subtle' }) {
-  const opacityMap = {
-    subtle: 0.03,
-    medium: 0.06,
-    strong: 0.10
+  const config = {
+    subtle: { gradient: 0.08, highlight: 0.5, blur: '0.5px' },
+    medium: { gradient: 0.12, highlight: 0.6, blur: '1px' },
+    strong: { gradient: 0.18, highlight: 0.7, blur: '1.5px' }
   };
+  const { gradient, highlight, blur } = config[intensity] || config.subtle;
 
   return (
     <>
+      {/* Subtle gradient overlay */}
       <div 
-        className="absolute inset-0 rounded-[inherit] pointer-events-none z-0 overflow-hidden"
+        className="absolute inset-0 rounded-[inherit] pointer-events-none z-0"
         style={{
-          background: `linear-gradient(135deg, rgba(255,255,255,${opacityMap[intensity]}) 0%, transparent 50%, rgba(255,255,255,${opacityMap[intensity] * 0.5}) 100%)`,
-          backdropFilter: 'blur(0.5px)',
+          background: `linear-gradient(135deg, rgba(255,255,255,${gradient}) 0%, transparent 40%, rgba(255,255,255,${gradient * 0.4}) 100%)`,
+          backdropFilter: `blur(${blur})`,
         }}
       />
+      {/* Top highlight line - the "glass edge" */}
       <div 
-        className="absolute top-0 left-0 right-0 h-px rounded-t-[inherit] pointer-events-none z-0"
+        className="absolute top-0 left-[8%] right-[8%] h-[1px] pointer-events-none z-[1]"
         style={{
-          background: 'linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.4) 50%, transparent 90%)'
+          background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,${highlight}) 30%, rgba(255,255,255,${highlight * 1.2}) 50%, rgba(255,255,255,${highlight}) 70%, transparent 100%)`
+        }}
+      />
+      {/* Inner soft glow */}
+      <div 
+        className="absolute inset-[1px] rounded-[inherit] pointer-events-none z-0"
+        style={{
+          boxShadow: `inset 0 1px 2px rgba(255,255,255,${highlight * 0.4}), inset 0 -1px 1px rgba(0,0,0,0.03)`
         }}
       />
     </>
