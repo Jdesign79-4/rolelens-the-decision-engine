@@ -303,6 +303,25 @@ function buildBlsSeriesIds(socCode) {
   };
 }
 
+// Decrypt helper for encrypted API keys
+function decryptKey(cipherText) {
+  if (!cipherText) return '';
+  const SECRET = Deno.env.get("BASE44_APP_ID") || "rolelens-default-key-2024";
+  try {
+    const decoded = Uint8Array.from(atob(cipherText), c => c.charCodeAt(0));
+    const keyBytes = new TextEncoder().encode(SECRET);
+    const result = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i++) {
+      result[i] = decoded[i] ^ keyBytes[i % keyBytes.length];
+    }
+    const plain = new TextDecoder().decode(result);
+    if (/^[a-zA-Z0-9_\-]+$/.test(plain)) return plain;
+    return cipherText;
+  } catch {
+    return cipherText;
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -312,13 +331,13 @@ Deno.serve(async (req) => {
     const records = await base44.asServiceRole.entities.UserApiKeys.filter({ created_by: user.email });
     const dbKeys = records.length > 0 ? records[0] : {};
     const env = {
-        ALPHA_VANTAGE_API_KEY: dbKeys.alpha_vantage_api_key || Deno.env.get("ALPHA_VANTAGE_API_KEY"),
-        FINNHUB_API_KEY: dbKeys.finnhub_api_key || Deno.env.get("FINNHUB_API_KEY"),
-        CAREER_ONE_STOP_USER_ID: dbKeys.career_one_stop_user_id || Deno.env.get("CAREER_ONE_STOP_USER_ID"),
-        CAREER_ONE_STOP_API_KEY: dbKeys.career_one_stop_api_key || Deno.env.get("CAREER_ONE_STOP_API_KEY"),
-        ONET_API_KEY: dbKeys.onet_api_key || Deno.env.get("ONET_API_KEY"),
-        BLS_API_KEY: dbKeys.bls_api_key || Deno.env.get("BLS_API_KEY"),
-        FRED_API_KEY: dbKeys.fred_api_key || Deno.env.get("FRED_API_KEY")
+        ALPHA_VANTAGE_API_KEY: decryptKey(dbKeys.alpha_vantage_api_key) || Deno.env.get("ALPHA_VANTAGE_API_KEY"),
+        FINNHUB_API_KEY: decryptKey(dbKeys.finnhub_api_key) || Deno.env.get("FINNHUB_API_KEY"),
+        CAREER_ONE_STOP_USER_ID: decryptKey(dbKeys.career_one_stop_user_id) || Deno.env.get("CAREER_ONE_STOP_USER_ID"),
+        CAREER_ONE_STOP_API_KEY: decryptKey(dbKeys.career_one_stop_api_key) || Deno.env.get("CAREER_ONE_STOP_API_KEY"),
+        ONET_API_KEY: decryptKey(dbKeys.onet_api_key) || Deno.env.get("ONET_API_KEY"),
+        BLS_API_KEY: decryptKey(dbKeys.bls_api_key) || Deno.env.get("BLS_API_KEY"),
+        FRED_API_KEY: decryptKey(dbKeys.fred_api_key) || Deno.env.get("FRED_API_KEY")
     };
 
     const { company_name, ticker_symbol, job_title, location, salary_low, salary_high, company_health, stock_data, analyst_data, opportunity_flags } = await req.json();

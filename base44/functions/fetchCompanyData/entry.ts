@@ -165,18 +165,39 @@ async function fetchGoogleFinance(ticker) {
   return null;
 }
 
+// Decrypt helper for encrypted API keys
+function decryptKey(cipherText) {
+  if (!cipherText) return '';
+  const SECRET = Deno.env.get("BASE44_APP_ID") || "rolelens-default-key-2024";
+  try {
+    const decoded = Uint8Array.from(atob(cipherText), c => c.charCodeAt(0));
+    const keyBytes = new TextEncoder().encode(SECRET);
+    const result = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i++) {
+      result[i] = decoded[i] ^ keyBytes[i % keyBytes.length];
+    }
+    const plain = new TextDecoder().decode(result);
+    // Sanity check: if decrypted text looks like a valid API key, return it
+    // Otherwise it was probably stored in plain text (legacy)
+    if (/^[a-zA-Z0-9_\-]+$/.test(plain)) return plain;
+    return cipherText; // legacy plain text
+  } catch {
+    return cipherText; // legacy plain text
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     
-    // Get keys
+    // Get keys and decrypt
     const records = user ? await base44.asServiceRole.entities.UserApiKeys.filter({ created_by: user.email }) : [];
     const dbKeys = records.length > 0 ? records[0] : {};
     
-    const FINNHUB_KEY = dbKeys.finnhub_api_key;
-    const FMP_KEY = dbKeys.fmp_api_key;
-    const AV_KEY = dbKeys.alpha_vantage_api_key;
+    const FINNHUB_KEY = decryptKey(dbKeys.finnhub_api_key);
+    const FMP_KEY = decryptKey(dbKeys.fmp_api_key);
+    const AV_KEY = decryptKey(dbKeys.alpha_vantage_api_key);
 
     const { company_name, ticker_symbol, entityId } = await req.json();
     
