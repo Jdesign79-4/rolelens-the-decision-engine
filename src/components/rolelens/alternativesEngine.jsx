@@ -56,142 +56,104 @@ export async function generateAlternatives({ companyName, jobTitle, location, is
   // Build tuner personality description for the LLM
   const profileDesc = buildProfileDescription(tunerSettings);
 
-  const result = await base44.integrations.Core.InvokeLLM({
-    prompt: `You are a senior career strategist with deep knowledge of the job market across all industries.
+  // Use a non-search model (gpt_5) because the schema is too complex for search-enabled models
+  // which often return invalid JSON with deeply nested array schemas.
+  // Retry up to 2 times on failure.
+  let result = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a senior career strategist. Generate exactly 5 market alternative companies for: ${roleContext}
+${location ? `Location: ${location}` : ''}
 
-TASK: Generate exactly 5 market alternative companies for someone researching: ${roleContext}
-${location ? `Location context: ${location}` : ''}
-
-USER PROFILE (use this to personalize):
+USER PROFILE:
 ${profileDesc}
 
-CRITICAL RULES FOR ALTERNATIVES:
-1. Each alternative MUST be a REAL company that actually exists
-2. Each alternative MUST actually hire for ${isCompanyOnly ? 'roles in this industry' : `${jobTitle || 'similar roles'}`}
-3. Alternatives must be DIVERSE — no more than 2 from the exact same sub-industry
-4. At least 1 should be a company the user probably hasn't considered
-5. All data must be realistic and sourced from your knowledge of real compensation, reviews, and company data
-6. Compensation figures should reflect real market data from Levels.fyi, Glassdoor, and BLS data
-7. DO NOT recommend direct competitors that would be obvious (e.g., if target is Coca-Cola, don't just say Pepsi)
+RULES:
+- Each alternative MUST be a REAL company
+- Each must hire for ${isCompanyOnly ? 'roles in this industry' : `${jobTitle || 'similar roles'}`}
+- Be DIVERSE across categories
+- Use realistic compensation data
 
-REQUIRED DIVERSITY — each slot has a specific purpose:
+REQUIRED SLOTS:
+1. PEER: Lateral move, similar prestige/comp
+2. WORKLIFE: Better work-life balance
+3. GROWTH: Faster growth, steeper learning curve
+4. COMPENSATION: Higher total comp
+5. HIDDEN_GEM: Lesser-known but excellent
 
-SLOT 1 - PEER ALTERNATIVE: Most similar company in prestige, comp, and industry. The "lateral move."
-SLOT 2 - BETTER WORK-LIFE BALANCE: Similar comp/prestige but notably better work-life balance.
-SLOT 3 - FASTER GROWTH & LEARNING: Higher growth company with steeper learning curve. May trade stability for opportunity.
-SLOT 4 - STRONGER COMPENSATION: Offers meaningfully higher total comp. Explain the trade-offs.
-SLOT 5 - HIDDEN GEM: Lesser-known company that's excellent. High employee satisfaction, good comp, but lower brand recognition.
-
-For EACH alternative, provide ALL of the following with real data:
-
-1. Company basics: name, industry, employee count, stage (Public/Series X/etc.), HQ location, website
-2. Why recommended: 2-3 sentences explaining the specific match reasoning for THIS user profile
-3. Category: which slot it fills (peer/worklife/growth/compensation/hidden_gem)
-4. Compensation data:
-   - headline: total annual compensation (base + equity + bonus)
-   - base: base salary
-   - equity: annual equity value
-   - real_feel: after-tax purchasing power adjusted for location COL
-   - tax_rate: effective tax rate for that location
-   - col_adjustment: cost-of-living multiplier (1.0 = national average)
-   - leak_label: what reduces purchasing power
-5. Culture data:
-   - type: culture archetype (e.g., "Engineering-First", "Move Fast", "Balanced")
-   - stress_level: 0-1 (0 = zen, 1 = burnout)
-   - wlb_score: 1-10 work-life balance
-   - growth_score: 1-10 career growth opportunity
-   - politics_level: Low/Medium/High
-6. Stability data:
-   - health: brief status label
-   - risk_score: 0-1 (0 = very stable, 1 = very risky)
-   - runway: estimated runway or stability timeframe
-   - headcount_trend: recent hiring trend (e.g., "+15%", "-5%")
-7. Strengths: exactly 3 bullet points
-8. Trade-offs: exactly 2 bullet points (honest downsides)
-9. Glassdoor rating: overall score out of 5 (realistic)
-10. Open roles estimate: approximate number of relevant open positions
-11. Career page URL: real URL to the company's careers page
-
-Make ALL numbers realistic. Use your knowledge of actual market data.`,
-    add_context_from_internet: true,
-    response_json_schema: {
-      type: "object",
-      properties: {
-        target_classification: {
+For each: company name, industry, employee_count, stage, hq_location, website, careers_url, category (peer/worklife/growth/compensation/hidden_gem), role_title, why_recommended, glassdoor_rating (1-5), open_roles_estimate, comp (headline/base/equity/real_feel numbers, tax_rate 0-0.5, col_adjustment 0.5-1.5, leak_label string), culture (type string, stress_level 0-1, wlb_score 1-10, growth_score 1-10, politics_level Low/Med/High), stability (health string, risk_score 0-1, runway string, headcount_trend string), strengths (3 strings), trade_offs (2 strings).`,
+        add_context_from_internet: false,
+        model: attempt === 0 ? 'gpt_5_mini' : 'gpt_5',
+        response_json_schema: {
           type: "object",
           properties: {
-            industry: { type: "string" },
-            sub_sector: { type: "string" },
-            prestige_tier: { type: "string" },
-            size_category: { type: "string" },
-            comp_percentile: { type: "string" }
-          }
-        },
-        alternatives: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              company_name: { type: "string" },
-              industry: { type: "string" },
-              employee_count: { type: "number" },
-              stage: { type: "string" },
-              hq_location: { type: "string" },
-              website: { type: "string" },
-              careers_url: { type: "string" },
-              category: { type: "string" },
-              why_recommended: { type: "string" },
-              glassdoor_rating: { type: "number" },
-              open_roles_estimate: { type: "number" },
-              role_title: { type: "string" },
-              comp: {
+            alternatives: {
+              type: "array",
+              items: {
                 type: "object",
                 properties: {
-                  headline: { type: "number" },
-                  base: { type: "number" },
-                  equity: { type: "number" },
-                  real_feel: { type: "number" },
-                  tax_rate: { type: "number" },
-                  col_adjustment: { type: "number" },
-                  leak_label: { type: "string" }
+                  company_name: { type: "string" },
+                  industry: { type: "string" },
+                  employee_count: { type: "number" },
+                  stage: { type: "string" },
+                  hq_location: { type: "string" },
+                  website: { type: "string" },
+                  careers_url: { type: "string" },
+                  category: { type: "string" },
+                  why_recommended: { type: "string" },
+                  glassdoor_rating: { type: "number" },
+                  open_roles_estimate: { type: "number" },
+                  role_title: { type: "string" },
+                  comp_headline: { type: "number" },
+                  comp_base: { type: "number" },
+                  comp_equity: { type: "number" },
+                  comp_real_feel: { type: "number" },
+                  comp_tax_rate: { type: "number" },
+                  comp_col_adjustment: { type: "number" },
+                  comp_leak_label: { type: "string" },
+                  culture_type: { type: "string" },
+                  culture_stress: { type: "number" },
+                  culture_wlb: { type: "number" },
+                  culture_growth: { type: "number" },
+                  culture_politics: { type: "string" },
+                  stability_health: { type: "string" },
+                  stability_risk: { type: "number" },
+                  stability_runway: { type: "string" },
+                  stability_headcount: { type: "string" },
+                  strength_1: { type: "string" },
+                  strength_2: { type: "string" },
+                  strength_3: { type: "string" },
+                  tradeoff_1: { type: "string" },
+                  tradeoff_2: { type: "string" }
                 }
-              },
-              culture: {
-                type: "object",
-                properties: {
-                  type: { type: "string" },
-                  stress_level: { type: "number" },
-                  wlb_score: { type: "number" },
-                  growth_score: { type: "number" },
-                  politics_level: { type: "string" }
-                }
-              },
-              stability: {
-                type: "object",
-                properties: {
-                  health: { type: "string" },
-                  risk_score: { type: "number" },
-                  runway: { type: "string" },
-                  headcount_trend: { type: "string" }
-                }
-              },
-              strengths: { type: "array", items: { type: "string" } },
-              trade_offs: { type: "array", items: { type: "string" } }
+              }
             }
           }
         }
-      }
+      });
+      if (result?.alternatives?.length > 0) break;
+    } catch (err) {
+      console.warn(`Alternatives attempt ${attempt + 1} failed:`, err);
+      if (attempt === 1) return [];
     }
-  });
+  }
 
   if (!result?.alternatives || result.alternatives.length === 0) {
     return [];
   }
 
   // Process and normalize each alternative into the format RoleLens expects
+  // Schema uses flat fields to avoid nested object JSON issues with LLMs
   return result.alternatives.slice(0, 5).map((alt, idx) => {
     const id = `smart_alt_${alt.company_name?.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${idx}`;
     const category = normalizeCategory(alt.category);
+
+    // Support both flat (comp_headline) and nested (comp.headline) schemas
+    const compHeadline = alt.comp_headline || alt.comp?.headline || 100000;
+    const compBase = alt.comp_base || alt.comp?.base || 80000;
+    const compEquity = alt.comp_equity || alt.comp?.equity || 0;
+    const compRealFeel = alt.comp_real_feel || alt.comp?.real_feel || compHeadline * 0.7;
 
     return {
       id,
@@ -205,45 +167,44 @@ Make ALL numbers realistic. Use your knowledge of actual market data.`,
         careers_url: alt.careers_url || null
       },
       stability: {
-        health: sanitizeShort(alt.stability?.health),
-        risk_score: clamp(alt.stability?.risk_score, 0, 1, 0.5),
+        health: sanitizeShort(alt.stability_health || alt.stability?.health),
+        risk_score: clamp(alt.stability_risk ?? alt.stability?.risk_score, 0, 1, 0.5),
         division: alt.industry || 'N/A',
-        runway: sanitizeShort(alt.stability?.runway),
-        headcount_trend: sanitizeShort(alt.stability?.headcount_trend)
+        runway: sanitizeShort(alt.stability_runway || alt.stability?.runway),
+        headcount_trend: sanitizeShort(alt.stability_headcount || alt.stability?.headcount_trend)
       },
       comp: {
-        headline: alt.comp?.headline || 100000,
-        base: alt.comp?.base || 80000,
-        equity: alt.comp?.equity || 0,
-        real_feel: alt.comp?.real_feel || alt.comp?.headline * 0.7 || 70000,
-        leak_label: sanitizeShort(alt.comp?.leak_label, 50) || 'Standard',
-        tax_rate: clamp(alt.comp?.tax_rate, 0, 0.5, 0.25),
-        col_adjustment: clamp(alt.comp?.col_adjustment, 0.5, 1.5, 1.0)
+        headline: compHeadline,
+        base: compBase,
+        equity: compEquity,
+        real_feel: compRealFeel,
+        leak_label: sanitizeShort(alt.comp_leak_label || alt.comp?.leak_label, 50) || 'Standard',
+        tax_rate: clamp(alt.comp_tax_rate ?? alt.comp?.tax_rate, 0, 0.5, 0.25),
+        col_adjustment: clamp(alt.comp_col_adjustment ?? alt.comp?.col_adjustment, 0.5, 1.5, 1.0)
       },
       culture: {
-        type: alt.culture?.type || 'Standard',
-        stress_level: clamp(alt.culture?.stress_level, 0, 1, 0.5),
-        wlb_score: clamp(alt.culture?.wlb_score, 1, 10, 5),
-        growth_score: clamp(alt.culture?.growth_score, 1, 10, 5),
-        politics_level: alt.culture?.politics_level || 'Medium'
+        type: alt.culture_type || alt.culture?.type || 'Standard',
+        stress_level: clamp(alt.culture_stress ?? alt.culture?.stress_level, 0, 1, 0.5),
+        wlb_score: clamp(alt.culture_wlb ?? alt.culture?.wlb_score, 1, 10, 5),
+        growth_score: clamp(alt.culture_growth ?? alt.culture?.growth_score, 1, 10, 5),
+        politics_level: alt.culture_politics || alt.culture?.politics_level || 'Medium'
       },
-      // Extended data only available on smart alternatives
       _smart: {
         category,
         categoryLabel: CATEGORY_LABELS[category] || 'Alternative',
         categoryColors: CATEGORY_COLORS[category] || CATEGORY_COLORS.peer,
         categoryIcon: CATEGORY_ICONS[category] || '🔍',
         why_recommended: alt.why_recommended || '',
-        strengths: (alt.strengths || []).slice(0, 3),
-        trade_offs: (alt.trade_offs || []).slice(0, 2),
-        glassdoor_rating: clamp(alt.glassdoor_rating, 1, 5, null), // AI estimate, not from Glassdoor API
-        open_roles_estimate: alt.open_roles_estimate || null, // AI estimate
+        strengths: [alt.strength_1, alt.strength_2, alt.strength_3].filter(Boolean).slice(0, 3),
+        trade_offs: [alt.tradeoff_1, alt.tradeoff_2].filter(Boolean).slice(0, 2),
+        glassdoor_rating: clamp(alt.glassdoor_rating, 1, 5, null),
+        open_roles_estimate: alt.open_roles_estimate || null,
         employee_count: alt.employee_count || null,
         stage: alt.stage || null,
         careers_url: alt.careers_url || null,
         industry: alt.industry || null
       },
-      alternatives: [] // Alternatives don't have their own alternatives
+      alternatives: []
     };
   });
 }

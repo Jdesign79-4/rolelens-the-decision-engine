@@ -87,6 +87,21 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
         </div>
       </div>
 
+      {/* Empty state / loading */}
+      {sortedAlternatives.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-8">
+          <motion.div
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="flex items-center gap-2 text-sm text-slate-500"
+          >
+            <Zap className="w-4 h-4" />
+            <span>Generating market alternatives...</span>
+          </motion.div>
+          <p className="text-xs text-slate-400 mt-2">This typically takes 10-15 seconds</p>
+        </div>
+      )}
+
       {/* Alternatives List */}
       <div className="space-y-3">
         {sortedAlternatives.map((alt, index) => {
