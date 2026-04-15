@@ -831,7 +831,8 @@ function RoleLensContent() {
   };
 
   const handleJobDataLoaded = (jobData, postingText = '') => {
-    setJobPostingText(postingText);
+    if (postingText) setJobPostingText(postingText);
+    
     // Add the new job and its alternatives to custom jobs
     const newCustomJobs = { [jobData.id]: jobData };
     
@@ -850,10 +851,15 @@ function RoleLensContent() {
     };
 
     setCustomJobs(prev => ({ ...prev, ...newCustomJobs }));
-    setActiveJob(jobData.id);
-    setIsPublicCompany(null); // Reset for new company lookup
-    setIsConnecting(true);
-    setTimeout(() => setIsConnecting(false), 600);
+    
+    // Only reset active job + animations if it's a new job (not an update with alternatives)
+    const isUpdate = activeJob === jobData.id;
+    if (!isUpdate) {
+      setActiveJob(jobData.id);
+      setIsPublicCompany(null);
+      setIsConnecting(true);
+      setTimeout(() => setIsConnecting(false), 600);
+    }
   };
 
   const handleJobSwap = (newJobId) => {

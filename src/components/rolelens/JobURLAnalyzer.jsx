@@ -279,9 +279,25 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
       setCurrentStep(-1);
       setTimeout(() => setAnalysisStatus('idle'), 3000);
       
-      // Build and deliver the job object to the UI
+      // Build the job object and generate alternatives in parallel
       const jobObject = buildJobObject(parsedJSON, extractedData);
+
+      // Generate market alternatives (non-blocking — load main results first, then alternatives)
       onJobDataLoaded(jobObject, pageContent.page_text || '', parsedJSON);
+
+      // Fire alternatives generation in background and update when ready
+      generateAlternatives({
+        companyName: jobObject.meta.company,
+        jobTitle: jobObject.meta.title,
+        location: jobObject.meta.location,
+        isCompanyOnly: false,
+        tunerSettings
+      }).then(alts => {
+        if (alts?.length > 0) {
+          jobObject.alternatives = alts;
+          onJobDataLoaded({ ...jobObject, alternatives: alts }, pageContent.page_text || '', parsedJSON);
+        }
+      }).catch(err => console.warn('Alternatives generation failed:', err));
     } catch (err) {
       console.error('URL analysis failed:', err);
       setError(err?.message || 'Failed to analyze job posting.');
