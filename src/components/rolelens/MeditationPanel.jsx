@@ -2,10 +2,27 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, ChevronDown, Newspaper, TrendingUp, AlertTriangle } from 'lucide-react';
 
+// Normalize source objects from different formats into a consistent shape
+function normalizeSource(src) {
+  return {
+    title: src.title || src.headline || 'Untitled',
+    publisher: src.publisher || src.source || 'Unknown',
+    summary: src.summary || src.excerpt || '',
+    date: src.date || '',
+    url: src.url || '#',
+    type: src.type || (src.sentiment === 'negative' ? 'alert' : src.sentiment === 'positive' ? 'financial' : 'news')
+  };
+}
+
 export default function MeditationPanel({ sources }) {
   const [expanded, setExpanded] = useState(true);
 
-  if (!sources || sources.length === 0) return null;
+  // Normalize and filter out sources with no meaningful content
+  const normalizedSources = (sources || [])
+    .map(normalizeSource)
+    .filter(s => s.title !== 'Untitled' || s.summary);
+
+  if (normalizedSources.length === 0) return null;
 
   const getSourceIcon = (type) => {
     switch (type) {
@@ -62,7 +79,7 @@ export default function MeditationPanel({ sources }) {
             transition={{ duration: 0.3 }}
             className="overflow-hidden space-y-3"
           >
-            {sources.slice(0, 3).map((source, index) => (
+            {normalizedSources.slice(0, 3).map((source, index) => (
               <motion.a
                 key={index}
                 href={source.url}
