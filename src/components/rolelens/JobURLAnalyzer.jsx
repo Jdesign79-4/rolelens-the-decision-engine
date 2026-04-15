@@ -675,7 +675,8 @@ IMPORTANT: Include exactly 3 source citations with REAL, WORKING URLs from vette
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3"
+                style={{ top: '50%', transform: 'translateY(-50%)' }}
               >
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${detectedPlatform.color}`}>
                   {detectedPlatform.icon} {detectedPlatform.name}
