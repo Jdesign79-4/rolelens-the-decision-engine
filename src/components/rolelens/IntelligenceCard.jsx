@@ -56,7 +56,7 @@ export default function IntelligenceCard({
         borderRadius: '16px'
       }}
     >
-      <LiquidGlassOverlay intensity="subtle" />
+      {!isDark && <LiquidGlassOverlay intensity="subtle" />}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
