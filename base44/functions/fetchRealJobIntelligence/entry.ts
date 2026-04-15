@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 async function fetchWithTimeout(url, options = {}, timeout = 8000) {
   const controller = new AbortController();
@@ -187,7 +187,54 @@ const SOC_TABLE = {
   "graphic designer": ["27-1024", "Graphic Designers"],
   "video editor": ["27-4032", "Film and Video Editors"],
   "content writer": ["27-3043", "Writers and Authors"],
-  "copywriter": ["27-3043", "Writers and Authors"]
+  "copywriter": ["27-3043", "Writers and Authors"],
+
+  // Design (expanded)
+  "motion designer": ["27-1014", "Special Effects Artists and Animators"],
+  "motion graphics designer": ["27-1014", "Special Effects Artists and Animators"],
+  "motion graphics artist": ["27-1014", "Special Effects Artists and Animators"],
+  "animator": ["27-1014", "Special Effects Artists and Animators"],
+  "2d animator": ["27-1014", "Special Effects Artists and Animators"],
+  "3d animator": ["27-1014", "Special Effects Artists and Animators"],
+  "visual effects artist": ["27-1014", "Special Effects Artists and Animators"],
+  "vfx artist": ["27-1014", "Special Effects Artists and Animators"],
+  "product designer": ["27-1021", "Commercial and Industrial Designers"],
+  "industrial designer": ["27-1021", "Commercial and Industrial Designers"],
+  "interaction designer": ["15-1255", "Web and Digital Interface Designers"],
+  "visual designer": ["27-1024", "Graphic Designers"],
+  "brand designer": ["27-1024", "Graphic Designers"],
+  "creative director": ["27-1011", "Art Directors"],
+  "art director": ["27-1011", "Art Directors"],
+  "design director": ["27-1011", "Art Directors"],
+
+  // Additional roles
+  "consultant": ["13-1111", "Management Analysts"],
+  "management consultant": ["13-1111", "Management Analysts"],
+  "strategy consultant": ["13-1111", "Management Analysts"],
+  "recruiter": ["13-1071", "Human Resources Specialists"],
+  "talent acquisition": ["13-1071", "Human Resources Specialists"],
+  "hr specialist": ["13-1071", "Human Resources Specialists"],
+  "customer success manager": ["11-2022", "Sales Managers"],
+  "account manager": ["11-2022", "Sales Managers"],
+  "account executive": ["41-3091", "Sales Representatives"],
+  "sales representative": ["41-3091", "Sales Representatives"],
+  "technical writer": ["27-3042", "Technical Writers"],
+  "documentation writer": ["27-3042", "Technical Writers"],
+  "supply chain manager": ["11-3071", "Transportation, Storage, and Distribution Managers"],
+  "logistics manager": ["11-3071", "Transportation, Storage, and Distribution Managers"],
+  "pharmacist": ["29-1051", "Pharmacists"],
+  "physical therapist": ["29-1123", "Physical Therapists"],
+  "occupational therapist": ["29-1122", "Occupational Therapists"],
+  "social worker": ["21-1021", "Child, Family, and School Social Workers"],
+  "paralegal": ["23-2011", "Paralegals and Legal Assistants"],
+  "executive assistant": ["43-6011", "Executive Secretaries and Executive Administrative Assistants"],
+  "administrative assistant": ["43-6014", "Secretaries and Administrative Assistants"],
+  "real estate agent": ["41-9022", "Real Estate Sales Agents"],
+  "realtor": ["41-9022", "Real Estate Sales Agents"],
+  "dental hygienist": ["29-1292", "Dental Hygienists"],
+  "veterinarian": ["29-1131", "Veterinarians"],
+  "research assistant": ["19-4099", "Life, Physical, and Social Science Technicians, All Other"],
+  "lab technician": ["19-4099", "Life, Physical, and Social Science Technicians, All Other"]
 };
 
 // Prefixes to strip for fuzzy matching (longest first)
@@ -208,32 +255,59 @@ function matchJobTitleToSOC(jobTitle) {
   const exact = SOC_TABLE[title];
   if (exact) return { socCode: exact[0], socTitle: exact[1], confidence: "high" };
 
-  // STEP 2 — strip common prefixes / suffixes then retry
-  let cleaned = title;
-  let modified = true;
-  while (modified) {
-    modified = false;
-    for (const p of STRIP_PREFIXES) {
-      if (cleaned.startsWith(p + " ")) {
-        cleaned = cleaned.slice(p.length + 1).trim();
-        modified = true;
-      }
-      if (cleaned.endsWith(" " + p)) {
-        cleaned = cleaned.slice(0, -(p.length + 1)).trim();
-        modified = true;
+  // STEP 1.5 — strip suffixes after separators (–, —, -, |, :, comma, parens)
+  // e.g. "Senior Motion Designer – Web & Mobile Apps, Advanced Team" → "Senior Motion Designer"
+  let truncated = title
+    .replace(/\s*[–—|]\s*.*/g, '')   // em-dash, en-dash, pipe
+    .replace(/\s*\(.*?\)/g, '')       // parenthetical
+    .replace(/\s*,\s*.*/g, '')        // everything after first comma
+    .trim();
+
+  // STEP 2 — strip common prefixes / suffixes then retry (on both truncated and original)
+  function stripPrefixes(input) {
+    let cleaned = input;
+    let modified = true;
+    while (modified) {
+      modified = false;
+      for (const p of STRIP_PREFIXES) {
+        if (cleaned.startsWith(p + " ")) {
+          cleaned = cleaned.slice(p.length + 1).trim();
+          modified = true;
+        }
+        if (cleaned.endsWith(" " + p)) {
+          cleaned = cleaned.slice(0, -(p.length + 1)).trim();
+          modified = true;
+        }
       }
     }
+    return cleaned;
   }
-  const stripped = SOC_TABLE[cleaned];
-  if (stripped) return { socCode: stripped[0], socTitle: stripped[1], confidence: "medium" };
 
-  // STEP 3 — partial / keyword matching against all keys
+  // Try truncated version first (more precise), then full title
+  for (const candidate of [truncated, title]) {
+    const cleaned = stripPrefixes(candidate);
+    const stripped = SOC_TABLE[cleaned];
+    if (stripped) return { socCode: stripped[0], socTitle: stripped[1], confidence: "medium" };
+  }
+
+  // STEP 3 — partial / keyword matching against all keys (try truncated first)
   let bestMatch = null;
   let bestLen = 0;
+  const cleaned = stripPrefixes(truncated || title);
   for (const key of Object.keys(SOC_TABLE)) {
     if (cleaned.includes(key) && key.length > bestLen) {
       bestMatch = SOC_TABLE[key];
       bestLen = key.length;
+    }
+  }
+  // Also check original title if truncated didn't find anything
+  if (!bestMatch) {
+    const cleanedFull = stripPrefixes(title);
+    for (const key of Object.keys(SOC_TABLE)) {
+      if (cleanedFull.includes(key) && key.length > bestLen) {
+        bestMatch = SOC_TABLE[key];
+        bestLen = key.length;
+      }
     }
   }
   if (bestMatch) return { socCode: bestMatch[0], socTitle: bestMatch[1], confidence: "medium" };
@@ -278,7 +352,48 @@ function matchJobTitleToSOC(jobTitle) {
   if (checkGroup(["video", "editor", "film"])) {
     return { socCode: "27-4032", socTitle: "Film and Video Editors", confidence: "medium" };
   }
+  if (checkGroup(["design", "designer"])) {
+    return { socCode: "27-1024", socTitle: "Graphic Designers", confidence: "low" };
+  }
+  if (checkGroup(["motion", "animation", "animate"])) {
+    return { socCode: "27-1014", socTitle: "Special Effects Artists and Animators", confidence: "low" };
+  }
+  if (checkGroup(["manager", "director", "head of", "vp"])) {
+    return { socCode: "11-1021", socTitle: "General and Operations Managers", confidence: "low" };
+  }
+  if (checkGroup(["engineer", "engineering"])) {
+    return { socCode: "15-1252", socTitle: "Software Developers", confidence: "low" };
+  }
+  if (checkGroup(["analyst"])) {
+    return { socCode: "13-1111", socTitle: "Management Analysts", confidence: "low" };
+  }
 
+  return null;
+}
+
+// LLM fallback for SOC mapping when static matching fails
+async function matchJobTitleToSOCWithLLM(jobTitle, base44) {
+  try {
+    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+      prompt: `Map the following job title to the closest BLS Standard Occupational Classification (SOC) code.
+
+Job title: "${jobTitle}"
+
+Return the 6-digit SOC code (e.g. "15-1252") and the official SOC title. Pick the single best match.`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          soc_code: { type: "string" },
+          soc_title: { type: "string" }
+        }
+      }
+    });
+    if (result?.soc_code && /^\d{2}-\d{4}$/.test(result.soc_code)) {
+      return { socCode: result.soc_code, socTitle: result.soc_title, confidence: "low" };
+    }
+  } catch (err) {
+    console.warn("[SOC-LLM] Fallback failed:", err.message);
+  }
   return null;
 }
 
@@ -366,7 +481,11 @@ Deno.serve(async (req) => {
     const data_sources_status = {};
 
     // --- SOC MATCH (shared across compensation + career growth) ---
-    const socMatch = matchJobTitleToSOC(job_title);
+    let socMatch = matchJobTitleToSOC(job_title);
+    if (!socMatch && job_title) {
+      console.log("[SOC] Static match failed for", JSON.stringify(job_title), "— trying LLM fallback");
+      socMatch = await matchJobTitleToSOCWithLLM(job_title, base44);
+    }
     console.log("SOC match for", JSON.stringify(job_title), "→", JSON.stringify(socMatch));
 
     // --- 1. COMPENSATION ---
@@ -529,14 +648,14 @@ Deno.serve(async (req) => {
       };
     } else {
       let diagReason = '';
-      if (!socMatch) diagReason = `SOC mapping failed for '${job_title || 'empty'}'.`;
-      else if (!BLS_KEY) diagReason = 'BLS API key not found. Configure it in API Keys Settings.';
-      else diagReason = 'BLS API returned no wage data for this occupation.';
+      if (!socMatch) diagReason = `Could not map '${job_title || 'empty'}' to a government occupation category.`;
+      else if (!BLS_KEY) diagReason = 'BLS API key not configured. Add it in Settings → API Keys.';
+      else diagReason = `BLS has no wage data for occupation ${socMatch.socCode} (${socMatch.socTitle}).`;
       console.warn("[COMP] Failed:", diagReason);
       dimensions.compensation = {
         score: null,
-        headline: "Could not retrieve BLS compensation data.",
-        insight: `${diagReason} Try a more standard title like 'Software Engineer' or 'Data Analyst'.`,
+        headline: "BLS compensation data unavailable.",
+        insight: diagReason,
         confidence: "low",
         verified: false,
         sources: []
