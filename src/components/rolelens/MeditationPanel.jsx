@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, ChevronDown, Newspaper, TrendingUp, AlertTriangle } from 'lucide-react';
+import { ExternalLink, ChevronDown, Newspaper, TrendingUp, AlertTriangle, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 // Normalize source objects from different formats into a consistent shape
 function normalizeSource(src) {
@@ -14,15 +15,83 @@ function normalizeSource(src) {
   };
 }
 
-export default function MeditationPanel({ sources }) {
-  const [expanded, setExpanded] = useState(true);
+// Filter to only keep sources with real, working-looking URLs (not placeholder or job board links)
+function isRealNewsUrl(url) {
+  if (!url || url === '#') return false;
+  // Reject job board URLs — those are not news articles
+  const jobBoardPatterns = [/linkedin\.com\/jobs/i, /indeed\.com\/viewjob/i, /glassdoor\.com\/job/i, /greenhouse\.io/i, /lever\.co/i, /workday/i, /wellfound\.com/i];
+  return !jobBoardPatterns.some(p => p.test(url));
+}
 
-  // Normalize and filter out sources with no meaningful content
+export default function MeditationPanel({ sources, companyName }) {
+  const [expanded, setExpanded] = useState(true);
+  const [fetchedArticles, setFetchedArticles] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Normalize and filter to real news articles only
   const normalizedSources = (sources || [])
     .map(normalizeSource)
-    .filter(s => s.title !== 'Untitled' || s.summary);
+    .filter(s => (s.title !== 'Untitled' || s.summary) && isRealNewsUrl(s.url));
 
-  if (normalizedSources.length === 0) return null;
+  // If we don't have 3 good articles from the API data, fetch them via LLM
+  useEffect(() => {
+    if (normalizedSources.length >= 3 || !companyName || fetchedArticles) return;
+    
+    let cancelled = false;
+    setIsLoading(true);
+    
+    base44.integrations.Core.InvokeLLM({
+      prompt: `Find 3 recent, noteworthy news articles about "${companyName}" from reputable publications (e.g. Reuters, Bloomberg, CNBC, Forbes, TechCrunch, Wall Street Journal, Financial Times, The Verge, Wired, Business Insider, etc).
+
+IMPORTANT RULES:
+- Each article MUST be from a DIFFERENT publication
+- Each article MUST have a REAL, WORKING URL that actually exists on the internet
+- Articles should cover important company news: earnings, strategy, leadership, products, partnerships, layoffs, acquisitions, etc.
+- Prioritize the most recent and significant articles
+- Do NOT invent URLs — only return articles you can verify exist`,
+      add_context_from_internet: true,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          articles: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                publisher: { type: "string" },
+                summary: { type: "string" },
+                date: { type: "string" },
+                url: { type: "string" },
+                category: { type: "string" }
+              }
+            }
+          }
+        }
+      }
+    }).then(result => {
+      if (!cancelled && result?.articles?.length > 0) {
+        setFetchedArticles(result.articles.map(a => ({
+          ...a,
+          type: a.category === 'alert' || a.category === 'negative' ? 'alert' : 
+                a.category === 'financial' || a.category === 'earnings' ? 'financial' : 'news'
+        })));
+      }
+    }).catch(err => {
+      console.warn('Failed to fetch company news articles:', err);
+    }).finally(() => {
+      if (!cancelled) setIsLoading(false);
+    });
+    
+    return () => { cancelled = true; };
+  }, [companyName]);
+
+  // Use API news if we have 3+, otherwise use LLM-fetched articles, merged with whatever we have
+  const displaySources = normalizedSources.length >= 3 
+    ? normalizedSources.slice(0, 3)
+    : (fetchedArticles || normalizedSources).slice(0, 3);
+
+  if (displaySources.length === 0 && !isLoading) return null;
 
   const getSourceIcon = (type) => {
     switch (type) {
@@ -58,8 +127,8 @@ export default function MeditationPanel({ sources }) {
             <Newspaper className="w-5 h-5 text-white" />
           </div>
           <div className="text-left">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Vetted Intelligence</p>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Meditation</h3>
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Company News</p>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Latest Headlines</h3>
           </div>
         </div>
         <motion.div
@@ -79,7 +148,13 @@ export default function MeditationPanel({ sources }) {
             transition={{ duration: 0.3 }}
             className="overflow-hidden space-y-3"
           >
-            {normalizedSources.slice(0, 3).map((source, index) => (
+            {isLoading && displaySources.length === 0 && (
+              <div className="flex items-center gap-3 p-4 text-slate-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Finding latest company news...</span>
+              </div>
+            )}
+            {displaySources.map((source, index) => (
               <motion.a
                 key={index}
                 href={source.url}
@@ -116,7 +191,7 @@ export default function MeditationPanel({ sources }) {
       </AnimatePresence>
 
       <p className="mt-4 text-xs text-slate-400 text-center">
-        Sources curated from vetted financial and industry publications
+        Recent articles from vetted financial and industry publications
       </p>
     </motion.div>
   );

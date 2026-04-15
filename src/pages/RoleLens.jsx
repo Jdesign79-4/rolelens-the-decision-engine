@@ -1500,8 +1500,8 @@ function RoleLensContent() {
               </div>
             )}
 
-            {/* Meditation Panel - Vetted Sources */}
-            {currentJob && <MeditationPanel sources={currentJob.sources} />}
+            {/* Company News Headlines */}
+            {currentJob && <MeditationPanel sources={currentJob.sources} companyName={currentJob.meta?.company} />}
 
             {/* LinkedIn Networking */}
             {currentJob?.meta?.company && (
