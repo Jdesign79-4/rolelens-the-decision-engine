@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DarkModeProvider } from '@/components/DarkModeContext';
 import DarkModeToggle from '@/components/DarkModeToggle';
@@ -31,6 +31,7 @@ import PublicCompanyIntelligence from '@/components/application-tracker/PublicCo
 import DataAttributionFooter from '@/components/rolelens/DataAttributionFooter';
 import AICollaborationWidget from '@/components/rolelens/AICollaborationWidget';
 import CultureDecoderWidget from '@/components/rolelens/culture-decoder/CultureDecoderWidget';
+import { generateAlternatives } from '@/components/rolelens/alternativesEngine';
 import IntelligenceCard from '@/components/rolelens/IntelligenceCard';
 import CollapsibleMobileCard from '@/components/rolelens/CollapsibleMobileCard';
 import PartialDataNotification from '@/components/rolelens/PartialDataNotification';
@@ -774,6 +775,46 @@ function RoleLensContent() {
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
   const currentJob = allJobs[activeJob];
+
+  // Auto-generate alternatives for custom jobs that don't have any yet
+  const altsGeneratedRef = useRef(new Set());
+  useEffect(() => {
+    if (!activeJob || !currentJob?.meta?.company) return;
+    // Skip static database jobs (they already have alternatives as string IDs)
+    if (jobDatabase[activeJob]) return;
+    // Skip if alternatives already exist
+    if (currentJob.alternatives?.length > 0) return;
+    // Skip if we already tried for this job
+    if (altsGeneratedRef.current.has(activeJob)) return;
+    altsGeneratedRef.current.add(activeJob);
+
+    const jobId = activeJob;
+    generateAlternatives({
+      companyName: currentJob.meta.company,
+      jobTitle: currentJob.meta.title,
+      location: currentJob.meta.location,
+      isCompanyOnly: currentJob.isCompanyOnly || false,
+      tunerSettings
+    }).then(alts => {
+      if (!alts?.length) return;
+      // Build the new entries using functional state updater (no stale closures)
+      setCustomJobs(prev => {
+        const updated = { ...prev };
+        // Add each alternative as its own entry
+        alts.forEach(alt => {
+          updated[alt.id] = {
+            ...alt,
+            alternatives: [jobId, ...alts.filter(a => a.id !== alt.id).slice(0, 4).map(a => a.id)]
+          };
+        });
+        // Update the main job's alternatives array (as IDs)
+        if (updated[jobId]) {
+          updated[jobId] = { ...updated[jobId], alternatives: alts.map(a => a.id) };
+        }
+        return updated;
+      });
+    }).catch(err => console.warn('Alternatives generation failed:', err));
+  }, [activeJob]);
 
   // Favorites management - adds to saved lists
   const toggleFavorite = (jobId) => {
