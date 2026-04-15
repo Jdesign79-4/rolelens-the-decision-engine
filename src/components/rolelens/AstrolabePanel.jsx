@@ -5,10 +5,13 @@ import { Shield, Sword, Anchor, Compass, TreeDeciduous, Sprout, Target } from 'l
 import ProfileAnalysis from './ProfileAnalysis';
 import { useDarkMode } from '@/components/DarkModeContext';
 
-export default function AstrolabePanel({ settings, onSettingsChange, isConnecting }) {
+export default function AstrolabePanel({ settings: rawSettings, onSettingsChange, isConnecting }) {
   const { isDark } = useDarkMode();
   const [wobble, setWobble] = useState({ x: 0, y: 0 });
   const [pulse, setPulse] = useState(0);
+
+  // Guard against undefined settings
+  const settings = rawSettings || { riskAppetite: 0.3, lifeAnchors: 0.5, careerStage: 0.6, honestSelfReflection: 0.7 };
 
   // Dynamic wobble based on risk AND life anchors (nomads wobble more)
   useEffect(() => {
