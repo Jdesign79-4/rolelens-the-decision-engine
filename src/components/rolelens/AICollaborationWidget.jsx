@@ -11,6 +11,7 @@ import {
   generateOpportunityMessage,
   generateBottomLine
 } from './aiCollaborationEngine';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function AICollaborationWidget({ job }) {
   const [data, setData] = useState(null);
@@ -142,6 +143,7 @@ Return a JSON object with:
 
   if (!data) return null;
 
+  const { isDark } = useDarkMode();
   const categoryInfo = getCategoryInfo(data.category);
   const color = getScoreColor(data.score);
 
@@ -150,7 +152,12 @@ Return a JSON object with:
     amber: { gradient: 'from-amber-600 to-orange-600', bar: 'bg-amber-500', light: 'bg-amber-50 border-amber-200 text-amber-700', badge: 'bg-amber-100 text-amber-800' },
     orange: { gradient: 'from-orange-600 to-red-600', bar: 'bg-orange-500', light: 'bg-orange-50 border-orange-200 text-orange-700', badge: 'bg-orange-100 text-orange-800' }
   };
-  const c = colorClasses[color] || colorClasses.amber;
+  const darkColorClasses = {
+    emerald: { gradient: 'from-emerald-900 to-teal-900', bar: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200 text-emerald-700', badge: 'bg-emerald-100 text-emerald-800' },
+    amber: { gradient: 'from-amber-900 to-orange-950', bar: 'bg-amber-500', light: 'bg-amber-50 border-amber-200 text-amber-700', badge: 'bg-amber-100 text-amber-800' },
+    orange: { gradient: 'from-orange-950 to-red-950', bar: 'bg-orange-500', light: 'bg-orange-50 border-orange-200 text-orange-700', badge: 'bg-orange-100 text-orange-800' }
+  };
+  const c = (isDark ? darkColorClasses : colorClasses)[color] || (isDark ? darkColorClasses : colorClasses).amber;
 
   return (
     <div className="space-y-4">
