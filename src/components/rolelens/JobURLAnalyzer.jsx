@@ -130,9 +130,10 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
 
       const parsedJSON = typeof aiResponse === 'string' ? JSON.parse(aiResponse) : aiResponse;
 
+      let tickerSymbol = null;
+
       try {
         // Enhance with real API data
-        let tickerSymbol = null;
         let parentTicker = null;
         let companyHealth = null;
         let stockData = null;
@@ -167,12 +168,12 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
           if (healthRes.data.data.news_articles?.length > 0) {
             parsedJSON.news = healthRes.data.data.news_articles;
           }
-        } else if (dbResp?.length > 0) {
+        } else if (existingCompanyRecord) {
           // Fallback to DB data if fetchCompanyData failed
-          companyHealth = dbResp[0].company_health;
-          stockData = dbResp[0].stock_data;
-          analystData = dbResp[0].analyst_data;
-          opportunityFlags = dbResp[0].opportunity_flags;
+          companyHealth = existingCompanyRecord.company_health;
+          stockData = existingCompanyRecord.stock_data;
+          analystData = existingCompanyRecord.analyst_data;
+          opportunityFlags = existingCompanyRecord.opportunity_flags;
         }
 
         const realIntelRes = await base44.functions.invoke('fetchRealJobIntelligence', {

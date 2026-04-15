@@ -17,6 +17,8 @@ function truncateField(value, maxLen = 50) {
 }
 
 export default function StabilityCard({ data, tunerSettings }) {
+  const { isDark } = useDarkMode();
+
   if (!data) {
     return (
       <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
@@ -69,7 +71,6 @@ export default function StabilityCard({ data, tunerSettings }) {
 
   const insight = getInsight();
   const InsightIcon = insight.icon;
-  const { isDark } = useDarkMode();
 
   return (
     <div className="transition-shadow" style={{ padding: '20px 22px', background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F0EAE1 0%, #EAF0E7 100%)', border: 'none', borderTop: isDark ? '1px solid rgba(51,65,85,0.3)' : '1px solid rgba(255,255,255,0.70)', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '4px 4px 10px #C2BCB4, -3px -3px 8px #FEFAF4', borderRadius: '16px' }}>

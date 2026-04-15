@@ -21,16 +21,8 @@ export default function CompensationCard({ data, tunerSettings, isCompanyOnly = 
   const [showDetails, setShowDetails] = useState(false);
   const fetchedRef = useRef('');
 
-  // Validate data
-  if (!data || !data.headline || (typeof data.headline === 'number' && data.headline < 1000)) {
-    return (
-      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
-        <p className="text-sm text-slate-500">Compensation data not available</p>
-      </div>
-    );
-  }
-
-  const safeHeadline = typeof data.headline === 'number' ? data.headline : 0;
+  const hasValidData = data && data.headline && !(typeof data.headline === 'number' && data.headline < 1000);
+  const safeHeadline = hasValidData && typeof data.headline === 'number' ? data.headline : 0;
   const safeRealFeel = typeof data.real_feel === 'number' && data.real_feel >= 1000 ? data.real_feel : safeHeadline;
   const hasExactRange = data.range_min && data.range_max;
 
@@ -148,6 +140,15 @@ Return: living_wage_annual (the annual pre-tax income needed for ${famStr} to me
       fetchCOLData(familyType);
     }
   }, [familyType]);
+
+  // Validate data — must be after all hooks
+  if (!hasValidData) {
+    return (
+      <div className="p-6 rounded-2xl bg-white border-2 border-slate-200">
+        <p className="text-sm text-slate-500">Compensation data not available</p>
+      </div>
+    );
+  }
 
   // Compute derived data
   const livingWage = colData?.living_wage_annual || 0;
