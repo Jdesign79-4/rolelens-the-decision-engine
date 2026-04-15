@@ -84,41 +84,41 @@ export default function ProfileAnalysis({ settings }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-6 pt-5 border-t border-slate-200/50 space-y-4"
+      className="mt-6 pt-5 border-t border-white/10 space-y-4"
     >
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profile Analysis</p>
+      <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Profile Analysis</p>
 
       {/* Strengths */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-          <span className="text-xs font-semibold text-slate-700">Strengths</span>
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-xs font-semibold text-white/90">Strengths</span>
         </div>
         {analysis.strengths.map((s, i) => (
-          <p key={i} className="text-[11px] text-slate-600 pl-5 leading-relaxed">• {s}</p>
+          <p key={i} className="text-[11px] text-white/70 pl-5 leading-relaxed">• {s}</p>
         ))}
       </div>
 
       {/* Development */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
-          <span className="text-xs font-semibold text-slate-700">Growth Areas</span>
+          <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-xs font-semibold text-white/90">Growth Areas</span>
         </div>
         {analysis.development.map((d, i) => (
-          <p key={i} className="text-[11px] text-slate-600 pl-5 leading-relaxed">• {d}</p>
+          <p key={i} className="text-[11px] text-white/70 pl-5 leading-relaxed">• {d}</p>
         ))}
       </div>
 
       {/* Culture Preferences */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <AlertCircle className="w-3.5 h-3.5 text-violet-500" />
-          <span className="text-xs font-semibold text-slate-700">Culture Priorities</span>
+          <AlertCircle className="w-3.5 h-3.5 text-violet-400" />
+          <span className="text-xs font-semibold text-white/90">Culture Priorities</span>
         </div>
         <div className="flex flex-wrap gap-1.5 pl-5">
           {analysis.culturePrefs.map((p, i) => (
-            <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 font-medium">
+            <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-violet-300 font-medium">
               {p}
             </span>
           ))}
@@ -128,12 +128,12 @@ export default function ProfileAnalysis({ settings }) {
       {/* Career Paths */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <Compass className="w-3.5 h-3.5 text-indigo-500" />
-          <span className="text-xs font-semibold text-slate-700">Aligned Paths</span>
+          <Compass className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="text-xs font-semibold text-white/90">Aligned Paths</span>
         </div>
         <div className="flex flex-wrap gap-1.5 pl-5">
           {analysis.paths.map((p, i) => (
-            <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-medium">
+            <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-white/10 text-indigo-300 font-medium">
               {p}
             </span>
           ))}
