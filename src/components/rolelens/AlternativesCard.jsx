@@ -118,7 +118,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
               className="relative"
             >
               {/* Top Match Glow */}
-              {isTopMatch && (
+              {isTopMatch && !isDark && (
                 <motion.div
                   animate={{ opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 2, repeat: Infinity }}
