@@ -193,20 +193,23 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
             )}
           </div>
 
-          {/* === MARKET CONSENSUS === */}
-          <SectionDivider label="MARKET CONSENSUS" isDark={isDark} />
-          <div className="space-y-3 mb-4">
-            {sentimentData?.insight && (
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{sentimentData.insight}</p>
-            )}
-            {/* Analyst consensus bar */}
-            {sentimentData?._analystData && (
-              <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50">
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2">Analyst Consensus</p>
-                <AnalystBar data={sentimentData._analystData} />
+          {/* === MARKET CONSENSUS === only show if we have analyst/sentiment data (public companies) */}
+          {(sentimentData?.insight || sentimentData?._analystData) && (
+            <>
+              <SectionDivider label="MARKET CONSENSUS" isDark={isDark} />
+              <div className="space-y-3 mb-4">
+                {sentimentData?.insight && (
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{sentimentData.insight}</p>
+                )}
+                {sentimentData?._analystData && (
+                  <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50">
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2">Analyst Consensus</p>
+                    <AnalystBar data={sentimentData._analystData} />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* Footer */}
           <div className="pt-3 border-t border-slate-200/50 dark:border-slate-700/50 flex flex-col gap-1">

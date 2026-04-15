@@ -769,6 +769,7 @@ function RoleLensContent() {
   const [cultureDecoderData, setCultureDecoderData] = useState(null);
   const [searchMode, setSearchMode] = useState('url'); // 'url' or 'manual'
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isPublicCompany, setIsPublicCompany] = useState(null); // null=unknown, true/false after lookup
 
   // Merge static and custom jobs
   const allJobs = { ...jobDatabase, ...customJobs };
@@ -850,6 +851,7 @@ function RoleLensContent() {
 
     setCustomJobs(prev => ({ ...prev, ...newCustomJobs }));
     setActiveJob(jobData.id);
+    setIsPublicCompany(null); // Reset for new company lookup
     setIsConnecting(true);
     setTimeout(() => setIsConnecting(false), 600);
   };
@@ -1384,13 +1386,13 @@ function RoleLensContent() {
               </div>
             )}
 
-            {/* Public Company Financial Intelligence */}
-            {currentJob?.meta?.company && (
+            {/* Public Company Financial Intelligence — only render for public companies */}
+            {currentJob?.meta?.company && isPublicCompany !== false && (
               <div className="mt-6">
                 <PublicCompanyIntelligence 
                   companyName={currentJob.meta.company}
                   onDataLoaded={(data) => {
-                    console.log('Financial intelligence loaded:', data);
+                    setIsPublicCompany(data?.is_public === true);
                   }}
                 />
               </div>
