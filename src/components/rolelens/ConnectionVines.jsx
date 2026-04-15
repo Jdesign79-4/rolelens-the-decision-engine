@@ -1,17 +1,28 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
+// Use for-loop instead of [...Array(n)].map() to avoid Radix Collection context hijacking .map()
+function useIndexArray(count) {
+  return useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < count; i++) arr.push(i);
+    return arr;
+  }, [count]);
+}
+
 export default function ConnectionVines({ isActive, settings }) {
-  const vineColor = settings.riskAppetite > 0.6 
+  const vineColor = settings?.riskAppetite > 0.6 
     ? 'rgba(233, 150, 122, 0.6)' 
     : 'rgba(143, 188, 143, 0.6)';
+
+  const indices = useIndexArray(5);
 
   return (
     <div className="hidden lg:block fixed left-80 xl:left-96 top-0 bottom-0 w-8 pointer-events-none z-20 overflow-hidden">
       {/* Vine Lines */}
-      {[...Array(5)].map((_, i) => (
+      {indices.map(i => (
         <motion.div
-          key={i}
+          key={`vine-${i}`}
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ 
             scaleX: isActive ? 1 : 0,
@@ -46,7 +57,7 @@ export default function ConnectionVines({ isActive, settings }) {
       />
 
       {/* Node Points */}
-      {[...Array(5)].map((_, i) => (
+      {indices.map(i => (
         <motion.div
           key={`node-${i}`}
           initial={{ scale: 0 }}
