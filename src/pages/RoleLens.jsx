@@ -1043,7 +1043,7 @@ function RoleLensContent() {
                 className="px-4 py-2 text-sm font-medium transition-all"
                 style={
                   searchMode === 'url'
-                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
+                    ? { background: isDark ? '#334155' : '#C0706A', color: isDark ? '#e2e8f0' : '#FFFFFF', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
                     : { background: isDark ? '#1e293b' : '#F0EAE1', color: isDark ? '#94a3b8' : '#786F6A', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
                 }
               >
@@ -1054,7 +1054,7 @@ function RoleLensContent() {
                 className="px-4 py-2 text-sm font-medium transition-all"
                 style={
                   searchMode === 'manual'
-                    ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
+                    ? { background: isDark ? '#334155' : '#C0706A', color: isDark ? '#e2e8f0' : '#FFFFFF', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
                     : { background: isDark ? '#1e293b' : '#F0EAE1', color: isDark ? '#94a3b8' : '#786F6A', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
                 }
               >
