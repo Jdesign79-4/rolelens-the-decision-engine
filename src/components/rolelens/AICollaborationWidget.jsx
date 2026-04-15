@@ -14,6 +14,7 @@ import {
 import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function AICollaborationWidget({ job }) {
+  const { isDark } = useDarkMode();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSections, setExpandedSections] = useState(['opportunity']);
@@ -143,7 +144,6 @@ Return a JSON object with:
 
   if (!data) return null;
 
-  const { isDark } = useDarkMode();
   const categoryInfo = getCategoryInfo(data.category);
   const color = getScoreColor(data.score);
 
