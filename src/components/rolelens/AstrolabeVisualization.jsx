@@ -1,6 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useDarkMode } from '@/components/DarkModeContext';
+
+// Pre-render dot components to avoid Array.from().map() which conflicts with Radix Collection context
+function RingDots({ count, radius, dotSize, color, glow, animate: animateProps, transitionFn }) {
+  const dots = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < count; i++) arr.push(i);
+    return arr;
+  }, [count]);
+
+  return (
+    <>
+      {dots.map(i => (
+        <motion.div
+          key={`dot-${i}`}
+          animate={animateProps ? (typeof animateProps === 'function' ? animateProps(i) : animateProps) : {}}
+          transition={transitionFn ? transitionFn(i) : {}}
+          className="absolute rounded-full"
+          style={{
+            width: dotSize,
+            height: dotSize,
+            backgroundColor: color,
+            top: '50%',
+            left: '50%',
+            transform: `rotate(${i * (360 / count)}deg) translateY(-${radius}px) translateX(-50%)`,
+            boxShadow: glow ? `0 0 6px ${glow}` : 'none'
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+function InnerDots({ count, color, pulse, spacing }) {
+  const dots = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < count; i++) arr.push(i);
+    return arr;
+  }, [count]);
+
+  return (
+    <>
+      {dots.map(i => (
+        <motion.div
+          key={`inner-${i}`}
+          animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
+          transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
+          className="absolute w-1 h-1 rounded-full"
+          style={{
+            backgroundColor: color,
+            top: '50%',
+            left: '50%',
+            transform: `rotate(${i * spacing + pulse}deg) translateY(-28px) translateX(-50%)`,
+            boxShadow: `0 0 4px ${color}`
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+function MiddleDots({ count, isNomad, isProvider, color }) {
+  const dots = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < count; i++) arr.push(i);
+    return arr;
+  }, [count]);
+
+  return (
+    <>
+      {dots.map(i => (
+        <motion.div
+          key={`mid-${i}`}
+          animate={isNomad ? { scale: [0.5, 1.5, 0.5], opacity: [0.3, 1, 0.3] } : {}}
+          transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
+          className="absolute rounded-full"
+          style={{
+            width: isProvider ? '8px' : '4px',
+            height: isProvider ? '8px' : '4px',
+            backgroundColor: color,
+            top: '50%',
+            left: '50%',
+            transform: `rotate(${i * (isNomad ? 90 : 45)}deg) translateY(-48px) translateX(-50%)`,
+            boxShadow: isNomad ? `0 0 8px ${color}` : 'none'
+          }}
+        />
+      ))}
+    </>
+  );
+}
 
 export default function AstrolabeVisualization({ settings, isConnecting }) {
   const { isDark } = useDarkMode();
@@ -80,7 +169,6 @@ export default function AstrolabeVisualization({ settings, isConnecting }) {
 
   return (
     <>
-      {/* Astrolabe Visualization */}
       <div className="relative flex items-center justify-center py-8">
         <div className="relative w-48 h-48">
           {isRiskSeeker && (
@@ -108,15 +196,15 @@ export default function AstrolabeVisualization({ settings, isConnecting }) {
             className="absolute inset-0 rounded-full"
             style={{ border: `${2 + ringThickness * 8}px solid`, borderColor: outerColors.main, boxShadow: `0 0 ${15 + ringThickness * 25}px ${outerColors.glow}, inset 0 0 ${10 + ringThickness * 10}px ${outerColors.glow}` }}
           >
-            {Array.from({ length: outerCount }, (_, i) => (
-              <motion.div
-                key={i}
-                animate={isSeedling ? { scale: [0.8, 1.2, 0.8], opacity: [0.4, 0.9, 0.4] } : {}}
-                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.1 }}
-                className="absolute rounded-full"
-                style={{ width: isOak ? '6px' : '4px', height: isOak ? '6px' : '4px', backgroundColor: outerColors.main, top: '50%', left: '50%', transform: `rotate(${i * (360 / outerCount)}deg) translateY(-96px) translateX(-50%)`, boxShadow: `0 0 6px ${outerColors.glow}` }}
-              />
-            ))}
+            <RingDots
+              count={outerCount}
+              radius={96}
+              dotSize={isOak ? '6px' : '4px'}
+              color={outerColors.main}
+              glow={outerColors.glow}
+              animate={isSeedling ? { scale: [0.8, 1.2, 0.8], opacity: [0.4, 0.9, 0.4] } : undefined}
+              transitionFn={isSeedling ? (i) => ({ duration: 1.5, repeat: Infinity, delay: i * 0.1 }) : undefined}
+            />
           </motion.div>
 
           {/* Middle Ring */}
@@ -126,15 +214,7 @@ export default function AstrolabeVisualization({ settings, isConnecting }) {
             className="absolute rounded-full"
             style={{ inset: '18%', border: `${2 + ringWeight * 6}px ${isNomad ? 'dashed' : 'solid'}`, borderColor: middleColors.main, boxShadow: `0 0 ${12 + ringWeight * 15}px ${middleColors.glow}` }}
           >
-            {Array.from({ length: middleCount }, (_, i) => (
-              <motion.div
-                key={i}
-                animate={isNomad ? { scale: [0.5, 1.5, 0.5], opacity: [0.3, 1, 0.3] } : {}}
-                transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
-                className="absolute rounded-full"
-                style={{ width: isProvider ? '8px' : '4px', height: isProvider ? '8px' : '4px', backgroundColor: middleColors.main, top: '50%', left: '50%', transform: `rotate(${i * (isNomad ? 90 : 45)}deg) translateY(-48px) translateX(-50%)`, boxShadow: isNomad ? `0 0 8px ${middleColors.main}` : 'none' }}
-              />
-            ))}
+            <MiddleDots count={middleCount} isNomad={isNomad} isProvider={isProvider} color={middleColors.main} />
           </motion.div>
 
           {/* Inner Ring */}
@@ -144,15 +224,7 @@ export default function AstrolabeVisualization({ settings, isConnecting }) {
             className="absolute rounded-full"
             style={{ inset: '32%', border: `${3 + (isRiskSeeker ? 2 : 0)}px solid`, borderColor: innerColors.main, boxShadow: `0 0 ${isRiskSeeker ? 35 : 20}px ${innerColors.glow}, inset 0 0 15px ${innerColors.glow}` }}
           >
-            {isRiskSeeker && Array.from({ length: 6 }, (_, i) => (
-              <motion.div
-                key={i}
-                animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }}
-                className="absolute w-1 h-1 rounded-full"
-                style={{ backgroundColor: innerColors.main, top: '50%', left: '50%', transform: `rotate(${i * 60 + pulse}deg) translateY(-28px) translateX(-50%)`, boxShadow: `0 0 4px ${innerColors.main}` }}
-              />
-            ))}
+            {isRiskSeeker && <InnerDots count={6} color={innerColors.main} pulse={pulse} spacing={60} />}
           </motion.div>
 
           {/* Center Core */}
