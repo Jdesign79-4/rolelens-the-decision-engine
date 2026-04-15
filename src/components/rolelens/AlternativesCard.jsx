@@ -131,7 +131,7 @@ export default function AlternativesCard({ alternatives, currentJob, onSwap, tun
                   isExpanded 
                     ? 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800' 
                     : isTopMatch
-                      ? 'border-violet-200 dark:border-violet-800 bg-white dark:bg-slate-800 hover:border-violet-300 dark:hover:border-violet-700'
+                      ? 'border-violet-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-violet-300 dark:hover:border-slate-600'
                       : 'border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-600 hover:bg-slate-50/50 dark:hover:bg-slate-700/50'
                 }`}
                 onClick={() => setExpandedId(isExpanded ? null : alt.id)}
