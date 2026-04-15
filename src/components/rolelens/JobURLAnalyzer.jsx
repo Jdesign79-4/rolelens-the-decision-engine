@@ -294,14 +294,42 @@ export default function JobURLAnalyzer({ onJobDataLoaded, isLoading, setIsLoadin
   };
 
   const fetchJobPage = async (jobUrl) => {
-    // Use a minimal schema to avoid JSON parsing failures with search models
     let result;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Fetch the COMPLETE text of this job posting: ${jobUrl}
+    
+    // Attempt 1: Direct fetch with web search
+    try {
+      result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Find and return ALL available information about this job posting: ${jobUrl}
 
-Return ALL text from the page. Include every tag, label, and metadata (like "Remote", "Full-time", "Hybrid", etc). Do NOT summarize. Return the full raw text.`,
+Search the web for this exact job listing. Return the job title, company name, location, and the full description text. Include metadata like "Remote", "Full-time", "Hybrid", salary, etc.
+
+If you cannot access the exact page, search for the job listing on the web using any details you can extract from the URL (company name, job ID, etc).`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            text: { type: "string" },
+            title: { type: "string" },
+            company: { type: "string" },
+            location: { type: "string" },
+            ok: { type: "boolean" }
+          }
+        }
+      });
+    } catch (err) {
+      console.warn('First fetch attempt failed:', err.message);
+    }
+
+    // Attempt 2: If first attempt returned nothing useful, try with explicit search instructions
+    if (!result?.text && !result?.title) {
+      try {
+        const urlInfo = extractInfoFromUrl(jobUrl);
+        result = await base44.integrations.Core.InvokeLLM({
+          prompt: `I need details about a job posting. The URL is: ${jobUrl}
+
+From the URL, the company appears to be "${urlInfo.companyName}" and the role may be "${urlInfo.jobTitle}".
+
+Search the web for this specific job listing at this company. Return the job title, company name, full job description, location, and any other details you can find. If you can't find the exact posting, find the most relevant current opening at this company that matches.`,
           add_context_from_internet: true,
           response_json_schema: {
             type: "object",
@@ -309,21 +337,47 @@ Return ALL text from the page. Include every tag, label, and metadata (like "Rem
               text: { type: "string" },
               title: { type: "string" },
               company: { type: "string" },
+              location: { type: "string" },
               ok: { type: "boolean" }
             }
           }
         });
-        if (result?.text || result?.title) break;
       } catch (err) {
-        if (attempt === 1) throw new Error('Could not fetch job posting. The page may require login or be restricted.');
+        console.warn('Second fetch attempt failed:', err.message);
       }
     }
 
+    // Attempt 3: Last resort — use URL-extracted info to do a general company + role research
     if (!result?.text && !result?.title) {
-      throw new Error('Could not access this job posting. The page may require login or be restricted.');
+      const urlInfo = extractInfoFromUrl(jobUrl);
+      if (urlInfo.companyName && urlInfo.companyName !== 'Unknown Company') {
+        try {
+          result = await base44.integrations.Core.InvokeLLM({
+            prompt: `Research the company "${urlInfo.companyName}" and the role "${urlInfo.jobTitle}". 
+
+Provide: the company name, a likely job title, the typical job description for this type of role at this company, the company's location, and any relevant details about working there. This is for a job seeker evaluating this opportunity.`,
+            add_context_from_internet: true,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                text: { type: "string" },
+                title: { type: "string" },
+                company: { type: "string" },
+                location: { type: "string" },
+                ok: { type: "boolean" }
+              }
+            }
+          });
+        } catch (err) {
+          console.warn('Third fetch attempt failed:', err.message);
+        }
+      }
     }
 
-    // Normalize to expected shape
+    if (!result?.text && !result?.title && !result?.company) {
+      throw new Error('Could not retrieve job posting details. LinkedIn often requires login — try copying the job description and using manual search instead.');
+    }
+
     return {
       page_text: result.text || '',
       job_title: result.title || '',
