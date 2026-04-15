@@ -99,17 +99,20 @@ export default function IntelligenceCard({
             <motion.div 
               animate={{ opacity: [0.3, 0.7, 0.3] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              className="h-4 bg-slate-300 rounded-full w-3/4"
+              className="h-4 rounded-full w-3/4"
+            style={{ background: isDark ? '#334155' : '#cbd5e1' }}
             />
             <motion.div 
               animate={{ opacity: [0.3, 0.7, 0.3] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-              className="h-4 bg-slate-300 rounded-full w-full"
+              className="h-4 rounded-full w-full"
+            style={{ background: isDark ? '#334155' : '#cbd5e1' }}
             />
             <motion.div 
               animate={{ opacity: [0.3, 0.7, 0.3] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-              className="h-4 bg-slate-300 rounded-full w-5/6"
+              className="h-4 rounded-full w-5/6"
+            style={{ background: isDark ? '#334155' : '#cbd5e1' }}
             />
           </div>
         )}

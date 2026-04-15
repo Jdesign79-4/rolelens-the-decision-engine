@@ -150,12 +150,12 @@ Be specific and cite recent events or data points when possible. Focus on inform
             {/* Health Score Display */}
             <div className="relative">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-slate-600">Overall Health Score</span>
+                <span className="text-sm font-medium" style={{ color: isDark ? '#94a3b8' : '#475569' }}>Overall Health Score</span>
                 <span className={`text-2xl font-bold ${healthColor.text}`}>
                   {healthData.health_score}/100
                 </span>
               </div>
-              <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-3 rounded-full overflow-hidden" style={{ background: isDark ? '#334155' : '#f1f5f9' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${healthData.health_score}%` }}
@@ -166,18 +166,18 @@ Be specific and cite recent events or data points when possible. Focus on inform
             </div>
 
             {/* Summary */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-700">
-              <p className="text-sm text-slate-700 leading-relaxed">
+            <div className="p-4 rounded-2xl" style={{ background: isDark ? 'rgba(30,41,59,0.6)' : 'linear-gradient(135deg, #f8fafc, #f1f5f9)', border: isDark ? '1px solid #334155' : 'none' }}>
+              <p className="text-sm leading-relaxed" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                 {healthData.summary}
               </p>
             </div>
 
             {/* News Sentiment & Financial Stability */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-700">
+              <div className="p-3 rounded-xl" style={{ background: isDark ? 'rgba(30,41,59,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <Newspaper className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">News Sentiment</p>
+                  <Newspaper className="w-4 h-4" style={{ color: isDark ? '#94a3b8' : '#64748b' }} />
+                  <p className="text-xs font-medium" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>News Sentiment</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <SentimentIcon className={`w-5 h-5 ${sentimentIcon.color}`} />
@@ -186,12 +186,12 @@ Be specific and cite recent events or data points when possible. Focus on inform
                   </p>
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-700">
+              <div className="p-3 rounded-xl" style={{ background: isDark ? 'rgba(30,41,59,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <DollarSign className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <p className="text-xs font-medium text-slate-500">Financial Health</p>
+                  <DollarSign className="w-4 h-4" style={{ color: isDark ? '#94a3b8' : '#64748b' }} />
+                  <p className="text-xs font-medium" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Financial Health</p>
                 </div>
-                <p className="text-xs text-slate-700 line-clamp-2">
+                <p className="text-xs line-clamp-2" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                   {healthData.financial_stability}
                 </p>
               </div>
@@ -201,7 +201,7 @@ Be specific and cite recent events or data points when possible. Focus on inform
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
-                <h4 className="text-sm font-semibold text-slate-800">Key Risks</h4>
+                <h4 className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>Key Risks</h4>
               </div>
               {healthData.risks.map((risk, index) => (
                 <motion.div
@@ -209,10 +209,11 @@ Be specific and cite recent events or data points when possible. Focus on inform
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100"
+                  className="flex items-start gap-2 p-3 rounded-xl"
+                  style={{ background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', border: isDark ? '1px solid rgba(127,29,29,0.4)' : '1px solid #fecaca' }}
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
-                  <p className="text-xs text-red-900 leading-relaxed">{risk}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: isDark ? '#fca5a5' : '#9f1239' }}>{risk}</p>
                 </motion.div>
               ))}
             </div>
@@ -221,7 +222,7 @@ Be specific and cite recent events or data points when possible. Focus on inform
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <h4 className="text-sm font-semibold text-slate-800">Growth Opportunities</h4>
+                <h4 className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>Growth Opportunities</h4>
               </div>
               {healthData.opportunities.map((opportunity, index) => (
                 <motion.div
@@ -229,17 +230,18 @@ Be specific and cite recent events or data points when possible. Focus on inform
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-start gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-100"
+                  className="flex items-start gap-2 p-3 rounded-xl"
+                  style={{ background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', border: isDark ? '1px solid rgba(6,78,59,0.4)' : '1px solid #d1fae5' }}
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0" />
-                  <p className="text-xs text-emerald-900 leading-relaxed">{opportunity}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: isDark ? '#6ee7b7' : '#065f46' }}>{opportunity}</p>
                 </motion.div>
               ))}
             </div>
 
             {/* Disclaimer */}
-            <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-[10px] text-amber-700">
+            <div className="p-2.5 rounded-lg" style={{ background: isDark ? 'rgba(120,53,15,0.2)' : '#fffbeb', border: isDark ? '1px solid rgba(120,53,15,0.4)' : '1px solid #fde68a' }}>
+              <p className="text-[10px]" style={{ color: isDark ? '#fcd34d' : '#92400e' }}>
                 <strong>AI-generated analysis.</strong> Health score and insights are estimated from web data and may not reflect the company's actual current state. Verify with official sources.
               </p>
             </div>

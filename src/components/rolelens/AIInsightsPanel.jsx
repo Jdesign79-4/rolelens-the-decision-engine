@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, TrendingUp, Map, Loader2, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import ReportExporter from './ReportExporter';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function AIInsightsPanel({ currentJob, tunerSettings }) {
+  const { isDark } = useDarkMode();
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('culture');
@@ -72,7 +74,7 @@ Provide 3 insights (each 2-3 sentences max):
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-3xl p-6 shadow-sm border border-violet-200"
+      style={{ background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%)', borderRadius: '24px', padding: '24px', border: isDark ? '1px solid rgba(139,92,246,0.25)' : '1px solid #ddd6fe', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4)' : '0 1px 4px rgba(0,0,0,0.06)' }}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -80,8 +82,8 @@ Provide 3 insights (each 2-3 sentences max):
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">AI Strategic Insights</h3>
-            <p className="text-xs text-slate-500">Powered by advanced analysis</p>
+            <h3 className="text-lg font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e1b4b' }}>AI Strategic Insights</h3>
+            <p className="text-xs" style={{ color: isDark ? '#94a3b8' : '#6b7280' }}>Powered by advanced analysis</p>
           </div>
         </div>
         <button
@@ -97,15 +99,16 @@ Provide 3 insights (each 2-3 sentences max):
       <div className="flex gap-2 mb-4 overflow-x-auto">
         {tabs.map(tab => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-slate-600 hover:bg-white/50'
-              }`}
+              style={isActive
+                ? { background: isDark ? '#334155' : '#ffffff', color: isDark ? '#a78bfa' : '#6d28d9', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', borderRadius: '12px', padding: '8px 16px', fontWeight: 600, fontSize: '14px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }
+                : { background: 'transparent', color: isDark ? '#94a3b8' : '#6b7280', borderRadius: '12px', padding: '8px 16px', fontWeight: 500, fontSize: '14px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }
+              }
+              className="flex items-center gap-2 transition-all"
             >
               <Icon className="w-4 h-4" />
               {tab.label}
@@ -143,16 +146,17 @@ Provide 3 insights (each 2-3 sentences max):
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
-            className="bg-white rounded-2xl p-4 min-h-[120px]"
+            className="rounded-2xl p-4 min-h-[120px]"
+            style={{ background: isDark ? 'rgba(30,41,59,0.6)' : '#ffffff', border: isDark ? '1px solid #334155' : 'none' }}
           >
-            <p className="text-sm text-slate-700 leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
               {tabs.find(t => t.id === activeTab)?.content || 'No data available.'}
             </p>
-            <p className="text-[10px] text-slate-400 mt-3 italic">AI-generated analysis — verify important details independently.</p>
+            <p className="text-[10px] mt-3 italic" style={{ color: isDark ? '#64748b' : '#9ca3af' }}>AI-generated analysis — verify important details independently.</p>
           </motion.div>
         ) : (
-          <div className="bg-white rounded-2xl p-4 min-h-[80px] flex items-center justify-center">
-            <p className="text-sm text-slate-400">Click "Refresh Insights" to generate analysis.</p>
+          <div className="rounded-2xl p-4 min-h-[80px] flex items-center justify-center" style={{ background: isDark ? 'rgba(30,41,59,0.6)' : '#ffffff' }}>
+            <p className="text-sm" style={{ color: isDark ? '#64748b' : '#9ca3af' }}>Click "Refresh Insights" to generate analysis.</p>
           </div>
         )}
       </AnimatePresence>
@@ -161,7 +165,8 @@ Provide 3 insights (each 2-3 sentences max):
       <button
         onClick={generateInsights}
         disabled={loading}
-        className="mt-4 w-full py-2 px-4 rounded-xl bg-violet-100 hover:bg-violet-200 text-violet-700 font-medium text-sm transition-all disabled:opacity-50"
+        className="mt-4 w-full py-2 px-4 rounded-xl font-medium text-sm transition-all disabled:opacity-50"
+        style={{ background: isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe', color: isDark ? '#a78bfa' : '#6d28d9' }}
       >
         {loading ? 'Analyzing...' : 'Refresh Insights'}
       </button>

@@ -5,8 +5,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { DataTrustBadge } from './DataTrustBadge';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 export default function ExternalDataAggregator({ company, jobTitle, onDataLoaded, hideSalaryBenchmarks = false }) {
+  const { isDark } = useDarkMode();
   const [enrichedData, setEnrichedData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -179,31 +181,31 @@ CRITICAL: Include direct URLs to each source used.`,
     if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
     return `$${value.toLocaleString()}`;
   };
-  const getSentimentColor = (sentiment) => {
-    if (sentiment === 'positive') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-    if (sentiment === 'negative') return 'text-red-600 bg-red-50 border-red-200';
-    if (sentiment === 'mixed') return 'text-amber-600 bg-amber-50 border-amber-200';
-    return 'text-slate-600 bg-slate-50 border-slate-200';
+  const getSentimentStyle = (sentiment) => {
+    if (sentiment === 'positive') return { color: isDark ? '#6ee7b7' : '#059669', background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', border: isDark ? '1px solid rgba(6,78,59,0.4)' : '1px solid #a7f3d0' };
+    if (sentiment === 'negative') return { color: isDark ? '#fca5a5' : '#dc2626', background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', border: isDark ? '1px solid rgba(127,29,29,0.4)' : '1px solid #fecaca' };
+    if (sentiment === 'mixed') return { color: isDark ? '#fcd34d' : '#d97706', background: isDark ? 'rgba(120,53,15,0.2)' : '#fffbeb', border: isDark ? '1px solid rgba(120,53,15,0.4)' : '1px solid #fde68a' };
+    return { color: isDark ? '#94a3b8' : '#475569', background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' };
   };
 
-  const getRiskColor = (severity) => {
-    if (severity === 'high') return 'text-red-600 bg-red-50 border-red-300';
-    if (severity === 'medium') return 'text-amber-600 bg-amber-50 border-amber-300';
-    return 'text-blue-600 bg-blue-50 border-blue-300';
+  const getRiskStyle = (severity) => {
+    if (severity === 'high') return { color: isDark ? '#fca5a5' : '#dc2626', background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', border: isDark ? '1px solid rgba(127,29,29,0.4)' : '1px solid #fca5a5' };
+    if (severity === 'medium') return { color: isDark ? '#fcd34d' : '#d97706', background: isDark ? 'rgba(120,53,15,0.2)' : '#fffbeb', border: isDark ? '1px solid rgba(120,53,15,0.4)' : '1px solid #fde68a' };
+    return { color: isDark ? '#93c5fd' : '#2563eb', background: isDark ? 'rgba(30,58,138,0.2)' : '#eff6ff', border: isDark ? '1px solid rgba(30,58,138,0.4)' : '1px solid #bfdbfe' };
   };
 
-  const aiEstimateCardStyle = "p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700";
+  const aiEstimateCardStyle = "p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600";
   const aiEstimateBorderStyle = { borderLeft: '3px solid #f59e0b' };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-800 rounded-3xl p-6 shadow-sm border border-blue-200 dark:border-slate-700">
+    <div className="rounded-3xl p-6 shadow-sm" style={{ background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)', border: isDark ? '1px solid #334155' : '1px solid #bfdbfe' }}>
       {/* Prominent AI Estimate Banner */}
-      <div className="mb-5 p-3 rounded-xl" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: '2px solid #f59e0b' }}>
+      <div className="mb-5 p-3 rounded-xl" style={{ background: isDark ? 'rgba(120,53,15,0.25)' : 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', border: isDark ? '2px solid rgba(120,53,15,0.5)' : '2px solid #f59e0b' }}>
         <div className="flex items-start gap-2">
           <span className="text-lg">⚠</span>
           <div>
-            <p className="text-sm font-bold text-amber-900">AI-ESTIMATED DATA</p>
-            <p className="text-xs text-amber-800 mt-0.5">The following metrics are synthesized by AI from web searches and may not be accurate. Verify at source links.</p>
+            <p className="text-sm font-bold" style={{ color: isDark ? '#fcd34d' : '#92400e' }}>AI-ESTIMATED DATA</p>
+            <p className="text-xs mt-0.5" style={{ color: isDark ? '#fbbf24' : '#b45309' }}>The following metrics are synthesized by AI from web searches and may not be accurate. Verify at source links.</p>
           </div>
         </div>
       </div>
@@ -211,12 +213,12 @@ CRITICAL: Include direct URLs to each source used.`,
       <div className="flex items-start justify-between mb-6">
         <div>
         <div className="flex items-center gap-2 mb-1">
-          <Database className="w-5 h-5 text-amber-600" />
-          <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">AI-Estimated Data</p>
+          <Database className="w-5 h-5 text-amber-500" />
+          <p className="text-xs font-medium uppercase tracking-wider" style={{ color: isDark ? '#fbbf24' : '#d97706' }}>AI-Estimated Data</p>
         </div>
-        <h3 className="text-lg font-semibold text-slate-800">External Data Aggregation</h3>
+        <h3 className="text-lg font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>External Data Aggregation</h3>
           {lastUpdated && (
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs mt-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
               Last updated: {new Date(lastUpdated).toLocaleTimeString()}
             </p>
           )}
@@ -255,7 +257,7 @@ CRITICAL: Include direct URLs to each source used.`,
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <DollarSign className="w-5 h-5 text-emerald-600" />
-                    <h4 className="text-sm font-semibold text-slate-800">Market Salary Benchmarks</h4>
+                    <h4 className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>Market Salary Benchmarks</h4>
                   </div>
                   <div className="flex items-center gap-2">
                     <DataTrustBadge verified={false} />
@@ -307,7 +309,7 @@ CRITICAL: Include direct URLs to each source used.`,
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-violet-600" />
-                    <h4 className="text-sm font-semibold text-slate-800">Funding & Valuation</h4>
+                    <h4 className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>Funding & Valuation</h4>
                   </div>
                   <div className="flex items-center gap-2">
                     <DataTrustBadge verified={false} />
@@ -324,20 +326,20 @@ CRITICAL: Include direct URLs to each source used.`,
                 </div>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
-                    <p className="text-xs text-slate-500">Latest Round</p>
-                    <p className="text-sm font-semibold text-slate-800">{enrichedData.funding_data.latest_round}</p>
+                    <p className="text-xs" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Latest Round</p>
+                    <p className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>{enrichedData.funding_data.latest_round}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">Total Raised</p>
-                    <p className="text-sm font-semibold text-slate-800">{enrichedData.funding_data.amount_raised}</p>
+                    <p className="text-xs" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Total Raised</p>
+                    <p className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>{enrichedData.funding_data.amount_raised}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">Valuation</p>
-                    <p className="text-sm font-semibold text-slate-800">{enrichedData.funding_data.valuation}</p>
+                    <p className="text-xs" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Valuation</p>
+                    <p className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>{enrichedData.funding_data.valuation}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">Lead Investors</p>
-                    <p className="text-xs text-slate-700">{enrichedData.funding_data.investors?.slice(0, 2).join(', ')}</p>
+                    <p className="text-xs" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Lead Investors</p>
+                    <p className="text-xs" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{enrichedData.funding_data.investors?.slice(0, 2).join(', ')}</p>
                   </div>
                 </div>
                 {/* Expandable Funding Rounds */}
@@ -388,7 +390,7 @@ CRITICAL: Include direct URLs to each source used.`,
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-blue-600" />
-                    <h4 className="text-sm font-semibold text-slate-800">Employee Reviews</h4>
+                    <h4 className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>Employee Reviews</h4>
                   </div>
                   <div className="flex items-center gap-2">
                     <DataTrustBadge verified={false} />
@@ -404,7 +406,7 @@ CRITICAL: Include direct URLs to each source used.`,
                 </div>
                 <div className="flex items-center gap-4 mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="text-3xl font-bold text-slate-800">
+                    <div className="text-3xl font-bold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>
                       {enrichedData.employee_sentiment.overall_rating != null && !isNaN(enrichedData.employee_sentiment.overall_rating) 
                         ? Math.min(5, Math.max(0, enrichedData.employee_sentiment.overall_rating)).toFixed(1) 
                         : 'N/A'}
@@ -417,14 +419,14 @@ CRITICAL: Include direct URLs to each source used.`,
                       style={{ width: `${(Math.min(5, Math.max(0, enrichedData.employee_sentiment.overall_rating || 0)) / 5) * 100}%` }}
                     />
                   </div>
-                  <div className="text-sm font-medium text-slate-700">
+                  <div className="text-sm font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                     {enrichedData.employee_sentiment.recommend_percent}% recommend
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-xs font-medium text-emerald-700 mb-1">Top Pros</p>
-                    <ul className="text-xs text-slate-600 space-y-1">
+                    <ul className="text-xs space-y-1" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                       {enrichedData.employee_sentiment.top_pros?.slice(0, 3).map((pro, i) => (
                         <li key={i} className="flex items-start gap-1">
                           <CheckCircle className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
@@ -434,8 +436,8 @@ CRITICAL: Include direct URLs to each source used.`,
                     </ul>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-red-700 mb-1">Top Cons</p>
-                    <ul className="text-xs text-slate-600 space-y-1">
+                    <p className="text-xs font-medium mb-1" style={{ color: isDark ? '#fca5a5' : '#dc2626' }}>Top Cons</p>
+                    <ul className="text-xs space-y-1" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                       {enrichedData.employee_sentiment.top_cons?.slice(0, 3).map((con, i) => (
                         <li key={i} className="flex items-start gap-1">
                           <AlertCircle className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
@@ -452,7 +454,7 @@ CRITICAL: Include direct URLs to each source used.`,
             {enrichedData.company_growth && (
               <div className={aiEstimateCardStyle} style={aiEstimateBorderStyle}>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-slate-800">Company Growth Metrics</h4>
+                  <h4 className="text-sm font-semibold" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>Company Growth Metrics</h4>
                   <div className="flex items-center gap-2">
                     <DataTrustBadge verified={false} />
                     <a 
@@ -466,19 +468,19 @@ CRITICAL: Include direct URLs to each source used.`,
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 rounded-xl bg-blue-50">
-                    <p className="text-xs text-blue-700">Employees</p>
-                    <p className="text-lg font-bold text-blue-800">
+                  <div className="text-center p-3 rounded-xl" style={{ background: isDark ? 'rgba(30,58,138,0.2)' : '#eff6ff' }}>
+                    <p className="text-xs" style={{ color: isDark ? '#93c5fd' : '#1d4ed8' }}>Employees</p>
+                    <p className="text-lg font-bold" style={{ color: isDark ? '#bfdbfe' : '#1e3a8a' }}>
                       {enrichedData.company_growth.employee_count?.toLocaleString()}
                     </p>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-blue-50">
-                    <p className="text-xs text-blue-700">6M Growth</p>
-                    <p className="text-lg font-bold text-blue-800">{enrichedData.company_growth.six_month_growth}</p>
+                  <div className="text-center p-3 rounded-xl" style={{ background: isDark ? 'rgba(30,58,138,0.2)' : '#eff6ff' }}>
+                    <p className="text-xs" style={{ color: isDark ? '#93c5fd' : '#1d4ed8' }}>6M Growth</p>
+                    <p className="text-lg font-bold" style={{ color: isDark ? '#bfdbfe' : '#1e3a8a' }}>{enrichedData.company_growth.six_month_growth}</p>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-blue-50">
-                    <p className="text-xs text-blue-700">Hiring Pace</p>
-                    <p className="text-lg font-bold text-blue-800">{enrichedData.company_growth.hiring_velocity}</p>
+                  <div className="text-center p-3 rounded-xl" style={{ background: isDark ? 'rgba(30,58,138,0.2)' : '#eff6ff' }}>
+                    <p className="text-xs" style={{ color: isDark ? '#93c5fd' : '#1d4ed8' }}>Hiring Pace</p>
+                    <p className="text-lg font-bold" style={{ color: isDark ? '#bfdbfe' : '#1e3a8a' }}>{enrichedData.company_growth.hiring_velocity}</p>
                   </div>
                 </div>
               </div>
@@ -486,7 +488,7 @@ CRITICAL: Include direct URLs to each source used.`,
 
             {/* News Sentiment */}
             {enrichedData.news_sentiment && (
-              <div className={`p-4 rounded-2xl border ${getSentimentColor(enrichedData.news_sentiment.overall)}`}>
+              <div className="p-4 rounded-2xl" style={getSentimentStyle(enrichedData.news_sentiment.overall)}>
                 <h4 className="text-sm font-semibold mb-3">Recent News Sentiment (30 days)</h4>
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   {/* Sentiment Distribution Chart */}
@@ -520,53 +522,54 @@ CRITICAL: Include direct URLs to each source used.`,
                   <div className="flex flex-col justify-center gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-medium text-slate-700">
+                      <span className="text-xs font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                         {enrichedData.news_sentiment.positive_count} Positive
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-slate-400" />
-                      <span className="text-xs font-medium text-slate-700">
+                      <span className="text-xs font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                         {enrichedData.news_sentiment.neutral_count} Neutral
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-red-500" />
-                      <span className="text-xs font-medium text-slate-700">
+                      <span className="text-xs font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                         {enrichedData.news_sentiment.negative_count} Negative
                       </span>
                     </div>
                   </div>
                 </div>
                 {/* Clickable Headlines */}
-                <div className="space-y-2 pt-3 border-t border-slate-200">
-                  {enrichedData.news_sentiment.key_headlines?.slice(0, 4).map((headline, i) => {
-                    const isExpanded = expandedHeadline === i;
-                    const headlineObj = typeof headline === 'object' ? headline : { title: headline };
-                    return (
-                      <div key={i} className="group">
-                        <button
-                          onClick={() => setExpandedHeadline(isExpanded ? null : i)}
-                          className="w-full text-left p-2 rounded-lg hover:bg-white/50 transition-colors"
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                              headlineObj.sentiment === 'positive' ? 'bg-emerald-500' :
-                              headlineObj.sentiment === 'negative' ? 'bg-red-500' : 'bg-slate-400'
-                            }`} />
-                            <div className="flex-1">
-                              <p className="text-xs text-slate-700 font-medium group-hover:text-slate-900">
-                                {headlineObj.title}
-                              </p>
-                              {headlineObj.date && (
-                                <p className="text-xs text-slate-500 mt-0.5">{headlineObj.date}</p>
-                              )}
-                            </div>
-                            {headlineObj.url && (
-                              <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                <div className="space-y-2 pt-3" style={{ borderTop: isDark ? '1px solid rgba(51,65,85,0.5)' : '1px solid #e2e8f0' }}>
+                {enrichedData.news_sentiment.key_headlines?.slice(0, 4).map((headline, i) => {
+                  const isExpanded = expandedHeadline === i;
+                  const headlineObj = typeof headline === 'object' ? headline : { title: headline };
+                  return (
+                    <div key={i} className="group">
+                      <button
+                        onClick={() => setExpandedHeadline(isExpanded ? null : i)}
+                        className="w-full text-left p-2 rounded-lg transition-colors"
+                        style={{ background: 'transparent' }}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className={`w-2 h-2 rounded-full mt-1.5 ${
+                            headlineObj.sentiment === 'positive' ? 'bg-emerald-500' :
+                            headlineObj.sentiment === 'negative' ? 'bg-red-500' : 'bg-slate-400'
+                          }`} />
+                          <div className="flex-1">
+                            <p className="text-xs font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
+                              {headlineObj.title}
+                            </p>
+                            {headlineObj.date && (
+                              <p className="text-xs mt-0.5" style={{ color: isDark ? '#64748b' : '#94a3b8' }}>{headlineObj.date}</p>
                             )}
                           </div>
-                        </button>
+                          {headlineObj.url && (
+                            <ExternalLink className="w-3 h-3" style={{ color: isDark ? '#64748b' : '#94a3b8' }} />
+                          )}
+                        </div>
+                      </button>
                         <AnimatePresence>
                           {isExpanded && headlineObj.url && (
                             <motion.div
@@ -595,16 +598,18 @@ CRITICAL: Include direct URLs to each source used.`,
 
             {/* Risks */}
             {enrichedData.risks && enrichedData.risks.length > 0 && (
-              <div className="p-4 rounded-2xl bg-white border border-red-200">
-                <h4 className="text-sm font-semibold text-slate-800 mb-3">⚠️ Identified Risks</h4>
+              <div className="p-4 rounded-2xl" style={{ background: isDark ? 'rgba(30,41,59,0.6)' : '#ffffff', border: isDark ? '1px solid rgba(127,29,29,0.3)' : '1px solid #fecaca' }}>
+                <h4 className="text-sm font-semibold mb-3" style={{ color: isDark ? '#f1f5f9' : '#1e293b' }}>⚠️ Identified Risks</h4>
                 <div className="space-y-2">
                   {enrichedData.risks.map((risk, i) => {
                     const isExpanded = expandedRisk === i;
+                    const riskStyle = getRiskStyle(risk.severity);
                     return (
                       <div key={i}>
                         <button
                           onClick={() => setExpandedRisk(isExpanded ? null : i)}
-                          className={`w-full text-left p-3 rounded-xl border ${getRiskColor(risk.severity)} hover:shadow-md transition-all`}
+                          className="w-full text-left p-3 rounded-xl transition-all hover:opacity-90"
+                          style={riskStyle}
                         >
                           <div className="flex items-center justify-between mb-1">
                             <p className="text-sm font-semibold">{risk.type}</p>
@@ -625,10 +630,11 @@ CRITICAL: Include direct URLs to each source used.`,
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="mt-2 ml-3 p-3 rounded-lg bg-white border border-slate-200"
+                              className="mt-2 ml-3 p-3 rounded-lg"
+                              style={{ background: isDark ? 'rgba(30,41,59,0.8)' : '#ffffff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }}
                             >
                               {risk.details && (
-                                <p className="text-xs text-slate-700 mb-2">{risk.details}</p>
+                                <p className="text-xs mb-2" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{risk.details}</p>
                               )}
                               {risk.source_url && (
                                 <a
@@ -655,24 +661,24 @@ CRITICAL: Include direct URLs to each source used.`,
 
             {/* Data Freshness */}
             {enrichedData.data_freshness && (
-              <div className="p-3 rounded-xl bg-slate-100 border border-slate-200">
-                <p className="text-xs font-medium text-slate-600 mb-2">Data Freshness</p>
+              <div className="p-3 rounded-xl" style={{ background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+                <p className="text-xs font-medium mb-2" style={{ color: isDark ? '#94a3b8' : '#475569' }}>Data Freshness</p>
                 <div className="grid grid-cols-4 gap-2 text-xs">
                   <div>
-                    <p className="text-slate-500">Glassdoor</p>
-                    <p className="font-medium text-slate-700">{enrichedData.data_freshness.glassdoor}</p>
+                    <p style={{ color: isDark ? '#64748b' : '#94a3b8' }}>Glassdoor</p>
+                    <p className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{enrichedData.data_freshness.glassdoor}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Crunchbase</p>
-                    <p className="font-medium text-slate-700">{enrichedData.data_freshness.crunchbase}</p>
+                    <p style={{ color: isDark ? '#64748b' : '#94a3b8' }}>Crunchbase</p>
+                    <p className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{enrichedData.data_freshness.crunchbase}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">LinkedIn</p>
-                    <p className="font-medium text-slate-700">{enrichedData.data_freshness.linkedin}</p>
+                    <p style={{ color: isDark ? '#64748b' : '#94a3b8' }}>LinkedIn</p>
+                    <p className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{enrichedData.data_freshness.linkedin}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">News</p>
-                    <p className="font-medium text-slate-700">{enrichedData.data_freshness.news}</p>
+                    <p style={{ color: isDark ? '#64748b' : '#94a3b8' }}>News</p>
+                    <p className="font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{enrichedData.data_freshness.news}</p>
                   </div>
                 </div>
               </div>

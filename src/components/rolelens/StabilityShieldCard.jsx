@@ -101,7 +101,7 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
       {isLoading && (
         <div className="space-y-3 py-4">
           {[0, 0.2, 0.4].map((d, i) => (
-            <motion.div key={i} animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: d }} className="h-4 bg-slate-300 rounded-full" style={{ width: `${75 + i * 10}%` }} />
+            <motion.div key={i} animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: d }} className="h-4 rounded-full" style={{ width: `${75 + i * 10}%`, background: isDark ? '#334155' : '#cbd5e1' }} />
           ))}
         </div>
       )}
@@ -154,10 +154,11 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
 
             {/* Job Security factors — hide unknown public-company metrics for private companies */}
             {jobSecurityData?._factors?.filter(f => f.icon !== 'unknown').map((factor, i) => (
-              <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
-                factor.icon === 'positive' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                'bg-rose-50 text-rose-700 border border-rose-100'
-              }`}>
+            <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium" style={
+              factor.icon === 'positive'
+                ? { background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', color: isDark ? '#6ee7b7' : '#047857', border: isDark ? '1px solid rgba(6,78,59,0.4)' : '1px solid #d1fae5' }
+                : { background: isDark ? 'rgba(127,29,29,0.2)' : '#fff1f2', color: isDark ? '#fca5a5' : '#be123c', border: isDark ? '1px solid rgba(127,29,29,0.4)' : '1px solid #fecdd3' }
+            }>
                 <span className="text-sm">{factor.icon === 'positive' ? '✅' : '⚠️'}</span>
                 <span className="flex-1">{factor.label}</span>
                 {factor.delta !== 0 && (
@@ -217,7 +218,7 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
           {/* Footer */}
           <div className="pt-3 border-t border-slate-200/50 dark:border-slate-700/50 flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              {jobSecurityData?.confidence && <ConfBadge confidence={jobSecurityData.confidence} />}
+              {jobSecurityData?.confidence && <ConfBadge confidence={jobSecurityData.confidence} isDark={isDark} />}
             </div>
             {allSources.length > 0 && (
               <p className="text-[10px]" style={{ color: isDark ? '#64748b' : '#A89E9A' }}>
@@ -266,8 +267,8 @@ function AnalystBar({ data }) {
   );
 }
 
-function ConfBadge({ confidence }) {
-  if (confidence === 'high') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#EAF0E7', color: '#4A6741' }}>✓ High Confidence</span>;
-  if (confidence === 'medium') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#F5F1EB', color: '#B07535' }}>~ Medium</span>;
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#F2EAE9', color: '#C0706A' }}>⚠ Estimated</span>;
+function ConfBadge({ confidence, isDark }) {
+  if (confidence === 'high') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: isDark ? 'rgba(6,78,59,0.3)' : '#EAF0E7', color: isDark ? '#6ee7b7' : '#4A6741' }}>✓ High Confidence</span>;
+  if (confidence === 'medium') return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: isDark ? 'rgba(120,53,15,0.3)' : '#F5F1EB', color: isDark ? '#fcd34d' : '#B07535' }}>~ Medium</span>;
+  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: isDark ? 'rgba(127,29,29,0.3)' : '#F2EAE9', color: isDark ? '#fca5a5' : '#C0706A' }}>⚠ Estimated</span>;
 }
