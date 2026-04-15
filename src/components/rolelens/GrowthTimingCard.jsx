@@ -86,7 +86,7 @@ export default function GrowthTimingCard({ careerData, timingData, status }) {
       {isLoading && (
         <div className="flex-1 space-y-3 py-4">
           {[0, 0.2, 0.4].map((d, i) => (
-            <motion.div key={i} animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: d }} className="h-4 bg-slate-300 rounded-full" style={{ width: `${75 + i * 10}%` }} />
+            <motion.div key={i} animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: d }} className="h-4 rounded-full" style={{ width: `${75 + i * 10}%`, background: isDark ? '#334155' : '#cbd5e1' }} />
           ))}
         </div>
       )}
@@ -106,7 +106,7 @@ export default function GrowthTimingCard({ careerData, timingData, status }) {
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{careerData.insight}</p>
             )}
             {careerData?._brightOutlook && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200 shadow-sm">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm" style={{ background: isDark ? 'rgba(120,53,15,0.3)' : '#fef3c7', color: isDark ? '#fcd34d' : '#92400e', borderColor: isDark ? 'rgba(120,53,15,0.5)' : '#fde68a' }}>
                 <span>☀️</span> Bright Outlook (O*NET)
               </div>
             )}
@@ -161,11 +161,11 @@ export default function GrowthTimingCard({ careerData, timingData, status }) {
 
           {/* Timing Signal Callout */}
           {macroScore != null && (
-            <div className={`p-3 rounded-xl border mb-4 ${
-              macroScore >= 75 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
-              macroScore >= 50 ? 'bg-amber-50 border-amber-200 text-amber-800' :
-              'bg-rose-50 border-rose-200 text-rose-800'
-            }`}>
+            <div className="p-3 rounded-xl border mb-4" style={
+              macroScore >= 75 ? { background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', borderColor: isDark ? 'rgba(6,78,59,0.4)' : '#a7f3d0', color: isDark ? '#6ee7b7' : '#065f46' } :
+              macroScore >= 50 ? { background: isDark ? 'rgba(120,53,15,0.2)' : '#fffbeb', borderColor: isDark ? 'rgba(120,53,15,0.4)' : '#fde68a', color: isDark ? '#fcd34d' : '#92400e' } :
+              { background: isDark ? 'rgba(127,29,29,0.2)' : '#fff1f2', borderColor: isDark ? 'rgba(127,29,29,0.4)' : '#fecdd3', color: isDark ? '#fca5a5' : '#9f1239' }
+            }>
               <div className="flex items-center gap-2">
                 <span className="text-lg">{macroScore >= 75 ? '🟢' : macroScore >= 50 ? '🟡' : '🔴'}</span>
                 <div>

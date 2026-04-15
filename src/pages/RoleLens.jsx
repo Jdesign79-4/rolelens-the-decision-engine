@@ -38,6 +38,7 @@ import PartialDataNotification from '@/components/rolelens/PartialDataNotificati
 import StabilityShieldCard from '@/components/rolelens/StabilityShieldCard';
 import GrowthTimingCard from '@/components/rolelens/GrowthTimingCard';
 import { Shield, DollarSign, TrendingUp, Clock, AlertTriangle, Lightbulb, SlidersHorizontal, X } from 'lucide-react';
+import { useDarkMode } from '@/components/DarkModeContext';
 
 const DEFAULT_CATEGORIES = [
   { id: 'dream', name: 'Dream Companies', icon: 'Star', color: 'from-amber-500 to-orange-500' },
@@ -733,6 +734,7 @@ export default function RoleLens() {
 }
 
 function RoleLensContent() {
+  const { isDark } = useDarkMode();
   const [activeJob, setActiveJob] = useState(null);
   const [customJobs, setCustomJobs] = useState({});
   const [tunerSettings, setTunerSettings] = useState({
@@ -1042,7 +1044,7 @@ function RoleLensContent() {
                 style={
                   searchMode === 'url'
                     ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
-                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
+                    : { background: isDark ? '#1e293b' : '#F0EAE1', color: isDark ? '#94a3b8' : '#786F6A', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
                 }
               >
                 🔗 Paste Job URL
@@ -1053,7 +1055,7 @@ function RoleLensContent() {
                 style={
                   searchMode === 'manual'
                     ? { background: '#C0706A', color: '#FFFFFF', boxShadow: '3px 3px 10px rgba(192,112,106,0.3), -2px -2px 6px rgba(255,255,255,0.5)', borderRadius: '999px', border: 'none' }
-                    : { background: '#F0EAE1', color: '#786F6A', boxShadow: '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
+                    : { background: isDark ? '#1e293b' : '#F0EAE1', color: isDark ? '#94a3b8' : '#786F6A', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '3px 3px 8px #C2BCB4, -2px -2px 6px #FEFAF4', borderRadius: '999px', border: 'none' }
                 }
               >
                 ✏️ Search Manually
@@ -1092,17 +1094,17 @@ function RoleLensContent() {
                 className="mb-[18px]"
               >
                 {currentJob ? (
-                  <div className="flex items-start gap-4" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F5F0EB 0%, #F2E8E7 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
+                  <div className="flex items-start gap-4" style={{ padding: '20px 22px', background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F5F0EB 0%, #F2E8E7 100%)', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden shadow-sm flex-shrink-0">
                       <img src={currentJob.meta?.logo} alt="" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h1 className="tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', fontWeight: 600, color: '#272320' }}>
+                          <h1 className="tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', fontWeight: 600, color: isDark ? '#f1f5f9' : '#272320' }}>
                             {currentJob.isCompanyOnly ? currentJob.meta?.company : currentJob.meta?.title}
                           </h1>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap" style={{ fontSize: '13px', color: '#786F6A', fontWeight: 500 }}>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap" style={{ fontSize: '13px', color: isDark ? '#94a3b8' : '#786F6A', fontWeight: 500 }}>
                             {!currentJob.isCompanyOnly && (
                               <>
                                 <span className="font-medium text-slate-700">{currentJob.meta?.company}</span>
@@ -1199,7 +1201,7 @@ function RoleLensContent() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-start gap-4" style={{ padding: '20px 22px', background: 'linear-gradient(135deg, #F5F0EB 0%, #F2E8E7 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
+                  <div className="flex items-start gap-4" style={{ padding: '20px 22px', background: isDark ? 'linear-gradient(135deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(135deg, #F5F0EB 0%, #F2E8E7 100%)', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
                     <div className="flex-1 min-w-0 text-center text-slate-500 py-2">
                       Ready to analyze a role. Please enter details above.
                     </div>
@@ -1211,7 +1213,7 @@ function RoleLensContent() {
 
 
             {/* Widget Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-[20px_22px] mb-[18px]" style={{ background: 'linear-gradient(180deg, #F5F1EC 0%, #EDE7DE 100%)', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-[20px_22px] mb-[18px]" style={{ background: isDark ? 'linear-gradient(180deg, #1e293b 0%, #1a2332 100%)' : 'linear-gradient(180deg, #F5F1EC 0%, #EDE7DE 100%)', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}>
               <div className="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <button
                   onClick={() => setShowSavedLists(true)}
@@ -1406,7 +1408,7 @@ function RoleLensContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-6 p-4"
-                style={{ background: '#F0EAE1', boxShadow: '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}
+                style={{ background: isDark ? '#1e293b' : '#F0EAE1', boxShadow: isDark ? '2px 2px 8px rgba(0,0,0,0.4), -1px -1px 4px rgba(30,41,59,0.3)' : '6px 6px 14px #C2BCB4, -5px -5px 12px #FEFAF4', borderRadius: '20px', border: 'none' }}
               >
                 <p className="text-sm font-medium text-slate-600 mb-3">Hidden Widgets - Click to Show:</p>
                 <div className="flex flex-wrap gap-2">
