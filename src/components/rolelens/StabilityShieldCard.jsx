@@ -148,14 +148,13 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
               </div>
             )}
 
-            {/* Job Security factors */}
-            {jobSecurityData?._factors?.map((factor, i) => (
+            {/* Job Security factors — hide unknown public-company metrics for private companies */}
+            {jobSecurityData?._factors?.filter(f => f.icon !== 'unknown').map((factor, i) => (
               <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
                 factor.icon === 'positive' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                factor.icon === 'negative' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
-                'bg-slate-50 text-slate-500 border border-slate-100'
+                'bg-rose-50 text-rose-700 border border-rose-100'
               }`}>
-                <span className="text-sm">{factor.icon === 'positive' ? '✅' : factor.icon === 'negative' ? '⚠️' : '❓'}</span>
+                <span className="text-sm">{factor.icon === 'positive' ? '✅' : '⚠️'}</span>
                 <span className="flex-1">{factor.label}</span>
                 {factor.delta !== 0 && (
                   <span className={`font-bold ${factor.delta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
