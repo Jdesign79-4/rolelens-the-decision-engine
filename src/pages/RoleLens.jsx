@@ -971,7 +971,7 @@ function RoleLensContent() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute left-0 top-0 h-full w-80 bg-[#1E3259] dark:bg-slate-900 shadow-2xl flex flex-col"
+              className="absolute left-0 top-0 h-full w-80 bg-[#1E3259] dark:bg-[#0f172a] shadow-2xl flex flex-col"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex-shrink-0 flex justify-end p-3">
@@ -1017,8 +1017,8 @@ function RoleLensContent() {
         </div>
 
         {/* Desktop Sidebar */}
-        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50" style={{ background: '#1E3259' }}>
-          <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)', boxShadow: 'inset 0 0 60px rgba(255,255,255,0.04)' }} />
+        <div className="hidden lg:block w-80 xl:w-96 flex-shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-slate-200/50 dark:border-slate-700/50" style={{ background: isDark ? '#0f172a' : '#1E3259' }}>
+          {!isDark && <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)', boxShadow: 'inset 0 0 60px rgba(255,255,255,0.04)' }} />}
           <div className="absolute top-4 right-4">
             <DarkModeToggle />
           </div>

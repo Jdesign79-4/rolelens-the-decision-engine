@@ -24,7 +24,7 @@ export default function AstrolabePanel({ settings: rawSettings, onSettingsChange
       {/* Tuner Sliders */}
       <div className="flex-1 mt-4">
         {/* Risk Appetite */}
-        <div style={{ background: isDark ? '#1e293b' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-teal-200" />
@@ -51,7 +51,7 @@ export default function AstrolabePanel({ settings: rawSettings, onSettingsChange
         </div>
 
         {/* Life Anchors */}
-        <div style={{ background: isDark ? '#1e293b' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-teal-200" />
@@ -78,7 +78,7 @@ export default function AstrolabePanel({ settings: rawSettings, onSettingsChange
         </div>
 
         {/* Career Stage */}
-        <div style={{ background: isDark ? '#1e293b' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Sprout className="w-4 h-4 text-emerald-300" />
@@ -115,7 +115,7 @@ export default function AstrolabePanel({ settings: rawSettings, onSettingsChange
         </div>
 
         {/* Honest Self-Reflection */}
-        <div style={{ background: isDark ? '#1e293b' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
+        <div style={{ background: isDark ? 'rgba(15,23,42,0.8)' : 'rgba(255,255,255,0.12)', borderRadius: '16px', boxShadow: isDark ? '2px 2px 6px rgba(0,0,0,0.3), -1px -1px 4px rgba(30,41,59,0.3)' : '0 1px 4px rgba(0,0,0,0.1)', padding: '14px 14px 12px', marginBottom: '10px' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-cyan-200" />
