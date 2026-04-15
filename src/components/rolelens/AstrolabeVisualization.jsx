@@ -262,8 +262,8 @@ export default function AstrolabeVisualization({ settings, isConnecting }) {
       {/* Archetype Label */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center mb-4">
         <span className="text-xs font-medium px-3 py-1 rounded-full" style={{
-          backgroundColor: isRiskSeeker && isNomad ? 'rgba(239, 68, 68, 0.1)' : isProvider && isOak ? 'rgba(34, 197, 94, 0.1)' : 'rgba(100, 116, 139, 0.1)',
-          color: isRiskSeeker && isNomad ? '#ef4444' : isProvider && isOak ? '#22c55e' : '#64748b'
+          backgroundColor: isRiskSeeker && isNomad ? 'rgba(239, 68, 68, 0.15)' : isProvider && isOak ? 'rgba(34, 197, 94, 0.15)' : 'rgba(255,255,255,0.1)',
+          color: isRiskSeeker && isNomad ? '#ef4444' : isProvider && isOak ? '#22c55e' : 'rgba(255,255,255,0.7)'
         }}>
           {isRiskSeeker && isNomad && "🔥 Bold Explorer"}
           {isRiskSeeker && isProvider && "⚡ Calculated Risk-Taker"}

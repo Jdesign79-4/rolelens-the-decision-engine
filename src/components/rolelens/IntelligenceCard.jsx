@@ -20,20 +20,20 @@ export default function IntelligenceCard({
   const renderConfidenceBadge = (confidence) => {
     if (confidence === 'high') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#EAF0E7', color: '#4A6741' }}>
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: isDark ? 'rgba(6,78,59,0.3)' : '#EAF0E7', color: isDark ? '#6ee7b7' : '#4A6741' }}>
           ✓ High Confidence
         </span>
       );
     }
     if (confidence === 'medium') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#F5F1EB', color: '#B07535' }}>
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: isDark ? 'rgba(120,53,15,0.3)' : '#F5F1EB', color: isDark ? '#fcd34d' : '#B07535' }}>
           ~ Medium
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: '#F2EAE9', color: '#C0706A' }}>
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: isDark ? 'rgba(127,29,29,0.3)' : '#F2EAE9', color: isDark ? '#fca5a5' : '#C0706A' }}>
         ⚠ Estimated
       </span>
     );
@@ -126,18 +126,16 @@ export default function IntelligenceCard({
           <div className="flex-1 flex flex-col">
             <div className="mb-4">
               {(() => {
-                // Normalize score: if it looks like a 0-10 scale, multiply by 10
                 const rawScore = dimensionData.score;
                 const normalizedScore = (rawScore != null && rawScore > 0 && rawScore <= 10) ? Math.round(rawScore * 10) : (rawScore != null ? Math.round(rawScore) : null);
-                // Hide score line entirely for Compensation when BLS data is present but score is null
-              const hasBLSData = title === 'Compensation' && dimensionData.market_median;
-              return normalizedScore != null ? (
+                const hasBLSData = title === 'Compensation' && dimensionData.market_median;
+                return normalizedScore != null ? (
                   <>
-                    <div className="flex justify-between text-xs text-slate-500 mb-1">
+                    <div className="flex justify-between text-xs mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
                       <span>Score</span>
                       <span>{normalizedScore}/100</span>
                     </div>
-                    <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="h-2 rounded-full overflow-hidden" style={{ background: isDark ? '#334155' : '#e2e8f0' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${normalizedScore}%` }}
@@ -147,12 +145,12 @@ export default function IntelligenceCard({
                     </div>
                   </>
                 ) : hasBLSData ? null : (
-                  <div className="text-xs text-slate-400 italic">Score not available</div>
+                  <div className="text-xs italic" style={{ color: isDark ? '#64748b' : '#94a3b8' }}>Score not available</div>
                 );
               })()}
             </div>
 
-            <p className="text-sm text-slate-700 leading-relaxed mb-4">
+            <p className="text-sm leading-relaxed mb-4" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
               {dimensionData.insight}
             </p>
 
@@ -165,8 +163,8 @@ export default function IntelligenceCard({
                 )}
 
                 {/* Percentile bar visualization */}
-                <div className="p-4 rounded-xl bg-white/50 border border-slate-200/50">
-                  <div className="flex justify-between text-xs text-slate-500 mb-2">
+                <div className="p-4 rounded-xl border" style={{ background: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.5)', borderColor: isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.5)' }}>
+                  <div className="flex justify-between text-xs mb-2" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
                     <span>10th: {dimensionData._p10 ? '$' + Math.round(dimensionData._p10).toLocaleString() : (dimensionData.market_low ? '$' + Math.round(dimensionData.market_low).toLocaleString() : 'N/A')}</span>
                     <span>90th: {dimensionData._p90 ? '$' + Math.round(dimensionData._p90).toLocaleString() : (dimensionData.market_high ? '$' + Math.round(dimensionData.market_high).toLocaleString() : 'N/A')}</span>
                   </div>
@@ -176,24 +174,24 @@ export default function IntelligenceCard({
                     const range = hi - lo || 1;
                     const pct = (v) => Math.max(0, Math.min(100, ((v - lo) / range) * 100));
                     return (
-                      <div className="relative h-4 bg-slate-200 rounded-full w-full mb-2">
+                      <div className="relative h-4 rounded-full w-full mb-2" style={{ background: isDark ? '#334155' : '#e2e8f0' }}>
                         {dimensionData.market_25th && dimensionData.market_75th && (
-                          <div className="absolute h-full bg-slate-400 opacity-30" style={{ left: `${pct(dimensionData.market_25th)}%`, width: `${pct(dimensionData.market_75th) - pct(dimensionData.market_25th)}%` }} />
+                          <div className="absolute h-full opacity-30" style={{ left: `${pct(dimensionData.market_25th)}%`, width: `${pct(dimensionData.market_75th) - pct(dimensionData.market_25th)}%`, background: isDark ? '#64748b' : '#94a3b8' }} />
                         )}
                         {dimensionData.market_25th && (
-                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_25th)}%` }} />
+                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 z-10" style={{ left: `${pct(dimensionData.market_25th)}%`, background: isDark ? '#64748b' : '#94a3b8' }} />
                         )}
                         {dimensionData.market_75th && (
-                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-slate-400 z-10" style={{ left: `${pct(dimensionData.market_75th)}%` }} />
+                          <div className="absolute top-[-2px] bottom-[-2px] w-0.5 z-10" style={{ left: `${pct(dimensionData.market_75th)}%`, background: isDark ? '#64748b' : '#94a3b8' }} />
                         )}
                         {dimensionData._salaryLow && dimensionData._salaryHigh && (
                           <div className="absolute h-full bg-indigo-500 opacity-60 z-10" style={{ left: `${pct(dimensionData._salaryLow)}%`, width: `${pct(dimensionData._salaryHigh) - pct(dimensionData._salaryLow)}%` }} />
                         )}
-                        <div className="absolute top-[-4px] bottom-[-4px] w-1 bg-slate-800 z-20" style={{ left: `${pct(dimensionData.market_median)}%` }} />
+                        <div className="absolute top-[-4px] bottom-[-4px] w-1 z-20" style={{ left: `${pct(dimensionData.market_median)}%`, background: isDark ? '#f1f5f9' : '#1e293b' }} />
                       </div>
                     );
                   })()}
-                  <div className="flex justify-between text-[10px] text-slate-500 font-medium px-1">
+                  <div className="flex justify-between text-[10px] font-medium px-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
                     {dimensionData.market_25th && <span>25th</span>}
                     <span>Median: ${Math.round(dimensionData.market_median).toLocaleString()}</span>
                     {dimensionData.market_75th && <span>75th</span>}
@@ -259,8 +257,8 @@ export default function IntelligenceCard({
 
             {title === 'Market Sentiment' && dimensionData._analystData && (
               <div className="mb-4 space-y-3">
-                <div className="p-3 rounded-xl bg-white/50 border border-slate-200/50">
-                  <p className="text-xs font-semibold text-slate-700 mb-2">Analyst Consensus</p>
+                <div className="p-3 rounded-xl border" style={{ background: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.5)', borderColor: isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.5)' }}>
+                  <p className="text-xs font-semibold mb-2" style={{ color: isDark ? '#e2e8f0' : '#374151' }}>Analyst Consensus</p>
                   <div className="flex gap-1 h-6 w-full rounded overflow-hidden">
                     <div className="bg-emerald-500 h-full flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${Math.max(5, ((dimensionData._analystData.strongBuy + dimensionData._analystData.buy) / (dimensionData._analystData.strongBuy + dimensionData._analystData.buy + dimensionData._analystData.hold + dimensionData._analystData.sell + dimensionData._analystData.strongSell)) * 100)}%` }}>
                       {dimensionData._analystData.strongBuy + dimensionData._analystData.buy > 0 ? (dimensionData._analystData.strongBuy + dimensionData._analystData.buy) : ''}
@@ -272,7 +270,7 @@ export default function IntelligenceCard({
                       {dimensionData._analystData.sell + dimensionData._analystData.strongSell > 0 ? (dimensionData._analystData.sell + dimensionData._analystData.strongSell) : ''}
                     </div>
                   </div>
-                  <div className="flex justify-between text-[10px] mt-1 text-slate-500">
+                  <div className="flex justify-between text-[10px] mt-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
                     <span>Buy</span>
                     <span>Hold</span>
                     <span>Sell</span>
@@ -284,21 +282,21 @@ export default function IntelligenceCard({
             {title === 'Career Growth' && (
               <div className="mb-4 space-y-3">
                 {dimensionData._brightOutlook && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold border border-amber-200 shadow-sm">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm" style={{ background: isDark ? 'rgba(120,53,15,0.3)' : '#fef3c7', color: isDark ? '#fcd34d' : '#92400e', borderColor: isDark ? 'rgba(120,53,15,0.5)' : '#fde68a' }}>
                     <span>☀️</span> Bright Outlook (O*NET)
                   </div>
                 )}
                 {dimensionData._growthPct !== undefined && (
-                  <div className="p-3 rounded-xl bg-white/50 border border-slate-200/50">
-                    <p className="text-[10px] text-slate-500 mb-1">Projected Growth (2023-2033)</p>
+                  <div className="p-3 rounded-xl border" style={{ background: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.5)', borderColor: isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.5)' }}>
+                    <p className="text-[10px] mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Projected Growth (2023-2033)</p>
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
                         <div className="flex justify-between text-xs font-semibold mb-1">
-                          <span className="text-indigo-700">This Role: {dimensionData._growthPct}%</span>
-                          <span className="text-slate-500">Avg: 4%</span>
+                          <span style={{ color: isDark ? '#a5b4fc' : '#4338ca' }}>This Role: {dimensionData._growthPct}%</span>
+                          <span style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Avg: 4%</span>
                         </div>
-                        <div className="relative h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div className="absolute top-0 bottom-0 left-0 bg-slate-400 opacity-50" style={{ width: '4%' }} />
+                        <div className="relative h-2 rounded-full overflow-hidden" style={{ background: isDark ? '#334155' : '#e2e8f0' }}>
+                          <div className="absolute top-0 bottom-0 left-0 opacity-50" style={{ width: '4%', background: isDark ? '#64748b' : '#94a3b8' }} />
                           <div className={`absolute top-0 bottom-0 left-0 ${dimensionData._growthPct >= 4 ? 'bg-indigo-500' : 'bg-amber-500'}`} style={{ width: `${Math.max(0, Math.min(100, dimensionData._growthPct))}%` }} />
                         </div>
                       </div>
@@ -307,10 +305,10 @@ export default function IntelligenceCard({
                 )}
                 {dimensionData._related?.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-[10px] text-slate-500 mb-1">Career Pathways (Related Roles):</p>
+                    <p className="text-[10px] mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Career Pathways (Related Roles):</p>
                     <div className="flex flex-wrap gap-1">
                       {dimensionData._related.map((role, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-white border border-slate-200 text-[10px] text-slate-600 rounded">
+                        <span key={i} className="px-2 py-0.5 text-[10px] rounded" style={{ background: isDark ? '#1e293b' : '#ffffff', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0', color: isDark ? '#cbd5e1' : '#475569' }}>
                           {typeof role === 'string' ? role : role.title}
                         </span>
                       ))}
@@ -319,8 +317,8 @@ export default function IntelligenceCard({
                 )}
                 {dimensionData._techSkills?.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-[10px] text-slate-500 mb-1">Top Tech Skills:</p>
-                    <p className="text-[10px] text-slate-700 font-medium">
+                    <p className="text-[10px] mb-1" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Top Tech Skills:</p>
+                    <p className="text-[10px] font-medium" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>
                       {dimensionData._techSkills.map(s => typeof s === 'string' ? s : s.name).join(', ')}
                     </p>
                   </div>
@@ -330,18 +328,18 @@ export default function IntelligenceCard({
 
             {title === 'Job Security' && dimensionData._factors && (
               <div className="mb-4 space-y-2">
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Score Breakdown</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Score Breakdown</p>
                 <div className="space-y-1.5">
                   {dimensionData._factors.map((factor, i) => (
-                    <div key={i} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium ${
-                      factor.icon === 'positive' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                      factor.icon === 'negative' ? 'bg-rose-50 text-rose-700 border border-rose-100' :
-                      'bg-slate-50 text-slate-500 border border-slate-100'
-                    }`}>
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium" style={
+                      factor.icon === 'positive' ? { background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', color: isDark ? '#6ee7b7' : '#047857', border: isDark ? '1px solid rgba(6,78,59,0.4)' : '1px solid #d1fae5' } :
+                      factor.icon === 'negative' ? { background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', color: isDark ? '#fca5a5' : '#be123c', border: isDark ? '1px solid rgba(127,29,29,0.4)' : '1px solid #fecaca' } :
+                      { background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', color: isDark ? '#94a3b8' : '#64748b', border: isDark ? '1px solid #334155' : '1px solid #e2e8f0' }
+                    }>
                       <span className="text-sm">{factor.icon === 'positive' ? '✅' : factor.icon === 'negative' ? '⚠️' : '❓'}</span>
                       <span className="flex-1">{factor.label}</span>
                       {factor.delta !== 0 && (
-                        <span className={`font-bold ${factor.delta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <span className="font-bold" style={{ color: factor.delta > 0 ? (isDark ? '#6ee7b7' : '#059669') : (isDark ? '#fca5a5' : '#e11d48') }}>
                           {factor.delta > 0 ? '+' : ''}{factor.delta}
                         </span>
                       )}
@@ -349,7 +347,7 @@ export default function IntelligenceCard({
                   ))}
                 </div>
                 {dimensionData._confidenceLabel && (
-                  <div className="mt-2 text-[10px] text-slate-500 flex items-center gap-1.5">
+                  <div className="mt-2 text-[10px] flex items-center gap-1.5" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
                     <span className="font-semibold">Confidence:</span>
                     <span>{dimensionData._confidenceLabel}</span>
                   </div>
@@ -360,7 +358,11 @@ export default function IntelligenceCard({
             {title === 'Risk Assessment' && (
               <div className="mb-4 space-y-3">
                 {dimensionData._warnFound !== undefined && (
-                  <div className={`p-3 rounded-xl border ${dimensionData._warnFound ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
+                  <div className="p-3 rounded-xl border" style={
+                    dimensionData._warnFound
+                      ? { background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', borderColor: isDark ? 'rgba(127,29,29,0.4)' : '#fecaca', color: isDark ? '#fca5a5' : '#9f1239' }
+                      : { background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', borderColor: isDark ? 'rgba(6,78,59,0.4)' : '#d1fae5', color: isDark ? '#6ee7b7' : '#065f46' }
+                  }>
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{dimensionData._warnFound ? '🚨' : '✅'}</span>
                       <div>
@@ -373,22 +375,22 @@ export default function IntelligenceCard({
                 
                 {dimensionData._riskFlagObjects?.length > 0 ? (
                   <div className="space-y-2">
-                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Detected Risks</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>Detected Risks</p>
                     {dimensionData._riskFlagObjects.map((flag, i) => (
-                      <div key={i} className={`p-2.5 rounded-lg border flex gap-2 items-start ${
-                        flag.severity === 'high' ? 'bg-rose-50 border-rose-100 text-rose-900' : 
-                        flag.severity === 'medium' ? 'bg-amber-50 border-amber-100 text-amber-900' : 
-                        'bg-slate-50 border-slate-200 text-slate-700'
-                      }`}>
+                      <div key={i} className="p-2.5 rounded-lg border flex gap-2 items-start" style={
+                        flag.severity === 'high' ? { background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', borderColor: isDark ? 'rgba(127,29,29,0.4)' : '#fecaca', color: isDark ? '#fca5a5' : '#9f1239' } :
+                        flag.severity === 'medium' ? { background: isDark ? 'rgba(120,53,15,0.2)' : '#fffbeb', borderColor: isDark ? 'rgba(120,53,15,0.4)' : '#fde68a', color: isDark ? '#fcd34d' : '#92400e' } :
+                        { background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', borderColor: isDark ? '#334155' : '#e2e8f0', color: isDark ? '#cbd5e1' : '#374151' }
+                      }>
                         <span className="text-sm shrink-0">{flag.severity === 'high' ? '🔴' : flag.severity === 'medium' ? '🟡' : '⚪'}</span>
                         <p className="text-xs font-medium leading-relaxed">{flag.text}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center gap-2">
+                  <div className="p-3 rounded-xl border flex items-center justify-center gap-2" style={{ background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', borderColor: isDark ? '#334155' : '#e2e8f0' }}>
                     <span className="text-emerald-500">✓</span>
-                    <p className="text-xs text-slate-600 font-medium">No verified risk signals detected in available data.</p>
+                    <p className="text-xs font-medium" style={{ color: isDark ? '#cbd5e1' : '#475569' }}>No verified risk signals detected in available data.</p>
                   </div>
                 )}
               </div>

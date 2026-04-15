@@ -115,7 +115,7 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
                 <span>Composite Score</span>
                 <span>{compositeScore}/100</span>
               </div>
-              <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: isDark ? '#334155' : '#e2e8f0' }}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${compositeScore}%` }}
@@ -124,7 +124,7 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
                   style={{ background: compositeScore >= 70 ? '#22c55e' : compositeScore >= 45 ? '#f59e0b' : '#ef4444' }}
                 />
               </div>
-              <div className="flex gap-3 mt-2 text-[10px] text-slate-500">
+              <div className="flex gap-3 mt-2 text-[10px]" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>
                 {jsScore != null && <span>Security: {jsScore}</span>}
                 {raScore != null && <span>Risk: {raScore}</span>}
                 {msScore != null && <span>Sentiment: {msScore}</span>}
@@ -137,7 +137,11 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
           <div className="space-y-2 mb-5">
             {/* WARN Act — deduplicated from both Job Security and Risk Assessment */}
             {riskData?._warnFound !== undefined && (
-              <div className={`p-3 rounded-xl border ${riskData._warnFound ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
+              <div className="p-3 rounded-xl border" style={
+                riskData._warnFound
+                  ? { background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', borderColor: isDark ? 'rgba(127,29,29,0.4)' : '#fecaca', color: isDark ? '#fca5a5' : '#9f1239' }
+                  : { background: isDark ? 'rgba(6,78,59,0.2)' : '#ecfdf5', borderColor: isDark ? 'rgba(6,78,59,0.4)' : '#d1fae5', color: isDark ? '#6ee7b7' : '#065f46' }
+              }>
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{riskData._warnFound ? '🚨' : '✅'}</span>
                   <div>
@@ -166,18 +170,18 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
 
             {/* Risk flags */}
             {riskData?._riskFlagObjects?.length > 0 && riskData._riskFlagObjects.map((flag, i) => (
-              <div key={`rf-${i}`} className={`p-2.5 rounded-lg border flex gap-2 items-start ${
-                flag.severity === 'high' ? 'bg-rose-50 border-rose-100 text-rose-900' :
-                flag.severity === 'medium' ? 'bg-amber-50 border-amber-100 text-amber-900' :
-                'bg-slate-50 border-slate-200 text-slate-700'
-              }`}>
+              <div key={`rf-${i}`} className="p-2.5 rounded-lg border flex gap-2 items-start" style={
+                flag.severity === 'high' ? { background: isDark ? 'rgba(127,29,29,0.2)' : '#fef2f2', borderColor: isDark ? 'rgba(127,29,29,0.4)' : '#fecaca', color: isDark ? '#fca5a5' : '#9f1239' } :
+                flag.severity === 'medium' ? { background: isDark ? 'rgba(120,53,15,0.2)' : '#fffbeb', borderColor: isDark ? 'rgba(120,53,15,0.4)' : '#fde68a', color: isDark ? '#fcd34d' : '#92400e' } :
+                { background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', borderColor: isDark ? '#334155' : '#e2e8f0', color: isDark ? '#cbd5e1' : '#374151' }
+              }>
                 <span className="text-sm shrink-0">{flag.severity === 'high' ? '🔴' : flag.severity === 'medium' ? '🟡' : '⚪'}</span>
                 <p className="text-xs font-medium leading-relaxed">{flag.text}</p>
               </div>
             ))}
 
             {!riskData?._riskFlagObjects?.length && !jobSecurityData?._factors?.length && riskData?._warnFound === undefined && (
-              <p className="text-xs text-slate-500 italic">No regulatory data available yet.</p>
+              <p className="text-xs italic" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>No regulatory data available yet.</p>
             )}
           </div>
 
@@ -185,10 +189,10 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
           <SectionDivider label="FINANCIAL HEALTH" isDark={isDark} />
           <div className="space-y-2 mb-5">
             {jobSecurityData?.insight && (
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{jobSecurityData.insight}</p>
+              <p className="text-xs leading-relaxed" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{jobSecurityData.insight}</p>
             )}
             {riskData?.insight && riskData.insight !== jobSecurityData?.insight && (
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{riskData.insight}</p>
+              <p className="text-xs leading-relaxed" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{riskData.insight}</p>
             )}
           </div>
 
@@ -198,11 +202,11 @@ export default function StabilityShieldCard({ jobSecurityData, riskData, sentime
               <SectionDivider label="MARKET CONSENSUS" isDark={isDark} />
               <div className="space-y-3 mb-4">
                 {sentimentData?.insight && (
-                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{sentimentData.insight}</p>
+                  <p className="text-xs leading-relaxed" style={{ color: isDark ? '#cbd5e1' : '#374151' }}>{sentimentData.insight}</p>
                 )}
                 {sentimentData?._analystData && (
-                  <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50">
-                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2">Analyst Consensus</p>
+                  <div className="p-3 rounded-xl border" style={{ background: isDark ? 'rgba(30,41,59,0.5)' : 'rgba(255,255,255,0.5)', borderColor: isDark ? 'rgba(51,65,85,0.5)' : 'rgba(226,232,240,0.5)' }}>
+                    <p className="text-xs font-semibold mb-2" style={{ color: isDark ? '#e2e8f0' : '#374151' }}>Analyst Consensus</p>
                     <AnalystBar data={sentimentData._analystData} />
                   </div>
                 )}
