@@ -12,6 +12,7 @@ export default function IntelligenceCard({
   status,
   enrichedSalaryData
 }) {
+  const { isDark } = useDarkMode();
   const isPending = status === 'pending';
   const isLoading = status === 'loading';
   const isPartial = status === 'partial' && !dimensionData;
@@ -40,7 +41,6 @@ export default function IntelligenceCard({
   };
 
   const verified = isComplete && isVerifiedData(dimensionData);
-  const { isDark } = useDarkMode();
 
   return (
     <div 
