@@ -303,20 +303,21 @@ function buildBlsSeriesIds(socCode) {
   };
 }
 
-// Decrypt helper for encrypted API keys
+// Decrypt helper for encrypted API keys (enc: prefix = encrypted, otherwise legacy plain text)
 function decryptKey(cipherText) {
   if (!cipherText) return '';
+  const ENC_PREFIX = 'enc:';
+  if (!cipherText.startsWith(ENC_PREFIX)) return cipherText;
   const SECRET = Deno.env.get("BASE44_APP_ID") || "rolelens-default-key-2024";
   try {
-    const decoded = Uint8Array.from(atob(cipherText), c => c.charCodeAt(0));
+    const b64 = cipherText.slice(ENC_PREFIX.length);
+    const decoded = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const keyBytes = new TextEncoder().encode(SECRET);
     const result = new Uint8Array(decoded.length);
     for (let i = 0; i < decoded.length; i++) {
       result[i] = decoded[i] ^ keyBytes[i % keyBytes.length];
     }
-    const plain = new TextDecoder().decode(result);
-    if (/^[a-zA-Z0-9_\-]+$/.test(plain)) return plain;
-    return cipherText;
+    return new TextDecoder().decode(result);
   } catch {
     return cipherText;
   }

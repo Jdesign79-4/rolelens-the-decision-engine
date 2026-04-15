@@ -4,6 +4,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 // Keys are never returned in plain text to the frontend.
 const SECRET = Deno.env.get("BASE44_APP_ID") || "rolelens-default-key-2024";
 
+const ENC_PREFIX = 'enc:';
+
 function encrypt(plainText) {
   if (!plainText) return '';
   const encoded = new TextEncoder().encode(plainText);
@@ -12,14 +14,15 @@ function encrypt(plainText) {
   for (let i = 0; i < encoded.length; i++) {
     result[i] = encoded[i] ^ keyBytes[i % keyBytes.length];
   }
-  // Convert to base64
-  return btoa(String.fromCharCode(...result));
+  return ENC_PREFIX + btoa(String.fromCharCode(...result));
 }
 
 function decrypt(cipherText) {
   if (!cipherText) return '';
+  if (!cipherText.startsWith(ENC_PREFIX)) return cipherText; // legacy plain text
   try {
-    const decoded = Uint8Array.from(atob(cipherText), c => c.charCodeAt(0));
+    const b64 = cipherText.slice(ENC_PREFIX.length);
+    const decoded = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const keyBytes = new TextEncoder().encode(SECRET);
     const result = new Uint8Array(decoded.length);
     for (let i = 0; i < decoded.length; i++) {
@@ -27,7 +30,6 @@ function decrypt(cipherText) {
     }
     return new TextDecoder().decode(result);
   } catch {
-    // If decryption fails, it might be a legacy plain-text key
     return cipherText;
   }
 }
@@ -37,24 +39,8 @@ function mask(plainText) {
   return plainText.substring(0, 4) + '••••••••' + plainText.substring(plainText.length - 4);
 }
 
-// Check if a value looks like it's already encrypted (base64 with XOR artifacts)
 function isEncrypted(value) {
-  if (!value) return false;
-  // Encrypted values are base64 and typically look different from API keys
-  // API keys usually contain alphanumeric chars and dashes/underscores
-  // Base64 encrypted output may contain +, /, = 
-  try {
-    const decoded = atob(value);
-    // If it decodes to something with lots of non-printable chars, it's likely encrypted
-    let nonPrintable = 0;
-    for (let i = 0; i < decoded.length; i++) {
-      const c = decoded.charCodeAt(i);
-      if (c < 32 || c > 126) nonPrintable++;
-    }
-    return nonPrintable > decoded.length * 0.3;
-  } catch {
-    return false;
-  }
+  return !!value && value.startsWith(ENC_PREFIX);
 }
 
 const KEY_FIELDS = [
